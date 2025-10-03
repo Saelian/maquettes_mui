@@ -45,6 +45,11 @@ npm run build
 # Prévisualiser le build de production
 npm run preview
 
+# Tests visuels avec Playwright - OBLIGATOIRE avant livraison
+npm run test:visual           # Exécute les tests visuels
+npm run test:visual:ui        # Interface de débogage Playwright
+npm run test:visual:headed    # Tests avec navigateur visible
+
 # Vérifier uniquement les types TypeScript et imports
 npm run typecheck
 
@@ -58,16 +63,42 @@ npm run lint:fix
 ## IMPORTANT : Validation des maquettes
 
 **Lors de la publication de nouvelles maquettes, tu DOIS TOUJOURS :**
-1. Exécuter `npm run lint` pour vérifier qu'il n'y a aucune erreur TypeScript ou ESLint
-   - Cette commande exécute automatiquement `npm run typecheck` puis ESLint
-   - Le typecheck vérifie les imports, types et erreurs de compilation TypeScript
-   - ESLint vérifie la qualité du code et les règles de style
-2. Si des erreurs sont détectées, les corriger immédiatement
-3. Ne jamais publier une maquette avec des erreurs de linter ou de typecheck
 
-**Commandes disponibles :**
-- `npm run typecheck` - Vérifie uniquement les types TypeScript et les imports
-- `npm run lint` - Vérifie types TypeScript + ESLint (recommandé)
+### 1. Créer un test visuel spécifique pour la maquette
+   - Chaque maquette doit avoir son propre fichier de test : `tests/[nom-maquette].visual.spec.ts`
+   - Le test doit vérifier l'alignement de tous les éléments majeurs avec l'AppBar
+   - Prendre des captures d'écran pour référence
+   - Voir [tests/README.md](tests/README.md) pour la structure type d'un test
+
+### 2. Vérifier visuellement l'alignement et l'apparence
+   - Exécuter `npm run test:visual` pour lancer les tests Playwright
+   - Le test doit passer sans erreur avant de livrer la maquette
+   - Si le test échoue, utiliser `npm run test:visual:ui` pour déboguer
+   - Les captures d'écran sont dans `tests/screenshots/`
+
+### 3. Vérifier le code - OBLIGATOIRE AVANT TOUTE LIVRAISON
+   - **TOUJOURS exécuter `npm run lint` AVANT de créer un fichier de test**
+   - **TOUJOURS exécuter `npm run build` pour détecter les erreurs d'imports et de compilation**
+   - Corriger immédiatement toute erreur détectée
+   - Ne jamais publier avec des erreurs de linter, typecheck ou build
+   - ⚠️ **Le lint seul ne détecte pas toujours les imports incorrects - le build est OBLIGATOIRE**
+
+### 4. Points de vérification visuels obligatoires
+   - ✅ Alignement horizontal de tous les conteneurs avec l'AppBar
+   - ✅ Espacement entre l'AppBar et le contenu principal (`mt: 2`)
+   - ✅ Tous les boutons/éléments fonctionnels sont visibles et accessibles
+   - ✅ Les marges et paddings sont cohérents
+
+**Ordre des commandes OBLIGATOIRE pour valider une maquette :**
+1. `npm run lint` - Vérifier TypeScript + ESLint
+2. `npm run build` - **OBLIGATOIRE** pour détecter les imports incorrects et erreurs de compilation
+3. `npm run test:visual` - Exécuter les tests visuels Playwright
+
+**Autres commandes disponibles :**
+- `npm run test:visual:ui` - Ouvre l'interface Playwright pour déboguer les tests
+- `npm run test:visual:headed` - Exécute les tests avec navigateur visible
+- `npx playwright test tests/[nom-maquette].visual.spec.ts` - Teste une maquette spécifique
+- `npm run typecheck` - Vérifie uniquement les types TypeScript
 - `npm run lint:fix` - Corrige automatiquement les erreurs ESLint
 
 ## Architecture

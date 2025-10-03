@@ -4,12 +4,16 @@ import Box from '@mui/material/Box';
 import { List, ListItem, ListItemButton, ListItemText, Divider } from '@mui/material';
 import { BrowserRouter, Routes, Route, Link as RouterLink } from 'react-router-dom';
 import PremierTest from './maquettes/PremierTest';
-import BaseIxbus from './maquettes/BaseIxbus';
+import TableauDeBordIxfacture from './maquettes/TableauDeBordIxfacture';
+import PrepareriXFacture from './maquettes/PrepareriXFacture';
+import FacturesAchatiXfacture from './maquettes/FacturesAchatiXfacture';
 import UtilisateurIxBus from './templates/UtilisateurIxBus';
 
 const maquettes = [
   { nom: 'Premier test', chemin: '/premier-test', composant: <PremierTest /> },
-  { nom: 'Base iXBus Utilisateur', chemin: '/base-ixbus', composant: <BaseIxbus /> },
+  { nom: 'Tableau de bord iXfacture', chemin: '/tableau-de-bord-ixfacture', composant: <TableauDeBordIxfacture /> },
+  { nom: 'Préparer iXFacture', chemin: '/preparer-ixfacture', composant: <PrepareriXFacture /> },
+  { nom: 'Factures d\'achat iXfacture', chemin: '/factures-achat-ixfacture', composant: <FacturesAchatiXfacture /> },
 ];
 
 const templates = [

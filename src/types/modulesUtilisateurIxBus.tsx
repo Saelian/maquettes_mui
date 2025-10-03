@@ -1,21 +1,27 @@
 import {
-  HelpOutline,
   Dashboard,
   Add,
   Send,
   Receipt,
   History,
   TableChart,
-  BarChart,
   Description,
   Accessibility,
   Chat,
   Visibility as VisibilityIcon,
-  Edit,
   CheckCircle,
   AccountBalance,
 } from '@mui/icons-material';
 import { Module } from './navigation';
+
+// Import des icônes SVG des modules
+import icoIxActes from '../assets/img_modules/ico_iXActes_couleur.svg';
+import icoIxHelios from '../assets/img_modules/ico_iXHelios_couleur.svg';
+import icoIxFacture from '../assets/img_modules/ico_iXFacture_couleur.svg';
+import icoIxFormulaire from '../assets/img_modules/ico_iXFormulaire_couleur.svg';
+import icoIxGed from '../assets/img_modules/ico_iXGed_couleur.svg';
+import icoIxSae from '../assets/img_modules/ico_iXSae_couleur.svg';
+import icoIxParapheur from '../assets/img_modules/ico_iXParapheur_couleur.svg';
 
 /**
  * Liste des modules iXBus pour le menu Utilisateur
@@ -24,7 +30,7 @@ import { Module } from './navigation';
 export const modulesUtilisateurIxBus: Module[] = [
   {
     nom: 'iXActes',
-    icone: <HelpOutline />,
+    icone: <img src={icoIxActes} alt="iXActes" style={{ width: 24, height: 24 }} />,
     couleur: '#fac021',
     sousSections: [
       { texte: 'Tableau de bord', icone: <Dashboard /> },
@@ -36,7 +42,7 @@ export const modulesUtilisateurIxBus: Module[] = [
   },
   {
     nom: 'iXHelios',
-    icone: <HelpOutline />,
+    icone: <img src={icoIxHelios} alt="iXHelios" style={{ width: 24, height: 24 }} />,
     couleur: '#0b9c3a',
     sousSections: [
       { texte: 'Tableau de bord', icone: <Dashboard /> },
@@ -47,18 +53,20 @@ export const modulesUtilisateurIxBus: Module[] = [
   },
   {
     nom: 'iXFacture',
-    icone: <Receipt />,
+    icone: <img src={icoIxFacture} alt="iXFacture" style={{ width: 24, height: 24 }} />,
     couleur: '#927DCE',
     sousSections: [
       { texte: 'Tableau de bord', icone: <Dashboard /> },
       { texte: 'Préparer', icone: <Add /> },
-      { texte: 'Suivi', icone: <VisibilityIcon /> },
+      { texte: 'Factures d\'achat', icone: <VisibilityIcon /> },
+      { texte: 'Factures de vente', icone: <VisibilityIcon /> },
+      { texte: 'Factures entrantes', icone: <VisibilityIcon /> },
       { texte: 'Historique', icone: <History /> },
     ],
   },
   {
     nom: 'iXFormulaire',
-    icone: <TableChart />,
+    icone: <img src={icoIxFormulaire} alt="iXFormulaire" style={{ width: 24, height: 24 }} />,
     couleur: '#00A99D',
     sousSections: [
       { texte: 'Préparer', icone: <Add /> },
@@ -67,19 +75,19 @@ export const modulesUtilisateurIxBus: Module[] = [
   },
   {
     nom: 'iXGed',
-    icone: <Description />,
+    icone: <img src={icoIxGed} alt="iXGed" style={{ width: 24, height: 24 }} />,
     couleur: '#193F61',
     sousSections: [{ texte: 'Suivi', icone: <VisibilityIcon /> }],
   },
   {
     nom: 'iXSae',
-    icone: <BarChart />,
+    icone: <img src={icoIxSae} alt="iXSae" style={{ width: 24, height: 24 }} />,
     couleur: '#47C3E8',
     sousSections: [{ texte: 'Suivi', icone: <VisibilityIcon /> }],
   },
   {
     nom: 'iXParapheur',
-    icone: <Edit />,
+    icone: <img src={icoIxParapheur} alt="iXParapheur" style={{ width: 24, height: 24 }} />,
     couleur: '#E566C7',
     sousSections: [
       { texte: 'Tableau de bord', icone: <Dashboard /> },

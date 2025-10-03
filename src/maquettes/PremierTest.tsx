@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Box, Button, Dialog, DialogContent, DialogTitle } from '@mui/material';
-import BoutonSommaire from '../composants/navigation/BoutonSommaire';
+import UtilisateurIxBus from '../templates/UtilisateurIxBus';
 
 /**
  * Maquette PremierTest
- * Affiche un bouton de test qui ouvre une modale
+ *
+ * Affiche un bouton de test qui ouvre une modale.
+ * Utilise le template UtilisateurIxBus pour la structure de base.
  */
 export default function PremierTest() {
   const [ouvert, setOuvert] = useState(false);
@@ -13,9 +15,7 @@ export default function PremierTest() {
   const fermerModale = () => setOuvert(false);
 
   return (
-    <Box sx={{ height: '100vh', position: 'relative' }}>
-      <BoutonSommaire />
-
+    <UtilisateurIxBus>
       <Box
         sx={{
           display: 'flex',
@@ -35,6 +35,6 @@ export default function PremierTest() {
           Test réussi !
         </DialogContent>
       </Dialog>
-    </Box>
+    </UtilisateurIxBus>
   );
 }

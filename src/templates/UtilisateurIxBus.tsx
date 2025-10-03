@@ -7,6 +7,8 @@ import { modulesUtilisateurIxBus } from '../types/modulesUtilisateurIxBus';
 
 interface UtilisateurIxBusProps {
   children: ReactNode;
+  titre?: string;
+  sousTitre?: string;
 }
 
 /**
@@ -24,7 +26,7 @@ interface UtilisateurIxBusProps {
  *
  * Note : Pour les maquettes avec le menu Administrateur, un template AdministrateurIxBus sera créé.
  */
-export default function UtilisateurIxBus({ children }: UtilisateurIxBusProps) {
+export default function UtilisateurIxBus({ children, titre, sousTitre }: UtilisateurIxBusProps) {
   const [drawerOuvert, setDrawerOuvert] = useState(true);
   const [moduleOuvert, setModuleOuvert] = useState<string | null>('iXFacture');
 
@@ -48,16 +50,11 @@ export default function UtilisateurIxBus({ children }: UtilisateurIxBusProps) {
       />
 
       <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', ml: 2, mr: 2 }}>
-        <BarreApplication onToggleDrawer={toggleDrawer} />
+        <BarreApplication onToggleDrawer={toggleDrawer} titre={titre} sousTitre={sousTitre} />
 
         <Box
           sx={{
             flexGrow: 1,
-            bgcolor: 'white',
-            boxShadow: 1,
-            mt: 2,
-            mb: 2,
-            p: 3,
             overflow: 'auto'
           }}
         >

@@ -14,24 +14,42 @@ import {
   HelpOutline,
 } from '@mui/icons-material';
 
-interface BarreApplicationProps {
+export interface BarreApplicationProps {
   onToggleDrawer: () => void;
+  titre?: string;
+  sousTitre?: string;
 }
 
 /**
  * Barre d'application en haut de page
  * Contient le bouton de menu, les liens d'accessibilité et les infos utilisateur
  */
-export default function BarreApplication({ onToggleDrawer }: BarreApplicationProps) {
+export default function BarreApplication({ onToggleDrawer, titre, sousTitre }: BarreApplicationProps) {
   return (
     <AppBar position="static" sx={{ bgcolor: 'white', color: 'black', boxShadow: 1, mt: 2 }}>
       <Toolbar>
         <IconButton edge="start" sx={{ mr: 2 }} onClick={onToggleDrawer}>
           <MenuIcon />
         </IconButton>
-        <IconButton sx={{ mr: 'auto' }}>
-          {/* Espace pour icône de navigation */}
-        </IconButton>
+
+        {titre && (
+          <Box sx={{ mr: 'auto' }}>
+            <Typography variant="h6" component="div">
+              {titre}
+            </Typography>
+            {sousTitre && (
+              <Typography variant="caption" component="div" sx={{ color: 'text.secondary' }}>
+                {sousTitre}
+              </Typography>
+            )}
+          </Box>
+        )}
+
+        {!titre && (
+          <IconButton sx={{ mr: 'auto' }}>
+            {/* Espace pour icône de navigation */}
+          </IconButton>
+        )}
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Button

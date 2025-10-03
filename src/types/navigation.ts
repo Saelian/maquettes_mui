@@ -1,3 +1,5 @@
+import { ReactElement } from 'react';
+
 /**
  * Types et interfaces pour les composants de navigation
  */
@@ -7,7 +9,7 @@
  */
 export interface SousSection {
   texte: string;
-  icone: JSX.Element;
+  icone: ReactElement;
 }
 
 /**
@@ -15,7 +17,7 @@ export interface SousSection {
  */
 export interface Module {
   nom: string;
-  icone: JSX.Element;
+  icone: ReactElement;
   couleur: string;
   sousSections?: SousSection[];
 }

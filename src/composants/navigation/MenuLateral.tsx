@@ -60,6 +60,17 @@ export default function MenuLateral({
                 alignItems: 'center',
                 gap: drawerOuvert ? 0 : 0.5,
                 position: 'relative',
+                bgcolor: moduleOuvert === module.nom ? 'action.hover' : 'transparent',
+                '&:hover': {
+                  bgcolor: 'primary.main',
+                  color: 'white',
+                  '& .MuiListItemIcon-root': {
+                    color: 'white',
+                  },
+                  '& .MuiTypography-root': {
+                    color: 'white',
+                  },
+                },
               }}
             >
               <ListItemIcon
@@ -78,7 +89,6 @@ export default function MenuLateral({
                     primary={module.nom}
                     primaryTypographyProps={{
                       fontSize: '0.85rem',
-                      fontWeight: moduleOuvert === module.nom ? 'bold' : 'normal',
                     }}
                   />
                   {module.sousSections &&
@@ -91,7 +101,6 @@ export default function MenuLateral({
                       fontSize: '0.5rem',
                       textAlign: 'center',
                       lineHeight: 1.2,
-                      fontWeight: moduleOuvert === module.nom ? 'bold' : 'normal',
                       color: 'text.primary',
                     }}
                   >
@@ -133,6 +142,16 @@ export default function MenuLateral({
                         justifyContent: 'center',
                         alignItems: 'center',
                         gap: drawerOuvert ? 0 : 0.3,
+                        '&:hover': {
+                          bgcolor: 'primary.main',
+                          color: 'white',
+                          '& .MuiListItemIcon-root': {
+                            color: 'white',
+                          },
+                          '& .MuiTypography-root': {
+                            color: 'white',
+                          },
+                        },
                       }}
                     >
                       <ListItemIcon

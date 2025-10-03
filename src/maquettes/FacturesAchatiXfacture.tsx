@@ -1,0 +1,926 @@
+import { useState } from 'react';
+import {
+  Box,
+  Button,
+  Menu,
+  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableSortLabel,
+  Checkbox,
+  FormGroup,
+  FormControlLabel,
+  Typography,
+  Toolbar,
+  Tooltip,
+  InputAdornment,
+  Divider,
+  Chip,
+  List,
+  ListItem,
+  ListItemText,
+} from '@mui/material';
+import {
+  Search as SearchIcon,
+  FileDownload as FileDownloadIcon,
+  FileUpload as FileUploadIcon,
+  ViewColumn as ViewColumnIcon,
+  RestartAlt as RestartAltIcon,
+  Clear as ClearIcon,
+  CheckCircle as CheckCircleIcon,
+  Cancel as CancelIcon,
+  PictureAsPdf as PictureAsPdfIcon,
+} from '@mui/icons-material';
+import UtilisateurIxBus from '../templates/UtilisateurIxBus';
+
+// Interface pour une facture d'achat
+interface FactureAchat {
+  id: string;
+  numero: string;
+  fournisseur: string;
+  type: 'Entreprise privée' | 'Entité publique';
+  dateReception: string;
+  dateEcheance: string;
+  montantHT: number;
+  montantTVA: number;
+  montantTTC: number;
+  statut: 'En attente' | 'Validée' | 'Refusée' | 'Payée';
+  reference: string;
+}
+
+// Interface pour l'historique d'une facture
+interface EvenementHistorique {
+  date: string;
+  statut: string;
+  utilisateur: string;
+  commentaire?: string;
+}
+
+// Interface pour les métadonnées
+interface Metadonnee {
+  id: string;
+  label: string;
+  type: 'text' | 'date' | 'number' | 'select';
+  valeur: string;
+  options?: string[];
+}
+
+// Colonnes disponibles pour le tableau
+interface Colonne {
+  id: keyof FactureAchat;
+  label: string;
+  visible: boolean;
+  sortable: boolean;
+}
+
+// Données fictives de factures d'achat
+const facturesAchatFictives: FactureAchat[] = [
+  {
+    id: '1',
+    numero: 'FA-2025-001',
+    fournisseur: 'Fournitures Bureau SA',
+    type: 'Entreprise privée',
+    dateReception: '2025-10-01',
+    dateEcheance: '2025-10-31',
+    montantHT: 3250.00,
+    montantTVA: 650.00,
+    montantTTC: 3900.00,
+    statut: 'En attente',
+    reference: 'CMD-ACH-045',
+  },
+  {
+    id: '2',
+    numero: 'FA-2025-002',
+    fournisseur: 'Solutions Informatiques SARL',
+    type: 'Entreprise privée',
+    dateReception: '2025-10-02',
+    dateEcheance: '2025-11-02',
+    montantHT: 8400.00,
+    montantTVA: 1680.00,
+    montantTTC: 10080.00,
+    statut: 'En attente',
+    reference: 'CMD-ACH-046',
+  },
+  {
+    id: '3',
+    numero: 'FA-2025-003',
+    fournisseur: 'Équipements Pro & Cie',
+    type: 'Entité publique',
+    dateReception: '2025-10-03',
+    dateEcheance: '2025-11-03',
+    montantHT: 1890.50,
+    montantTVA: 378.10,
+    montantTTC: 2268.60,
+    statut: 'Validée',
+    reference: 'CMD-ACH-047',
+  },
+  {
+    id: '4',
+    numero: 'FA-2025-004',
+    fournisseur: 'Maintenance Services Plus',
+    type: 'Entreprise privée',
+    dateReception: '2025-10-04',
+    dateEcheance: '2025-11-04',
+    montantHT: 12670.00,
+    montantTVA: 2534.00,
+    montantTTC: 15204.00,
+    statut: 'En attente',
+    reference: 'CMD-ACH-048',
+  },
+  {
+    id: '5',
+    numero: 'FA-2025-005',
+    fournisseur: 'Distribution Logistique Express',
+    type: 'Entité publique',
+    dateReception: '2025-10-05',
+    dateEcheance: '2025-11-05',
+    montantHT: 5340.75,
+    montantTVA: 1068.15,
+    montantTTC: 6408.90,
+    statut: 'Refusée',
+    reference: 'CMD-ACH-049',
+  },
+];
+
+// Configuration des colonnes par défaut
+const colonnesParDefaut: Colonne[] = [
+  { id: 'numero', label: 'N° Facture', visible: true, sortable: true },
+  { id: 'fournisseur', label: 'Fournisseur', visible: true, sortable: true },
+  { id: 'type', label: 'Type', visible: true, sortable: true },
+  { id: 'dateReception', label: 'Date réception', visible: true, sortable: true },
+  { id: 'dateEcheance', label: 'Date échéance', visible: true, sortable: true },
+  { id: 'montantHT', label: 'Montant HT', visible: true, sortable: true },
+  { id: 'montantTVA', label: 'TVA', visible: false, sortable: true },
+  { id: 'montantTTC', label: 'Montant TTC', visible: true, sortable: true },
+  { id: 'statut', label: 'Statut', visible: true, sortable: true },
+  { id: 'reference', label: 'Référence', visible: true, sortable: true },
+];
+
+// Historique fictif pour une facture
+const historiqueFactureFictif: EvenementHistorique[] = [
+  {
+    date: '2025-10-01 09:15:00',
+    statut: 'Reçue',
+    utilisateur: 'Système',
+    commentaire: 'Facture importée automatiquement depuis le portail fournisseur',
+  },
+  {
+    date: '2025-10-01 10:30:00',
+    statut: 'En attente de validation',
+    utilisateur: 'Marie Dupont',
+    commentaire: 'Assignée au service comptabilité',
+  },
+  {
+    date: '2025-10-02 14:20:00',
+    statut: 'En cours de vérification',
+    utilisateur: 'Jean Martin',
+    commentaire: 'Vérification des montants et conformité',
+  },
+];
+
+// Métadonnées fictives
+const metadonneesFictives: Metadonnee[] = [
+  {
+    id: '1',
+    label: 'Centre de coût',
+    type: 'select',
+    valeur: 'CC-001',
+    options: ['CC-001', 'CC-002', 'CC-003', 'CC-004'],
+  },
+  {
+    id: '2',
+    label: 'Projet',
+    type: 'select',
+    valeur: 'PRJ-2025-15',
+    options: ['PRJ-2025-15', 'PRJ-2025-16', 'PRJ-2025-17'],
+  },
+  {
+    id: '3',
+    label: 'Responsable validation',
+    type: 'text',
+    valeur: 'Sophie Durand',
+  },
+  {
+    id: '4',
+    label: 'Date de paiement prévue',
+    type: 'date',
+    valeur: '2025-10-30',
+  },
+  {
+    id: '5',
+    label: 'Montant autorisé',
+    type: 'number',
+    valeur: '15000',
+  },
+  {
+    id: '6',
+    label: 'Type de dépense',
+    type: 'select',
+    valeur: 'Fonctionnement',
+    options: ['Fonctionnement', 'Investissement', 'Sous-traitance', 'Honoraires'],
+  },
+];
+
+const FacturesAchatiXfacture = () => {
+  // États pour les modales
+  const [modaleRechercheOuverte, setModaleRechercheOuverte] = useState(false);
+  const [modaleColonnesOuverte, setModaleColonnesOuverte] = useState(false);
+  const [modaleDetailOuverte, setModaleDetailOuverte] = useState(false);
+
+  // États pour les menus déroulants
+  const [anchorValider, setAnchorValider] = useState<null | HTMLElement>(null);
+  const [anchorExporter, setAnchorExporter] = useState<null | HTMLElement>(null);
+  const [anchorTelecharger, setAnchorTelecharger] = useState<null | HTMLElement>(null);
+
+  // États pour le tableau
+  const [factures, setFactures] = useState<FactureAchat[]>(facturesAchatFictives);
+  const [facturesSelectionnees, setFacturesSelectionnees] = useState<string[]>([]);
+  const [colonnes, setColonnes] = useState<Colonne[]>(colonnesParDefaut);
+  const [ordreTriColonne, setOrdreTriColonne] = useState<keyof FactureAchat>('numero');
+  const [directionTri, setDirectionTri] = useState<'asc' | 'desc'>('asc');
+
+  // États pour la facture sélectionnée
+  const [factureSelectionnee, setFactureSelectionnee] = useState<FactureAchat | null>(null);
+  const [metadonnees, setMetadonnees] = useState<Metadonnee[]>(metadonneesFictives);
+
+  // États pour la recherche
+  const [critereRecherche, setCritereRecherche] = useState({
+    numero: '',
+    fournisseur: '',
+    dateDebut: '',
+    dateFin: '',
+  });
+
+  // État pour la recherche rapide dans la barre d'actions
+  const [rechercheRapide, setRechercheRapide] = useState('');
+
+  // Handlers pour les menus déroulants
+  const ouvrirMenuValider = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorValider(event.currentTarget);
+  };
+
+  const fermerMenuValider = () => {
+    setAnchorValider(null);
+  };
+
+  const changerStatut = (nouveauStatut: FactureAchat['statut']) => {
+    facturesSelectionnees.forEach((id) => {
+      setFactures((prev) =>
+        prev.map((f) => (f.id === id ? { ...f, statut: nouveauStatut } : f))
+      );
+    });
+    setFacturesSelectionnees([]);
+    fermerMenuValider();
+  };
+
+  const ouvrirMenuExporter = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorExporter(event.currentTarget);
+  };
+
+  const fermerMenuExporter = () => {
+    setAnchorExporter(null);
+  };
+
+  const ouvrirMenuTelecharger = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorTelecharger(event.currentTarget);
+  };
+
+  const fermerMenuTelecharger = () => {
+    setAnchorTelecharger(null);
+  };
+
+  // Handlers pour les modales
+  const ouvrirModaleRecherche = () => setModaleRechercheOuverte(true);
+  const fermerModaleRecherche = () => setModaleRechercheOuverte(false);
+
+  const ouvrirModaleColonnes = () => setModaleColonnesOuverte(true);
+  const fermerModaleColonnes = () => setModaleColonnesOuverte(false);
+
+  const ouvrirModaleDetail = (facture: FactureAchat) => {
+    setFactureSelectionnee(facture);
+    setModaleDetailOuverte(true);
+  };
+
+  const fermerModaleDetail = () => {
+    setModaleDetailOuverte(false);
+    setFactureSelectionnee(null);
+  };
+
+  // Handler pour refuser les factures sélectionnées
+  const refuserFactures = () => {
+    facturesSelectionnees.forEach((id) => {
+      setFactures((prev) =>
+        prev.map((f) => (f.id === id ? { ...f, statut: 'Refusée' } : f))
+      );
+    });
+    setFacturesSelectionnees([]);
+  };
+
+  // Handler pour sélectionner/désélectionner une facture
+  const toggleSelectionFacture = (id: string) => {
+    if (facturesSelectionnees.includes(id)) {
+      setFacturesSelectionnees(facturesSelectionnees.filter((fid) => fid !== id));
+    } else {
+      setFacturesSelectionnees([...facturesSelectionnees, id]);
+    }
+  };
+
+  // Handler pour sélectionner/désélectionner toutes les factures
+  const toggleSelectionTout = () => {
+    if (facturesSelectionnees.length === factures.length) {
+      setFacturesSelectionnees([]);
+    } else {
+      setFacturesSelectionnees(factures.map((f) => f.id));
+    }
+  };
+
+  // Handler pour le tri
+  const demanderTri = (colonne: keyof FactureAchat) => {
+    const estAsc = ordreTriColonne === colonne && directionTri === 'asc';
+    setDirectionTri(estAsc ? 'desc' : 'asc');
+    setOrdreTriColonne(colonne);
+  };
+
+  // Fonction de tri des factures
+  const facturesTriees = [...factures].sort((a, b) => {
+    const valeurA = a[ordreTriColonne];
+    const valeurB = b[ordreTriColonne];
+
+    if (typeof valeurA === 'string' && typeof valeurB === 'string') {
+      return directionTri === 'asc'
+        ? valeurA.localeCompare(valeurB)
+        : valeurB.localeCompare(valeurA);
+    }
+
+    if (typeof valeurA === 'number' && typeof valeurB === 'number') {
+      return directionTri === 'asc'
+        ? valeurA - valeurB
+        : valeurB - valeurA;
+    }
+
+    return 0;
+  });
+
+  // Handler pour basculer la visibilité d'une colonne
+  const toggleVisibiliteColonne = (colonneId: keyof FactureAchat) => {
+    setColonnes(
+      colonnes.map((col) =>
+        col.id === colonneId ? { ...col, visible: !col.visible } : col
+      )
+    );
+  };
+
+  // Handler pour réinitialiser les filtres et colonnes
+  const reinitialiser = () => {
+    setColonnes(colonnesParDefaut);
+    setFacturesSelectionnees([]);
+    setCritereRecherche({
+      numero: '',
+      fournisseur: '',
+      dateDebut: '',
+      dateFin: '',
+    });
+  };
+
+  // Handler pour appliquer la recherche
+  const appliquerRecherche = () => {
+    let resultats = [...facturesAchatFictives];
+
+    if (critereRecherche.numero) {
+      resultats = resultats.filter((f) =>
+        f.numero.toLowerCase().includes(critereRecherche.numero.toLowerCase())
+      );
+    }
+
+    if (critereRecherche.fournisseur) {
+      resultats = resultats.filter((f) =>
+        f.fournisseur.toLowerCase().includes(critereRecherche.fournisseur.toLowerCase())
+      );
+    }
+
+    if (critereRecherche.dateDebut) {
+      resultats = resultats.filter((f) => f.dateReception >= critereRecherche.dateDebut);
+    }
+
+    if (critereRecherche.dateFin) {
+      resultats = resultats.filter((f) => f.dateReception <= critereRecherche.dateFin);
+    }
+
+    setFactures(resultats);
+    fermerModaleRecherche();
+  };
+
+  // Formater le montant en euros
+  const formaterMontant = (montant: number) => {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR',
+    }).format(montant);
+  };
+
+  // Obtenir la couleur du chip de statut
+  const obtenirCouleurStatut = (statut: FactureAchat['statut']) => {
+    switch (statut) {
+      case 'En attente':
+        return 'warning';
+      case 'Validée':
+        return 'success';
+      case 'Refusée':
+        return 'error';
+      case 'Payée':
+        return 'info';
+      default:
+        return 'default';
+    }
+  };
+
+  // Handler pour mettre à jour une métadonnée
+  const mettreAJourMetadonnee = (id: string, nouvelleValeur: string) => {
+    setMetadonnees((prev) =>
+      prev.map((meta) => (meta.id === id ? { ...meta, valeur: nouvelleValeur } : meta))
+    );
+  };
+
+  const contenu = (
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {/* Barre d'actions supérieure */}
+      <Paper
+        elevation={0}
+        sx={{
+          borderRadius: 0,
+          mt: 2,
+        }}
+      >
+        <Toolbar
+          sx={{
+            gap: 1,
+            flexWrap: 'wrap',
+          }}
+        >
+          <Tooltip title="Valider et changer le statut">
+            <span>
+              <Button
+                variant="contained"
+                color="success"
+                startIcon={<CheckCircleIcon />}
+                onClick={ouvrirMenuValider}
+                disabled={facturesSelectionnees.length === 0}
+              >
+                Valider
+              </Button>
+            </span>
+          </Tooltip>
+          <Menu
+            anchorEl={anchorValider}
+            open={Boolean(anchorValider)}
+            onClose={fermerMenuValider}
+          >
+            <MenuItem onClick={() => changerStatut('Validée')}>Validée</MenuItem>
+            <MenuItem onClick={() => changerStatut('En attente')}>En attente</MenuItem>
+            <MenuItem onClick={() => changerStatut('Payée')}>Payée</MenuItem>
+          </Menu>
+
+          <Tooltip title="Refuser les factures sélectionnées">
+            <span>
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<CancelIcon />}
+                onClick={refuserFactures}
+                disabled={facturesSelectionnees.length === 0}
+              >
+                Refuser
+              </Button>
+            </span>
+          </Tooltip>
+
+          <Tooltip title="Rechercher des factures">
+            <Button
+              variant="outlined"
+              startIcon={<SearchIcon />}
+              onClick={ouvrirModaleRecherche}
+            >
+              Rechercher
+            </Button>
+          </Tooltip>
+
+          <Tooltip title="Exporter les factures">
+            <Button
+              variant="outlined"
+              startIcon={<FileUploadIcon />}
+              onClick={ouvrirMenuExporter}
+            >
+              Exporter
+            </Button>
+          </Tooltip>
+          <Menu
+            anchorEl={anchorExporter}
+            open={Boolean(anchorExporter)}
+            onClose={fermerMenuExporter}
+          >
+            <MenuItem onClick={fermerMenuExporter}>CSV</MenuItem>
+            <MenuItem onClick={fermerMenuExporter}>Excel</MenuItem>
+            <MenuItem onClick={fermerMenuExporter}>Mail</MenuItem>
+          </Menu>
+
+          <Tooltip title="Télécharger au format">
+            <Button
+              variant="outlined"
+              startIcon={<FileDownloadIcon />}
+              onClick={ouvrirMenuTelecharger}
+            >
+              Télécharger
+            </Button>
+          </Tooltip>
+          <Menu
+            anchorEl={anchorTelecharger}
+            open={Boolean(anchorTelecharger)}
+            onClose={fermerMenuTelecharger}
+          >
+            <MenuItem onClick={fermerMenuTelecharger}>UBL</MenuItem>
+            <MenuItem onClick={fermerMenuTelecharger}>CII</MenuItem>
+            <MenuItem onClick={fermerMenuTelecharger}>Factur-X</MenuItem>
+            <MenuItem onClick={fermerMenuTelecharger}>PDF</MenuItem>
+          </Menu>
+
+          {/* Zone de recherche rapide */}
+          <TextField
+            placeholder="Rechercher..."
+            variant="standard"
+            size="small"
+            value={rechercheRapide}
+            onChange={(e) => setRechercheRapide(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ flexGrow: 1, minWidth: '200px' }}
+          />
+
+          <Tooltip title="Gérer les colonnes">
+            <Button
+              variant="outlined"
+              startIcon={<ViewColumnIcon />}
+              onClick={ouvrirModaleColonnes}
+            >
+              Colonnes
+            </Button>
+          </Tooltip>
+
+          <Tooltip title="Réinitialiser les filtres et colonnes">
+            <Button
+              variant="outlined"
+              startIcon={<RestartAltIcon />}
+              onClick={reinitialiser}
+            >
+              Réinitialiser
+            </Button>
+          </Tooltip>
+        </Toolbar>
+      </Paper>
+
+      {/* Tableau des factures */}
+      <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
+        <TableContainer component={Paper} sx={{ borderRadius: 0 }}>
+          <Table stickyHeader>
+            <TableHead>
+              <TableRow>
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    indeterminate={
+                      facturesSelectionnees.length > 0 &&
+                      facturesSelectionnees.length < factures.length
+                    }
+                    checked={
+                      factures.length > 0 &&
+                      facturesSelectionnees.length === factures.length
+                    }
+                    onChange={toggleSelectionTout}
+                  />
+                </TableCell>
+                {colonnes
+                  .filter((col) => col.visible)
+                  .map((col) => (
+                    <TableCell key={col.id}>
+                      {col.sortable ? (
+                        <TableSortLabel
+                          active={ordreTriColonne === col.id}
+                          direction={ordreTriColonne === col.id ? directionTri : 'asc'}
+                          onClick={() => demanderTri(col.id)}
+                        >
+                          {col.label}
+                        </TableSortLabel>
+                      ) : (
+                        col.label
+                      )}
+                    </TableCell>
+                  ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {facturesTriees.map((facture) => (
+                <TableRow
+                  key={facture.id}
+                  hover
+                  selected={facturesSelectionnees.includes(facture.id)}
+                  onClick={() => ouvrirModaleDetail(facture)}
+                  sx={{ cursor: 'pointer' }}
+                >
+                  <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={facturesSelectionnees.includes(facture.id)}
+                      onChange={() => toggleSelectionFacture(facture.id)}
+                    />
+                  </TableCell>
+                  {colonnes
+                    .filter((col) => col.visible)
+                    .map((col) => (
+                      <TableCell key={col.id}>
+                        {col.id === 'montantHT' ||
+                        col.id === 'montantTVA' ||
+                        col.id === 'montantTTC' ? (
+                          formaterMontant(facture[col.id] as number)
+                        ) : col.id === 'statut' ? (
+                          <Chip
+                            label={facture.statut}
+                            color={obtenirCouleurStatut(facture.statut)}
+                            size="small"
+                          />
+                        ) : (
+                          facture[col.id]
+                        )}
+                      </TableCell>
+                    ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+
+      {/* Modale de détail de facture */}
+      <Dialog
+        open={modaleDetailOuverte}
+        onClose={fermerModaleDetail}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle>
+          Détail de la facture {factureSelectionnee?.numero}
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', gap: 3, mt: 1, flexWrap: { xs: 'wrap', md: 'nowrap' } }}>
+            {/* Colonne gauche - Aperçu PDF */}
+            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 50%' } }}>
+              <Paper
+                elevation={3}
+                sx={{
+                  height: 600,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: 'grey.100',
+                  p: 2,
+                }}
+              >
+                <PictureAsPdfIcon sx={{ fontSize: 80, color: 'error.main', mb: 2 }} />
+                <Typography variant="h6" gutterBottom>
+                  Aperçu de la facture PDF
+                </Typography>
+                <Typography variant="body2" color="text.secondary" align="center">
+                  Facture {factureSelectionnee?.numero}
+                  <br />
+                  {factureSelectionnee?.fournisseur}
+                  <br />
+                  {formaterMontant(factureSelectionnee?.montantTTC || 0)}
+                </Typography>
+                <Button
+                  variant="outlined"
+                  startIcon={<FileDownloadIcon />}
+                  sx={{ mt: 3 }}
+                >
+                  Télécharger le PDF
+                </Button>
+              </Paper>
+            </Box>
+
+            {/* Colonne droite - Historique et Métadonnées */}
+            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 50%' } }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                {/* Historique */}
+                <Paper elevation={2} sx={{ p: 2 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Historique de la facture
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+                  <List dense>
+                    {historiqueFactureFictif.map((evenement, index) => (
+                      <ListItem key={index} sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                        <ListItemText
+                          primary={
+                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                              <Chip
+                                label={evenement.statut}
+                                size="small"
+                                color="primary"
+                                variant="outlined"
+                              />
+                              <Typography variant="caption" color="text.secondary">
+                                {evenement.date}
+                              </Typography>
+                            </Box>
+                          }
+                          secondary={
+                            <>
+                              <Typography variant="body2" component="span" sx={{ fontWeight: 'bold' }}>
+                                {evenement.utilisateur}
+                              </Typography>
+                              {evenement.commentaire && (
+                                <Typography variant="body2" component="span" sx={{ display: 'block', mt: 0.5 }}>
+                                  {evenement.commentaire}
+                                </Typography>
+                              )}
+                            </>
+                          }
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Paper>
+
+                {/* Métadonnées */}
+                <Paper elevation={2} sx={{ p: 2 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Métadonnées supplémentaires
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {metadonnees.map((meta) => (
+                      <Box key={meta.id}>
+                        {meta.type === 'select' ? (
+                          <TextField
+                            select
+                            label={meta.label}
+                            value={meta.valeur}
+                            onChange={(e) => mettreAJourMetadonnee(meta.id, e.target.value)}
+                            fullWidth
+                            size="small"
+                          >
+                            {meta.options?.map((option) => (
+                              <MenuItem key={option} value={option}>
+                                {option}
+                              </MenuItem>
+                            ))}
+                          </TextField>
+                        ) : (
+                          <TextField
+                            label={meta.label}
+                            type={meta.type}
+                            value={meta.valeur}
+                            onChange={(e) => mettreAJourMetadonnee(meta.id, e.target.value)}
+                            fullWidth
+                            size="small"
+                            InputLabelProps={meta.type === 'date' ? { shrink: true } : undefined}
+                          />
+                        )}
+                      </Box>
+                    ))}
+                  </Box>
+                </Paper>
+              </Box>
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={fermerModaleDetail}>Fermer</Button>
+          <Button variant="contained" onClick={fermerModaleDetail}>
+            Enregistrer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modale de recherche */}
+      <Dialog
+        open={modaleRechercheOuverte}
+        onClose={fermerModaleRecherche}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Rechercher des factures</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+            <TextField
+              label="Numéro de facture"
+              value={critereRecherche.numero}
+              onChange={(e) =>
+                setCritereRecherche({ ...critereRecherche, numero: e.target.value })
+              }
+              fullWidth
+            />
+            <TextField
+              label="Fournisseur"
+              value={critereRecherche.fournisseur}
+              onChange={(e) =>
+                setCritereRecherche({ ...critereRecherche, fournisseur: e.target.value })
+              }
+              fullWidth
+            />
+            <TextField
+              label="Date de début"
+              type="date"
+              value={critereRecherche.dateDebut}
+              onChange={(e) =>
+                setCritereRecherche({ ...critereRecherche, dateDebut: e.target.value })
+              }
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+            />
+            <TextField
+              label="Date de fin"
+              type="date"
+              value={critereRecherche.dateFin}
+              onChange={(e) =>
+                setCritereRecherche({ ...critereRecherche, dateFin: e.target.value })
+              }
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+            />
+            <Button
+              startIcon={<ClearIcon />}
+              onClick={() =>
+                setCritereRecherche({
+                  numero: '',
+                  fournisseur: '',
+                  dateDebut: '',
+                  dateFin: '',
+                })
+              }
+            >
+              Effacer les critères
+            </Button>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={fermerModaleRecherche}>Annuler</Button>
+          <Button onClick={appliquerRecherche} variant="contained">
+            Rechercher
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modale de gestion des colonnes */}
+      <Dialog
+        open={modaleColonnesOuverte}
+        onClose={fermerModaleColonnes}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Gérer les colonnes</DialogTitle>
+        <DialogContent>
+          <FormGroup>
+            {colonnes.map((col) => (
+              <FormControlLabel
+                key={col.id}
+                control={
+                  <Checkbox
+                    checked={col.visible}
+                    onChange={() => toggleVisibiliteColonne(col.id)}
+                  />
+                }
+                label={col.label}
+              />
+            ))}
+          </FormGroup>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={fermerModaleColonnes}>Fermer</Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
+
+  return (
+    <UtilisateurIxBus
+      titre="Factures d'achat iXFacture"
+      sousTitre="Validation et gestion des factures fournisseurs"
+    >
+      {contenu}
+    </UtilisateurIxBus>
+  );
+};
+
+export default FacturesAchatiXfacture;

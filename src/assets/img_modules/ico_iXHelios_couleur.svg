@@ -1,0 +1,12 @@
+<svg id="Calque_1" data-name="Calque 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450.33 397.14">
+	<defs>
+		<style>
+			.logo-helios {
+				fill: #0b9c3a;
+			}
+		</style>
+	</defs>
+	<path class="logo-helios logo-module"
+		d="M250,51.43,24.84,180.65H475.16ZM368.34,176.89l12.93,31.69V398.74H433V208.58l12.93-31.69Zm-103.37,0,12.92,31.69V398.74h51.69V208.58l12.92-31.69Zm-103.38,0,12.92,31.69V398.74H226.2V208.58l12.92-31.69Zm-103.37,0,12.92,31.69V398.74h51.69V208.58l12.92-31.69Zm0,220L45.29,448.57H458.8l-12.92-51.69Zm219.67-276.1"
+		transform="translate(-24.84 -51.43)" />
+</svg>
