@@ -55,7 +55,7 @@ export const modulesAdministrateurIxBus: Module[] = [
     sousSections: [
       { texte: 'Configurations API', icone: <Webhook />, lien: '/config-api-ixfacture' },
       { texte: 'Metadonnées', icone: <DataArray />, lien: '/metadonnees-ixfacture' },
-      { texte: 'Interfaces', icone: <Share /> },
+      { texte: 'Interfaces', icone: <Share />, lien: '/interfaces-ixfacture' },
     ],
   },
 ];
