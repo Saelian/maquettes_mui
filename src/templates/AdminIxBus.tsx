@@ -10,6 +10,7 @@ interface AdminIxBusProps {
   titre?: string;
   sousTitre?: string;
   moduleParDefaut?: string;
+  sousSectionSelectionnee?: string;
 }
 
 /**
@@ -25,7 +26,7 @@ interface AdminIxBusProps {
  * Les maquettes basées sur ce template héritent automatiquement des modifications
  * apportées aux composants MenuLateral, BarreApplication et BoutonSommaire.
  */
-export default function AdminIxBus({ children, titre, sousTitre, moduleParDefaut = 'Général' }: AdminIxBusProps) {
+export default function AdminIxBus({ children, titre, sousTitre, moduleParDefaut = 'Général', sousSectionSelectionnee }: AdminIxBusProps) {
   const [drawerOuvert, setDrawerOuvert] = useState(true);
   const [moduleOuvert, setModuleOuvert] = useState<string | null>(moduleParDefaut);
 
@@ -46,6 +47,7 @@ export default function AdminIxBus({ children, titre, sousTitre, moduleParDefaut
         drawerOuvert={drawerOuvert}
         moduleOuvert={moduleOuvert}
         onToggleModule={toggleModule}
+        sousSectionSelectionnee={sousSectionSelectionnee}
       />
 
       <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', ml: 2, mr: 2 }}>

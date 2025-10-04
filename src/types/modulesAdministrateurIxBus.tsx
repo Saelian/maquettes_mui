@@ -9,9 +9,9 @@ import {
   SupervisorAccount,
   Email,
   ShowChart,
-  Sync,
-  Storage,
-  AccountTree as WorkflowIcon,
+  DataArray,
+  Webhook,
+  Share,
 } from '@mui/icons-material';
 import { Module } from './navigation';
 
@@ -27,7 +27,7 @@ export const modulesAdministrateurIxBus: Module[] = [
   {
     nom: 'Général',
     icone: <Settings />,
-    couleur: '#1976d2',
+    couleur: 'rgba(0,0,0, 0.6)',
     sousSections: [
       { texte: 'Revenir à l\'application', icone: <Home /> },
       { texte: 'Statistiques', icone: <BarChart /> },
@@ -53,9 +53,9 @@ export const modulesAdministrateurIxBus: Module[] = [
     icone: <img src={icoIxFacture} alt="iXFacture" style={{ width: 24, height: 24 }} />,
     couleur: '#927DCE',
     sousSections: [
-      { texte: 'Interfaces', icone: <Sync />, lien: '/interfaces-ixfacture' },
-      { texte: 'Metadonnées', icone: <Storage />, lien: '/metadonnees-ixfacture' },
-      { texte: 'Workflow', icone: <WorkflowIcon /> },
+      { texte: 'Configurations API', icone: <Webhook />, lien: '/config-api-ixfacture' },
+      { texte: 'Metadonnées', icone: <DataArray />, lien: '/metadonnees-ixfacture' },
+      { texte: 'Interfaces', icone: <Share /> },
     ],
   },
 ];

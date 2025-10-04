@@ -8,7 +8,7 @@ import TableauDeBordIxfacture from './maquettes/TableauDeBordIxfacture';
 import PrepareriXFacture from './maquettes/PrepareriXFacture';
 import FacturesAchatiXfacture from './maquettes/FacturesAchatiXfacture';
 import FacturesVenteIxfacture from './maquettes/FacturesVenteIxfacture';
-import InterfacesIXFacture from './maquettes/InterfacesIXFacture';
+import ConfigurationsAPIIXFacture from './maquettes/ConfigurationsAPIIXFacture';
 import MetadonneesIXFacture from './maquettes/MetadonneesIXFacture';
 import UtilisateurIxBus from './templates/UtilisateurIxBus';
 import AdminIxBus from './templates/AdminIxBus';
@@ -18,7 +18,7 @@ const maquettes = [
   { nom: 'Préparer iXFacture', chemin: '/preparer-ixfacture', composant: <PrepareriXFacture /> },
   { nom: 'Factures d\'achat iXfacture', chemin: '/factures-achat-ixfacture', composant: <FacturesAchatiXfacture /> },
   { nom: 'Factures de vente iXfacture', chemin: '/factures-vente-ixfacture', composant: <FacturesVenteIxfacture /> },
-  { nom: 'Interfaces iXFacture', chemin: '/interfaces-ixfacture', composant: <InterfacesIXFacture /> },
+  { nom: 'Configurations API IXFacture', chemin: '/config-api-ixfacture', composant: <ConfigurationsAPIIXFacture /> },
   { nom: 'Métadonnées iXFacture', chemin: '/metadonnees-ixfacture', composant: <MetadonneesIXFacture /> },
 ];
 

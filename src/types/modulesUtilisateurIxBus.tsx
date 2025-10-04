@@ -6,11 +6,14 @@ import {
   History,
   TableChart,
   Description,
-  Accessibility,
-  Chat,
+  School,
   Visibility as VisibilityIcon,
   CheckCircle,
   AccountBalance,
+  FileDownload,
+  FileUpload,
+  Visibility,
+  Campaign
 } from '@mui/icons-material';
 import { Module } from './navigation';
 
@@ -58,9 +61,9 @@ export const modulesUtilisateurIxBus: Module[] = [
     sousSections: [
       { texte: 'Tableau de bord', icone: <Dashboard />, lien: '/tableau-de-bord-ixfacture' },
       { texte: 'Préparer', icone: <Add />, lien: '/preparer-ixfacture' },
-      { texte: 'Factures d\'achat', icone: <VisibilityIcon />, lien: '/factures-achat-ixfacture' },
-      { texte: 'Factures de vente', icone: <VisibilityIcon />, lien: '/factures-vente-ixfacture' },
-      { texte: 'Factures entrantes', icone: <VisibilityIcon /> },
+      { texte: 'Factures d\'achat', icone: <FileDownload />, lien: '/factures-achat-ixfacture' },
+      { texte: 'Factures de vente', icone: <FileUpload />, lien: '/factures-vente-ixfacture' },
+      { texte: 'Autres factures entrantes', icone: <Description /> },
       { texte: 'Historique', icone: <History /> },
     ],
   },
@@ -101,17 +104,17 @@ export const modulesUtilisateurIxBus: Module[] = [
   },
   {
     nom: 'Communications',
-    icone: <Chat />,
-    couleur: '#8E8E93',
+    icone: <Campaign />,
+    couleur: 'rgba(0,0,0,0.6)',
   },
   {
     nom: 'Documentation',
-    icone: <Description />,
-    couleur: '#8E8E93',
+    icone: <School />,
+    couleur: 'rgba(0,0,0,0.6)',
   },
   {
     nom: "Déclaration d'accessibilité",
-    icone: <Accessibility />,
-    couleur: '#8E8E93',
+    icone: <Visibility />,
+    couleur: 'rgba(0,0,0,0.6)',
   },
 ];

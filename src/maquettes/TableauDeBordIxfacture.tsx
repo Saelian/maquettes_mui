@@ -89,78 +89,8 @@ export default function TableauDeBordIxfacture() {
 
       {/* Disposition en deux colonnes */}
       <Box sx={{ display: 'flex', gap: 3, pt: 2, flex: 1 }}>
-        {/* Colonne gauche - Factures de vente */}
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <Paper sx={{ p: 2, mb: 2, borderRadius: 0 }}>
-            <Typography variant="h6">Factures de vente</Typography>
-          </Paper>
-
-          <Paper sx={{ p: 3, mb: 2, borderRadius: 0 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Total ventes du mois</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-                  <Typography variant="h4" sx={{ color: '#008577', fontWeight: 'bold' }}>
-                    124 580 €
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-          </Paper>
-
-          <Paper sx={{ p: 3, mb: 2, borderRadius: 0 }}>
-            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 'bold' }}>
-              Répartition par statut
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="body2">Factures envoyées</Typography>
-                <Badge badgeContent="148" sx={{ '& .MuiBadge-badge': { bgcolor: '#008577', color: 'white', position: 'static', transform: 'none' } }} />
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="body2">Factures acceptées</Typography>
-                <Badge badgeContent="132" sx={{ '& .MuiBadge-badge': { bgcolor: '#4caf50', color: 'white', position: 'static', transform: 'none' } }} />
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="body2">Factures retournées</Typography>
-                <Badge badgeContent="16" sx={{ '& .MuiBadge-badge': { bgcolor: '#f44336', color: 'white', position: 'static', transform: 'none' } }} />
-              </Box>
-            </Box>
-          </Paper>
-
-          <Paper sx={{ p: 3, flex: 1, borderRadius: 0 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-              <Description sx={{ color: '#008577' }} />
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                Dernières factures émises
-              </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1, borderBottom: '1px solid #e0e0e0' }}>
-                <Typography variant="body2">FAC-2025-001</Typography>
-                <Typography variant="body2" sx={{ color: '#008577', fontWeight: 'bold' }}>1 245 €</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1, borderBottom: '1px solid #e0e0e0' }}>
-                <Typography variant="body2">FAC-2025-002</Typography>
-                <Typography variant="body2" sx={{ color: '#008577', fontWeight: 'bold' }}>3 890 €</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1, borderBottom: '1px solid #e0e0e0' }}>
-                <Typography variant="body2">FAC-2025-003</Typography>
-                <Typography variant="body2" sx={{ color: '#008577', fontWeight: 'bold' }}>875 €</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1, borderBottom: '1px solid #e0e0e0' }}>
-                <Typography variant="body2">FAC-2025-004</Typography>
-                <Typography variant="body2" sx={{ color: '#008577', fontWeight: 'bold' }}>855 €</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1, borderBottom: '1px solid #e0e0e0' }}>
-                <Typography variant="body2">FAC-2025-005</Typography>
-                <Typography variant="body2" sx={{ color: '#008577', fontWeight: 'bold' }}>1 875 €</Typography>
-              </Box>
-            </Box>
-          </Paper>
-        </Box>
-
-        {/* Colonne droite - Factures d'achat */}
+        
+        {/* Colonne gauche - Factures d'achat */}
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <Paper sx={{ p: 2, mb: 2, borderRadius: 0 }}>
             <Typography variant="h6">Factures d'achat</Typography>
@@ -226,6 +156,78 @@ export default function TableauDeBordIxfacture() {
               <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1, borderBottom: '1px solid #e0e0e0' }}>
                 <Typography variant="body2">FOUR-2025-050</Typography>
                 <Typography variant="body2" sx={{ color: '#008577', fontWeight: 'bold' }}>990 €</Typography>
+              </Box>
+            </Box>
+          </Paper>
+        </Box>
+
+
+        {/* Colonne droite - Factures de vente */}
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <Paper sx={{ p: 2, mb: 2, borderRadius: 0 }}>
+            <Typography variant="h6">Factures de vente</Typography>
+          </Paper>
+
+          <Paper sx={{ p: 3, mb: 2, borderRadius: 0 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Box>
+                <Typography variant="body2" color="text.secondary">Total ventes du mois</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                  <Typography variant="h4" sx={{ color: '#008577', fontWeight: 'bold' }}>
+                    124 580 €
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Paper>
+
+          <Paper sx={{ p: 3, mb: 2, borderRadius: 0 }}>
+            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 'bold' }}>
+              Répartition par statut
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="body2">Factures envoyées</Typography>
+                <Badge badgeContent="148" sx={{ '& .MuiBadge-badge': { bgcolor: '#008577', color: 'white', position: 'static', transform: 'none' } }} />
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="body2">Factures acceptées</Typography>
+                <Badge badgeContent="132" sx={{ '& .MuiBadge-badge': { bgcolor: '#4caf50', color: 'white', position: 'static', transform: 'none' } }} />
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="body2">Factures retournées</Typography>
+                <Badge badgeContent="16" sx={{ '& .MuiBadge-badge': { bgcolor: '#f44336', color: 'white', position: 'static', transform: 'none' } }} />
+              </Box>
+            </Box>
+          </Paper>
+
+          <Paper sx={{ p: 3, flex: 1, borderRadius: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+              <Description sx={{ color: '#008577' }} />
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                Dernières factures émises
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1, borderBottom: '1px solid #e0e0e0' }}>
+                <Typography variant="body2">FAC-2025-001</Typography>
+                <Typography variant="body2" sx={{ color: '#008577', fontWeight: 'bold' }}>1 245 €</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1, borderBottom: '1px solid #e0e0e0' }}>
+                <Typography variant="body2">FAC-2025-002</Typography>
+                <Typography variant="body2" sx={{ color: '#008577', fontWeight: 'bold' }}>3 890 €</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1, borderBottom: '1px solid #e0e0e0' }}>
+                <Typography variant="body2">FAC-2025-003</Typography>
+                <Typography variant="body2" sx={{ color: '#008577', fontWeight: 'bold' }}>875 €</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1, borderBottom: '1px solid #e0e0e0' }}>
+                <Typography variant="body2">FAC-2025-004</Typography>
+                <Typography variant="body2" sx={{ color: '#008577', fontWeight: 'bold' }}>855 €</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1, borderBottom: '1px solid #e0e0e0' }}>
+                <Typography variant="body2">FAC-2025-005</Typography>
+                <Typography variant="body2" sx={{ color: '#008577', fontWeight: 'bold' }}>1 875 €</Typography>
               </Box>
             </Box>
           </Paper>

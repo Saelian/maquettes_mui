@@ -19,6 +19,7 @@ interface MenuLateralProps {
   drawerOuvert: boolean;
   moduleOuvert: string | null;
   onToggleModule: (nomModule: string) => void;
+  sousSectionSelectionnee?: string;
 }
 
 /**
@@ -30,6 +31,7 @@ export default function MenuLateral({
   drawerOuvert,
   moduleOuvert,
   onToggleModule,
+  sousSectionSelectionnee,
 }: MenuLateralProps) {
   const location = useLocation();
 
@@ -135,7 +137,9 @@ export default function MenuLateral({
               <Collapse in={moduleOuvert === module.nom} timeout="auto" unmountOnExit>
                 <List component="div" disablePadding>
                   {module.sousSections.map((sousSection, index) => {
-                    const estActif = sousSection.lien && location.pathname === sousSection.lien;
+                    const estActif = sousSectionSelectionnee
+                      ? sousSection.texte === sousSectionSelectionnee
+                      : sousSection.lien && location.pathname === sousSection.lien;
                     return (
                       <ListItemButton
                         key={index}
