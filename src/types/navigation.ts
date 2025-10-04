@@ -10,6 +10,7 @@ import { ReactElement } from 'react';
 export interface SousSection {
   texte: string;
   icone: ReactElement;
+  lien?: string; // Lien optionnel vers une maquette
 }
 
 /**

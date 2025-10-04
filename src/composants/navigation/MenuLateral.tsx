@@ -10,6 +10,7 @@ import {
   Typography,
 } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
+import { Link as RouterLink } from 'react-router-dom';
 import { Module } from '../../types/navigation';
 import LogoIxBus from './LogoIxBus';
 
@@ -134,6 +135,8 @@ export default function MenuLateral({
                   {module.sousSections.map((sousSection, index) => (
                     <ListItemButton
                       key={index}
+                      component={sousSection.lien ? RouterLink : 'div'}
+                      to={sousSection.lien || undefined}
                       sx={{
                         pl: drawerOuvert ? 4 : 1,
                         pr: drawerOuvert ? 2 : 1,
@@ -142,6 +145,8 @@ export default function MenuLateral({
                         justifyContent: 'center',
                         alignItems: 'center',
                         gap: drawerOuvert ? 0 : 0.3,
+                        textDecoration: 'none',
+                        color: 'inherit',
                         '&:hover': {
                           bgcolor: 'primary.main',
                           color: 'white',
