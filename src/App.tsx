@@ -10,6 +10,7 @@ import PrepareriXFacture from './maquettes/PrepareriXFacture';
 import FacturesAchatiXfacture from './maquettes/FacturesAchatiXfacture';
 import FacturesVenteIxfacture from './maquettes/FacturesVenteIxfacture';
 import UtilisateurIxBus from './templates/UtilisateurIxBus';
+import AdminIxBus from './templates/AdminIxBus';
 
 const maquettes = [
   { nom: 'Premier test', chemin: '/premier-test', composant: <PremierTest /> },
@@ -32,11 +33,24 @@ const templates = [
           <Typography variant="body1" color="text.secondary">
             Ce template fournit une structure de base avec AppBar, menu Utilisateur (Drawer) et zone de contenu personnalisable.
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-            Note : Un template AdministrateurIxBus sera créé pour les maquettes avec le menu Administrateur.
-          </Typography>
         </Box>
       </UtilisateurIxBus>
+    )
+  },
+  {
+    nom: 'AdminIxBus',
+    chemin: '/template-admin-ixbus',
+    composant: (
+      <AdminIxBus>
+        <Box sx={{ p: 3 }}>
+          <Typography variant="h5" gutterBottom>
+            Template AdminIxBus
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Ce template fournit une structure de base avec AppBar, menu Administrateur (Drawer) et zone de contenu personnalisable.
+          </Typography>
+        </Box>
+      </AdminIxBus>
     )
   },
 ];
