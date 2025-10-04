@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { Module } from '../../types/navigation';
 import LogoIxBus from './LogoIxBus';
 
@@ -31,6 +31,8 @@ export default function MenuLateral({
   moduleOuvert,
   onToggleModule,
 }: MenuLateralProps) {
+  const location = useLocation();
+
   return (
     <Drawer
       variant="permanent"
@@ -132,37 +134,40 @@ export default function MenuLateral({
             {module.sousSections && (
               <Collapse in={moduleOuvert === module.nom} timeout="auto" unmountOnExit>
                 <List component="div" disablePadding>
-                  {module.sousSections.map((sousSection, index) => (
-                    <ListItemButton
-                      key={index}
-                      component={sousSection.lien ? RouterLink : 'div'}
-                      to={sousSection.lien || undefined}
-                      sx={{
-                        pl: drawerOuvert ? 4 : 1,
-                        pr: drawerOuvert ? 2 : 1,
-                        py: drawerOuvert ? 0.5 : 0.75,
-                        flexDirection: drawerOuvert ? 'row' : 'column',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        gap: drawerOuvert ? 0 : 0.3,
-                        textDecoration: 'none',
-                        color: 'inherit',
-                        '&:hover': {
-                          bgcolor: 'primary.main',
-                          color: 'white',
-                          '& .MuiListItemIcon-root': {
+                  {module.sousSections.map((sousSection, index) => {
+                    const estActif = sousSection.lien && location.pathname === sousSection.lien;
+                    return (
+                      <ListItemButton
+                        key={index}
+                        component={sousSection.lien ? RouterLink : 'div'}
+                        to={sousSection.lien || undefined}
+                        sx={{
+                          pl: drawerOuvert ? 4 : 1,
+                          pr: drawerOuvert ? 2 : 1,
+                          py: drawerOuvert ? 0.5 : 0.75,
+                          flexDirection: drawerOuvert ? 'row' : 'column',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          gap: drawerOuvert ? 0 : 0.3,
+                          textDecoration: 'none',
+                          color: estActif ? 'white' : 'inherit',
+                          bgcolor: estActif ? 'primary.main' : 'transparent',
+                          '&:hover': {
+                            bgcolor: 'primary.main',
                             color: 'white',
+                            '& .MuiListItemIcon-root': {
+                              color: 'white',
+                            },
+                            '& .MuiTypography-root': {
+                              color: 'white',
+                            },
                           },
-                          '& .MuiTypography-root': {
-                            color: 'white',
-                          },
-                        },
-                      }}
-                    >
+                        }}
+                      >
                       <ListItemIcon
                         sx={{
                           minWidth: drawerOuvert ? 40 : 'auto',
-                          color: 'text.secondary',
+                          color: estActif ? 'white' : 'text.secondary',
                           justifyContent: 'center',
                           display: 'flex',
                           fontSize: drawerOuvert ? 'inherit' : '1rem',
@@ -175,6 +180,7 @@ export default function MenuLateral({
                           primary={sousSection.texte}
                           primaryTypographyProps={{
                             fontSize: '0.8rem',
+                            color: estActif ? 'white' : 'inherit',
                           }}
                         />
                       ) : (
@@ -183,14 +189,15 @@ export default function MenuLateral({
                             fontSize: '0.6rem',
                             textAlign: 'center',
                             lineHeight: 1.1,
-                            color: 'text.secondary',
+                            color: estActif ? 'white' : 'text.secondary',
                           }}
                         >
                           {sousSection.texte}
                         </Typography>
                       )}
                     </ListItemButton>
-                  ))}
+                    );
+                  })}
                 </List>
               </Collapse>
             )}

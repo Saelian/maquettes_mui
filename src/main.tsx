@@ -13,6 +13,26 @@ const theme = createTheme({
   typography: {
     fontFamily: 'Montserrat, Roboto, Arial, sans-serif',
   },
+  components: {
+    // Configuration par défaut pour TextField : variant "standard"
+    MuiTextField: {
+      defaultProps: {
+        variant: 'standard',
+      },
+    },
+    // Configuration par défaut pour Select : variant "standard"
+    MuiSelect: {
+      defaultProps: {
+        variant: 'standard',
+      },
+    },
+    // Configuration par défaut pour FormControl : variant "standard"
+    MuiFormControl: {
+      defaultProps: {
+        variant: 'standard',
+      },
+    },
+  },
 });
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

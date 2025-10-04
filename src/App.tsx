@@ -4,20 +4,22 @@ import Box from '@mui/material/Box';
 import { Divider, Card, CardContent, CardActionArea, Chip } from '@mui/material';
 import { BrowserRouter, Routes, Route, Link as RouterLink } from 'react-router-dom';
 import { Palette as PaletteIcon, ViewQuilt as ViewQuiltIcon } from '@mui/icons-material';
-import PremierTest from './maquettes/PremierTest';
 import TableauDeBordIxfacture from './maquettes/TableauDeBordIxfacture';
 import PrepareriXFacture from './maquettes/PrepareriXFacture';
 import FacturesAchatiXfacture from './maquettes/FacturesAchatiXfacture';
 import FacturesVenteIxfacture from './maquettes/FacturesVenteIxfacture';
+import InterfacesIXFacture from './maquettes/InterfacesIXFacture';
+import MetadonneesIXFacture from './maquettes/MetadonneesIXFacture';
 import UtilisateurIxBus from './templates/UtilisateurIxBus';
 import AdminIxBus from './templates/AdminIxBus';
 
 const maquettes = [
-  { nom: 'Premier test', chemin: '/premier-test', composant: <PremierTest /> },
   { nom: 'Tableau de bord iXfacture', chemin: '/tableau-de-bord-ixfacture', composant: <TableauDeBordIxfacture /> },
   { nom: 'Préparer iXFacture', chemin: '/preparer-ixfacture', composant: <PrepareriXFacture /> },
   { nom: 'Factures d\'achat iXfacture', chemin: '/factures-achat-ixfacture', composant: <FacturesAchatiXfacture /> },
   { nom: 'Factures de vente iXfacture', chemin: '/factures-vente-ixfacture', composant: <FacturesVenteIxfacture /> },
+  { nom: 'Interfaces iXFacture', chemin: '/interfaces-ixfacture', composant: <InterfacesIXFacture /> },
+  { nom: 'Métadonnées iXFacture', chemin: '/metadonnees-ixfacture', composant: <MetadonneesIXFacture /> },
 ];
 
 const templates = [

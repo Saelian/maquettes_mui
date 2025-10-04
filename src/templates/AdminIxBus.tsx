@@ -9,6 +9,7 @@ interface AdminIxBusProps {
   children: ReactNode;
   titre?: string;
   sousTitre?: string;
+  moduleParDefaut?: string;
 }
 
 /**
@@ -24,9 +25,9 @@ interface AdminIxBusProps {
  * Les maquettes basées sur ce template héritent automatiquement des modifications
  * apportées aux composants MenuLateral, BarreApplication et BoutonSommaire.
  */
-export default function AdminIxBus({ children, titre, sousTitre }: AdminIxBusProps) {
+export default function AdminIxBus({ children, titre, sousTitre, moduleParDefaut = 'Général' }: AdminIxBusProps) {
   const [drawerOuvert, setDrawerOuvert] = useState(true);
-  const [moduleOuvert, setModuleOuvert] = useState<string | null>('Général');
+  const [moduleOuvert, setModuleOuvert] = useState<string | null>(moduleParDefaut);
 
   const toggleDrawer = () => {
     setDrawerOuvert(!drawerOuvert);
