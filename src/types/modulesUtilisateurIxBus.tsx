@@ -13,7 +13,8 @@ import {
   FileDownload,
   FileUpload,
   Visibility,
-  Campaign
+  Campaign,
+  AttachMoney
 } from '@mui/icons-material';
 import { Module } from './navigation';
 
@@ -64,6 +65,7 @@ export const modulesUtilisateurIxBus: Module[] = [
       { texte: 'Factures d\'achat', icone: <FileDownload />, lien: '/factures-achat-ixfacture' },
       { texte: 'Factures de vente', icone: <FileUpload />, lien: '/factures-vente-ixfacture' },
       { texte: 'Autres factures entrantes', icone: <Description /> },
+      { texte: 'E-reporting', icone: <AttachMoney /> },
       { texte: 'Historique', icone: <History /> },
     ],
   },

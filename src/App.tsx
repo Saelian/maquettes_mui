@@ -11,6 +11,8 @@ import FacturesVenteIxfacture from './maquettes/FacturesVenteIxfacture';
 import ConfigurationsAPIIXFacture from './maquettes/ConfigurationsAPIIXFacture';
 import MetadonneesIXFacture from './maquettes/MetadonneesIXFacture';
 import InterfacesIXFacture from './maquettes/InterfacesIXFacture';
+import TodoList from './maquettes/TodoList';
+import OTP from './maquettes/OTP';
 import UtilisateurIxBus from './templates/UtilisateurIxBus';
 import AdminIxBus from './templates/AdminIxBus';
 
@@ -22,6 +24,8 @@ const maquettes = [
   { nom: 'Configurations API IXFacture', chemin: '/config-api-ixfacture', composant: <ConfigurationsAPIIXFacture /> },
   { nom: 'Métadonnées iXFacture', chemin: '/metadonnees-ixfacture', composant: <MetadonneesIXFacture /> },
   { nom: 'Interfaces iXFacture', chemin: '/interfaces-ixfacture', composant: <InterfacesIXFacture /> },
+  { nom: 'Gestion des tâches - Todo List', chemin: '/todo-list', composant: <TodoList /> },
+  { nom: 'Validation OTP', chemin: '/otp', composant: <OTP /> },
 ];
 
 const templates = [
