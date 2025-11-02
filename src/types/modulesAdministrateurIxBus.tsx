@@ -53,6 +53,7 @@ export const modulesAdministrateurIxBus: Module[] = [
     icone: <img src={icoIxFacture} alt="iXFacture" style={{ width: 24, height: 24 }} />,
     couleur: '#927DCE',
     sousSections: [
+      { texte: 'Natures', icone: <Category />, lien: '/natures-ixfacture' },
       { texte: 'Configurations API', icone: <Webhook />, lien: '/config-api-ixfacture' },
       { texte: 'Metadonnées', icone: <DataArray />, lien: '/metadonnees-ixfacture' },
       { texte: 'Interfaces', icone: <Share />, lien: '/interfaces-ixfacture' },

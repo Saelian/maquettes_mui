@@ -43,7 +43,7 @@ export const modulesUtilisateurIxBus: Module[] = [
       { texte: 'Éléments reçus', icone: <Receipt /> },
       { texte: 'Nomenclature', icone: <TableChart /> },
     ],
-  },
+  }, 
   {
     nom: 'iXHelios',
     icone: <img src={icoIxHelios} alt="iXHelios" style={{ width: 24, height: 24 }} />,
@@ -69,7 +69,7 @@ export const modulesUtilisateurIxBus: Module[] = [
       { texte: 'Historique', icone: <History /> },
     ],
   },
-  {
+   {
     nom: 'iXFormulaire',
     icone: <img src={icoIxFormulaire} alt="iXFormulaire" style={{ width: 24, height: 24 }} />,
     couleur: '#00A99D',
@@ -77,7 +77,7 @@ export const modulesUtilisateurIxBus: Module[] = [
       { texte: 'Préparer', icone: <Add /> },
       { texte: 'Suivi', icone: <VisibilityIcon /> },
     ],
-  },
+  }, 
   {
     nom: 'iXGed',
     icone: <img src={icoIxGed} alt="iXGed" style={{ width: 24, height: 24 }} />,
@@ -89,7 +89,7 @@ export const modulesUtilisateurIxBus: Module[] = [
     icone: <img src={icoIxSae} alt="iXSae" style={{ width: 24, height: 24 }} />,
     couleur: '#47C3E8',
     sousSections: [{ texte: 'Suivi', icone: <VisibilityIcon /> }],
-  },
+  }, 
   {
     nom: 'iXParapheur',
     icone: <img src={icoIxParapheur} alt="iXParapheur" style={{ width: 24, height: 24 }} />,
@@ -103,7 +103,7 @@ export const modulesUtilisateurIxBus: Module[] = [
       { texte: 'Historique', icone: <History /> },
       { texte: 'Mes délégations', icone: <AccountBalance /> },
     ],
-  },
+  }  ,
   {
     nom: 'Communications',
     icone: <Campaign />,
@@ -118,5 +118,5 @@ export const modulesUtilisateurIxBus: Module[] = [
     nom: "Déclaration d'accessibilité",
     icone: <Visibility />,
     couleur: 'rgba(0,0,0,0.6)',
-  },
+  }, 
 ];
