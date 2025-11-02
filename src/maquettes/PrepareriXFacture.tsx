@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -24,6 +24,10 @@ import {
   Toolbar,
   Tooltip,
   InputAdornment,
+  ToggleButton,
+  ToggleButtonGroup,
+  Divider,
+  Chip,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -35,788 +39,413 @@ import {
   FileUpload as FileUploadIcon,
   ViewColumn as ViewColumnIcon,
   RestartAlt as RestartAltIcon,
-  Clear as ClearIcon,
+  ShoppingCart as ShoppingCartIcon,
+  Sell as SellIcon,
 } from '@mui/icons-material';
 import UtilisateurIxBus from '../templates/UtilisateurIxBus';
+import { ChampFactureAvecCode } from '../composants/factures/ChampFactureAvecCode';
+import { GestionLignesFacture } from '../composants/factures/GestionLignesFacture';
+import type {
+  FactureElectronique,
+  CodeTypeDocument,
+  ModeFacturation,
+  LigneFacture,
+  TotauxFacture,
+  Partie,
+  CodeCategorieTVA,
+} from '../types/factureEN16931';
+import {
+  formaterDateFacture,
+  validerFormatIdentifiant,
+  calculerMontantTVA,
+  arrondirMontant,
+  MODES_FACTURATION,
+} from '../utils/validationFacture';
+import {
+  FACTURE_B2B_STANDARD,
+  FACTURE_TVA_MIXTE,
+  FACTURE_ACOMPTE,
+  AVOIR_EXEMPLE,
+  FACTURE_B2C_EXEMPLE,
+  ACHETEUR_EXEMPLE,
+  VENDEUR_EXEMPLE,
+  NOTES_LEGALES_FRANCE,
+  NOTE_TRAITEMENT_B2B,
+} from '../utils/donneesExemplesFactures';
 
-// Interface pour une facture
-interface Facture {
-  id: string;
-  numero: string;
-  destinataire: string;
-  dateEmission: string;
-  dateEcheance: string;
-  montantHT: number;
-  montantTVA: number;
-  montantTTC: number;
-  reference: string;
-}
+// Type pour distinguer facture d'achat et de vente
+type TypeFacture = 'ACHAT' | 'VENTE';
+
+// Ajout d'un ID et d'un type Achat/Vente aux exemples de factures complets
+const facturesExemplesCompletes: (FactureElectronique & { id: string; typeFacture: TypeFacture })[] = [
+  { ...FACTURE_B2B_STANDARD, id: '1', typeFacture: 'VENTE' },
+  { ...FACTURE_TVA_MIXTE, id: '2', typeFacture: 'VENTE' },
+  { ...FACTURE_ACOMPTE, id: '3', typeFacture: 'VENTE' },
+  { ...AVOIR_EXEMPLE, id: '4', typeFacture: 'VENTE' },
+  { ...FACTURE_B2C_EXEMPLE, id: '5', typeFacture: 'VENTE' },
+  {
+    ...FACTURE_B2B_STANDARD,
+    id: '6',
+    numero: 'ACH-2025-001',
+    vendeur: ACHETEUR_EXEMPLE, // On inverse vendeur/acheteur pour simuler un achat
+    acheteur: VENDEUR_EXEMPLE,
+    typeFacture: 'ACHAT',
+  },
+];
+
+// Mapping des codes types de documents
+const TYPE_DOCUMENT_LABELS: Record<string, string> = {
+  '380': 'Facture commerciale',
+  '381': 'Avoir',
+  '384': 'Facture rectificative',
+  '386': "Facture d'acompte",
+};
+
+// Codes de types de documents filtrés (380 à 386)
+const CODES_TYPE_DOCUMENT_FILTRES = ['380', '381', '384', '386'] as const;
+
+// Mapping des modes de facturation avec descriptions
+const MODE_FACTURATION_LABELS: Record<string, string> = {
+  'B1': "B1 : Dépôt d'une facture de bien",
+  'S1': "S1 : Dépôt d'une facture de prestation de service",
+  'M1': "M1 : Dépôt d'une facture double",
+  'B2': "B2 : Dépôt d'une facture de bien déjà payée",
+  'S2': "S2 : Dépôt d'une facture de prestation de service déjà payée",
+  'M2': "M2 : Dépôt d'une facture double déjà payée",
+  'B4': "B4 : Dépôt d'une facture définitive (après acompte) de bien",
+  'S4': "S4 : Dépôt d'une facture définitive (après acompte) de service",
+  'M4': "M4 : Dépôt d'une facture définitive (après acompte) double",
+  'S5': "S5 : Dépôt par un sous-traitant d'une facture de prestation de service",
+  'S6': "S6 : Dépôt par un cotraitant d'une facture de prestation de service",
+  'B7': "B7 : Dépôt d'une facture de bien ayant fait l'objet d'un e-reporting",
+  'S7': "S7 : Dépôt d'une facture de service ayant fait l'objet d'un e-reporting",
+};
 
 // Colonnes disponibles pour le tableau
 interface Colonne {
-  id: keyof Facture;
+  id: 'numero' | 'dateEmission' | 'typeDocument' | 'vendeur' | 'acheteur' | 'montantTTC' | 'montantDu' | 'devise' | 'nombreLignes' | 'typeFacture';
   label: string;
+  codeBT: string;
   visible: boolean;
   sortable: boolean;
 }
 
-// Données fictives de factures
-const facturesFictives: Facture[] = [
-  {
-    id: '1',
-    numero: 'FAC-2025-001',
-    destinataire: 'Entreprise Martin SA',
-    dateEmission: '2025-10-01',
-    dateEcheance: '2025-10-31',
-    montantHT: 1250.00,
-    montantTVA: 250.00,
-    montantTTC: 1500.00,
-    reference: 'CMD-2025-045',
-  },
-  {
-    id: '2',
-    numero: 'FAC-2025-002',
-    destinataire: 'Société Durand SARL',
-    dateEmission: '2025-10-02',
-    dateEcheance: '2025-11-02',
-    montantHT: 3400.00,
-    montantTVA: 680.00,
-    montantTTC: 4080.00,
-    reference: 'CMD-2025-046',
-  },
-  {
-    id: '3',
-    numero: 'FAC-2025-003',
-    destinataire: 'Établissements Petit & Fils',
-    dateEmission: '2025-10-03',
-    dateEcheance: '2025-11-03',
-    montantHT: 890.50,
-    montantTVA: 178.10,
-    montantTTC: 1068.60,
-    reference: 'CMD-2025-047',
-  },
-  {
-    id: '4',
-    numero: 'FAC-2025-004',
-    destinataire: 'Groupe Bernard Industries',
-    dateEmission: '2025-10-04',
-    dateEcheance: '2025-11-04',
-    montantHT: 5670.00,
-    montantTVA: 1134.00,
-    montantTTC: 6804.00,
-    reference: 'CMD-2025-048',
-  },
-  {
-    id: '5',
-    numero: 'FAC-2025-005',
-    destinataire: 'Thomas Distribution',
-    dateEmission: '2025-10-05',
-    dateEcheance: '2025-11-05',
-    montantHT: 2340.75,
-    montantTVA: 468.15,
-    montantTTC: 2808.90,
-    reference: 'CMD-2025-049',
-  },
-  {
-    id: '6',
-    numero: 'FAC-2025-006',
-    destinataire: 'Richard Consulting',
-    dateEmission: '2025-10-06',
-    dateEcheance: '2025-11-06',
-    montantHT: 1890.00,
-    montantTVA: 378.00,
-    montantTTC: 2268.00,
-    reference: 'CMD-2025-050',
-  },
-];
-
-// Configuration des colonnes par défaut
+// Configuration des colonnes conformes EN16931
 const colonnesParDefaut: Colonne[] = [
-  { id: 'numero', label: 'N° Facture', visible: true, sortable: true },
-  { id: 'destinataire', label: 'Destinataire', visible: true, sortable: true },
-  { id: 'dateEmission', label: 'Date émission', visible: true, sortable: true },
-  { id: 'dateEcheance', label: 'Date échéance', visible: true, sortable: true },
-  { id: 'montantHT', label: 'Montant HT', visible: true, sortable: true },
-  { id: 'montantTVA', label: 'TVA', visible: false, sortable: true },
-  { id: 'montantTTC', label: 'Montant TTC', visible: true, sortable: true },
-  { id: 'reference', label: 'Référence', visible: true, sortable: true },
+  { id: 'numero', label: 'Numéro facture', codeBT: 'BT-1', visible: true, sortable: true },
+  { id: 'dateEmission', label: 'Date émission', codeBT: 'BT-2', visible: true, sortable: true },
+  { id: 'typeDocument', label: 'Type document', codeBT: 'BT-3', visible: true, sortable: true },
+  { id: 'vendeur', label: 'Vendeur', codeBT: 'BT-27', visible: true, sortable: true },
+  { id: 'acheteur', label: 'Acheteur', codeBT: 'BT-44', visible: true, sortable: true },
+  { id: 'montantTTC', label: 'Montant TTC', codeBT: 'BT-112', visible: true, sortable: true },
+  { id: 'montantDu', label: 'Montant dû', codeBT: 'BT-115', visible: true, sortable: true },
+  { id: 'devise', label: 'Devise', codeBT: 'BT-5', visible: false, sortable: true },
+  { id: 'nombreLignes', label: 'Nb lignes', codeBT: 'BG-25', visible: true, sortable: true },
+  { id: 'typeFacture', label: 'Type (Achat/Vente)', codeBT: '-', visible: true, sortable: true },
 ];
 
 const PrepareriXFacture = () => {
-  // États pour les modales
-  const [modaleCreationOuverte, setModaleCreationOuverte] = useState(false);
-  const [modaleImportOuverte, setModaleImportOuverte] = useState(false);
+  // --- STATES ---
+  const [modaleFactureOuverte, setModaleFactureOuverte] = useState(false);
+  const [modeEdition, setModeEdition] = useState(false);
+  const [modePreparation, setModePreparation] = useState<'manuel' | 'import'>('manuel');
   const [modaleRechercheOuverte, setModaleRechercheOuverte] = useState(false);
   const [modaleColonnesOuverte, setModaleColonnesOuverte] = useState(false);
-
-  // États pour les menus déroulants
   const [anchorExporter, setAnchorExporter] = useState<null | HTMLElement>(null);
   const [anchorTelecharger, setAnchorTelecharger] = useState<null | HTMLElement>(null);
-
-  // États pour le tableau
-  const [factures, setFactures] = useState<Facture[]>(facturesFictives);
+  const [factures, setFactures] = useState(facturesExemplesCompletes);
+  const [factureActive, setFactureActive] = useState<Partial<FactureElectronique> & { typeFacture?: TypeFacture; id?: string; }>({});
   const [facturesSelectionnees, setFacturesSelectionnees] = useState<string[]>([]);
   const [colonnes, setColonnes] = useState<Colonne[]>(colonnesParDefaut);
-  const [ordreTriColonne, setOrdreTriColonne] = useState<keyof Facture>('numero');
+  const [ordreTriColonne, setOrdreTriColonne] = useState<Colonne['id']>('numero');
   const [directionTri, setDirectionTri] = useState<'asc' | 'desc'>('asc');
-
-  // États pour le formulaire de création
-  const [nouvelleFacture, setNouvelleFacture] = useState<Partial<Facture>>({
-    numero: '',
-    destinataire: '',
-    dateEmission: '',
-    dateEcheance: '',
-    montantHT: 0,
-    montantTVA: 0,
-    montantTTC: 0,
-    reference: '',
-  });
-
-  // États pour la recherche
-  const [critereRecherche, setCritereRecherche] = useState({
-    numero: '',
-    destinataire: '',
-    dateDebut: '',
-    dateFin: '',
-  });
-
-  // État pour la recherche rapide dans la barre d'actions
+  const [critereRecherche, setCritereRecherche] = useState({ numero: '', vendeur: '', acheteur: '', dateDebut: '', dateFin: '', typeFacture: 'TOUS' as 'TOUS' | TypeFacture });
   const [rechercheRapide, setRechercheRapide] = useState('');
 
-  // Handlers pour les menus déroulants
-  const ouvrirMenuExporter = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorExporter(event.currentTarget);
-  };
+  // --- HANDLERS & LOGIC ---
 
-  const fermerMenuExporter = () => {
-    setAnchorExporter(null);
-  };
-
-  const ouvrirMenuTelecharger = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorTelecharger(event.currentTarget);
-  };
-
-  const fermerMenuTelecharger = () => {
-    setAnchorTelecharger(null);
-  };
-
-  // Handlers pour les modales
-  const ouvrirModaleCreation = () => setModaleCreationOuverte(true);
-  const fermerModaleCreation = () => {
-    setModaleCreationOuverte(false);
-    setNouvelleFacture({
-      numero: '',
-      destinataire: '',
-      dateEmission: '',
-      dateEcheance: '',
-      montantHT: 0,
-      montantTVA: 0,
-      montantTTC: 0,
-      reference: '',
+  const recalculerTotaux = (lignes: LigneFacture[]): TotauxFacture => {
+    const sommeMontsNetsLignes = lignes.reduce((acc, ligne) => acc + ligne.montantNet, 0);
+    const detailsTVAMap = new Map<number, { montantBase: number; montantTVA: number; codeCategorie: CodeCategorieTVA }>();
+    lignes.forEach((ligne) => {
+      const taux = ligne.informationTVA.taux || 0;
+      const montantBase = ligne.montantNet;
+      const montantTVA = calculerMontantTVA(montantBase, taux);
+      if (detailsTVAMap.has(taux)) {
+        const detail = detailsTVAMap.get(taux)!;
+        detail.montantBase += montantBase;
+        detail.montantTVA += montantTVA;
+      } else {
+        detailsTVAMap.set(taux, { montantBase, montantTVA, codeCategorie: ligne.informationTVA.codeCategorie });
+      }
     });
+    const detailsTVA = Array.from(detailsTVAMap.entries()).map(([taux, detail]) => ({ codeCategorie: detail.codeCategorie, taux, montantBase: arrondirMontant(detail.montantBase), montantTVA: arrondirMontant(detail.montantTVA) }));
+    const montantTotalHT = arrondirMontant(sommeMontsNetsLignes);
+    const montantTotalTVA = arrondirMontant(detailsTVA.reduce((acc, d) => acc + d.montantTVA, 0));
+    const montantTotalTTC = arrondirMontant(montantTotalHT + montantTotalTVA);
+    return { sommeMontsNetsLignes: montantTotalHT, montantTotalHT, montantTotalTVA, montantTotalTTC, montantDu: montantTotalTTC, detailsTVA };
   };
 
-  const ouvrirModaleImport = () => setModaleImportOuverte(true);
-  const fermerModaleImport = () => setModaleImportOuverte(false);
+  useMemo(() => {
+    if (factureActive.lignes) {
+      setFactureActive((prev) => ({ ...prev, totaux: recalculerTotaux(prev.lignes || []) }));
+    }
+    }, [factureActive.lignes]);
 
+  const facturesTriees = useMemo(() => {
+    return [...factures]
+      .filter((f) => {
+        if (critereRecherche.typeFacture !== 'TOUS' && f.typeFacture !== critereRecherche.typeFacture) return false;
+        if (rechercheRapide) {
+          const terms = rechercheRapide.toLowerCase().split(' ');
+          const searchableContent = [f.numero, f.vendeur?.nom, f.acheteur?.nom, f.totaux?.montantTotalTTC?.toString()].join(' ').toLowerCase();
+          return terms.every(term => searchableContent.includes(term));
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        let valeurA: string | number | undefined, valeurB: string | number | undefined;
+        switch (ordreTriColonne) {
+          case 'vendeur': valeurA = a.vendeur?.nom; valeurB = b.vendeur?.nom; break;
+          case 'acheteur': valeurA = a.acheteur?.nom; valeurB = b.acheteur?.nom; break;
+          case 'montantTTC': valeurA = a.totaux?.montantTotalTTC; valeurB = b.totaux?.montantTotalTTC; break;
+          case 'montantDu': valeurA = a.totaux?.montantDu; valeurB = b.totaux?.montantDu; break;
+          case 'devise': valeurA = a.codeDevise; valeurB = b.codeDevise; break;
+          case 'nombreLignes': valeurA = a.lignes?.length; valeurB = b.lignes?.length; break;
+          default: valeurA = a[ordreTriColonne as keyof FactureElectronique] as string; valeurB = b[ordreTriColonne as keyof FactureElectronique] as string;
+        }
+        valeurA = valeurA ?? ''; valeurB = valeurB ?? '';
+        if (typeof valeurA === 'string' && typeof valeurB === 'string') return directionTri === 'asc' ? valeurA.localeCompare(valeurB) : valeurB.localeCompare(valeurA);
+        if (typeof valeurA === 'number' && typeof valeurB === 'number') return directionTri === 'asc' ? valeurA - valeurB : valeurB - valeurA;
+        return 0;
+      });
+  }, [factures, ordreTriColonne, directionTri, critereRecherche, rechercheRapide]);
+
+  const handleOuvrirModaleCreation = () => {
+    setModePreparation('manuel');
+    setModeEdition(false);
+    setFactureActive({
+      id: Date.now().toString(),
+      identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
+      modeFacturation: 'B1',
+      numero: `FACT-${new Date().getFullYear()}-${String(factures.length + 1).padStart(4, '0')}`,
+      dateEmission: formaterDateFacture(new Date()),
+      typeDocument: '380',
+      codeDevise: 'EUR',
+      typeFacture: 'VENTE',
+      vendeur: VENDEUR_EXEMPLE,
+      acheteur: ACHETEUR_EXEMPLE,
+      notes: NOTES_LEGALES_FRANCE.concat([NOTE_TRAITEMENT_B2B]),
+      lignes: [],
+    });
+    setModaleFactureOuverte(true);
+  };
+
+  const handleOuvrirModaleEdition = (facture: FactureElectronique & { id: string; typeFacture: TypeFacture }) => {
+    setModeEdition(true);
+    setFactureActive({ ...facture });
+    setModaleFactureOuverte(true);
+  };
+
+  const handleFermerModale = () => setModaleFactureOuverte(false);
+
+  const handleSauvegarderFacture = () => {
+    if (!factureActive.numero || !factureActive.lignes || factureActive.lignes.length === 0) return;
+    if (modeEdition) {
+      setFactures(factures.map((f) => (f.id === factureActive.id ? (factureActive as FactureElectronique & { id: string; typeFacture: TypeFacture }) : f)));
+    } else {
+      setFactures([...factures, factureActive as FactureElectronique & { id: string; typeFacture: TypeFacture }]);
+    }
+    handleFermerModale();
+  };
+
+  const handleLignesChange = (lignes: LigneFacture[]) => setFactureActive((prev) => ({ ...prev, lignes }));
+  const ouvrirMenuExporter = (event: React.MouseEvent<HTMLElement>) => setAnchorExporter(event.currentTarget);
+  const fermerMenuExporter = () => setAnchorExporter(null);
+  const ouvrirMenuTelecharger = (event: React.MouseEvent<HTMLElement>) => setAnchorTelecharger(event.currentTarget);
+  const fermerMenuTelecharger = () => setAnchorTelecharger(null);
   const ouvrirModaleRecherche = () => setModaleRechercheOuverte(true);
   const fermerModaleRecherche = () => setModaleRechercheOuverte(false);
-
+  const appliquerRecherche = () => fermerModaleRecherche();
   const ouvrirModaleColonnes = () => setModaleColonnesOuverte(true);
   const fermerModaleColonnes = () => setModaleColonnesOuverte(false);
+  const toggleVisibiliteColonne = (colonneId: Colonne['id']) => setColonnes(colonnes.map((col) => (col.id === colonneId ? { ...col, visible: !col.visible } : col)));
+  const toggleSelectionFacture = (id: string) => setFacturesSelectionnees(facturesSelectionnees.includes(id) ? facturesSelectionnees.filter((fid) => fid !== id) : [...facturesSelectionnees, id]);
+  const toggleSelectionTout = () => setFacturesSelectionnees(facturesSelectionnees.length === factures.length ? [] : factures.map((f) => f.id));
+  const supprimerFactures = () => { setFactures(factures.filter((f) => !facturesSelectionnees.includes(f.id))); setFacturesSelectionnees([]); };
+  const reinitialiser = () => { setColonnes(colonnesParDefaut); setFacturesSelectionnees([]); setCritereRecherche({ numero: '', vendeur: '', acheteur: '', dateDebut: '', dateFin: '', typeFacture: 'TOUS' }); setRechercheRapide(''); };
+  const formaterMontant = (montant: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(montant);
+  const formaterDateAffichage = (dateStr: string) => dateStr ? `${dateStr.substring(6, 8)}/${dateStr.substring(4, 6)}/${dateStr.substring(0, 4)}` : '';
 
-  // Handler pour créer une facture
-  const creerFacture = () => {
-    const factureComplete: Facture = {
-      id: Date.now().toString(),
-      numero: nouvelleFacture.numero || '',
-      destinataire: nouvelleFacture.destinataire || '',
-      dateEmission: nouvelleFacture.dateEmission || '',
-      dateEcheance: nouvelleFacture.dateEcheance || '',
-      montantHT: nouvelleFacture.montantHT || 0,
-      montantTVA: nouvelleFacture.montantTVA || 0,
-      montantTTC: nouvelleFacture.montantTTC || 0,
-      reference: nouvelleFacture.reference || '',
-    };
-    setFactures([...factures, factureComplete]);
-    fermerModaleCreation();
+  const handlePartieChange = (partie: 'vendeur' | 'acheteur', champ: keyof Partie, valeur: string) => {
+    setFactureActive(prev => ({ ...prev, [partie]: { ...prev[partie], [champ]: valeur } }));
   };
 
-  // Handler pour supprimer les factures sélectionnées
-  const supprimerFactures = () => {
-    setFactures(factures.filter((f) => !facturesSelectionnees.includes(f.id)));
-    setFacturesSelectionnees([]);
+  const handleAdresseChange = (partie: 'vendeur' | 'acheteur', champ: string, valeur: string) => {
+    setFactureActive(prev => ({ ...prev, [partie]: { ...prev[partie], adressePostale: { ...prev[partie]?.adressePostale, [champ]: valeur } } }));
   };
 
-  // Handler pour sélectionner/désélectionner une facture
-  const toggleSelectionFacture = (id: string) => {
-    if (facturesSelectionnees.includes(id)) {
-      setFacturesSelectionnees(facturesSelectionnees.filter((fid) => fid !== id));
-    } else {
-      setFacturesSelectionnees([...facturesSelectionnees, id]);
-    }
+  const demanderTri = (colonneId: Colonne['id']) => {
+    const isAsc = ordreTriColonne === colonneId && directionTri === 'asc';
+    setDirectionTri(isAsc ? 'desc' : 'asc');
+    setOrdreTriColonne(colonneId);
   };
 
-  // Handler pour sélectionner/désélectionner toutes les factures
-  const toggleSelectionTout = () => {
-    if (facturesSelectionnees.length === factures.length) {
-      setFacturesSelectionnees([]);
-    } else {
-      setFacturesSelectionnees(factures.map((f) => f.id));
-    }
-  };
+  return (
+    <UtilisateurIxBus titre="Préparer iXFacture" sousTitre="Préparation et gestion des factures avant transmission">
+      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Paper elevation={0} sx={{ borderRadius: 0, mt: 1 }}>
+          <Toolbar sx={{ gap: 1, flexWrap: 'wrap' }}>
+            <Tooltip title="Préparer une nouvelle facture"><Button variant="contained" startIcon={<AddIcon />} onClick={handleOuvrirModaleCreation}>Préparer</Button></Tooltip>
+            <Tooltip title="Transmettre les factures sélectionnées"><span><Button variant="outlined" startIcon={<SendIcon />} disabled={facturesSelectionnees.length === 0}>Transmettre</Button></span></Tooltip>
+            <Tooltip title="Supprimer les factures sélectionnées"><span><Button variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={supprimerFactures} disabled={facturesSelectionnees.length === 0}>Supprimer</Button></span></Tooltip>
+            <Tooltip title="Rechercher des factures"><Button variant="outlined" startIcon={<SearchIcon />} onClick={ouvrirModaleRecherche}>Rechercher</Button></Tooltip>
+            <Tooltip title="Exporter les factures"><Button variant="outlined" startIcon={<FileUploadIcon />} onClick={ouvrirMenuExporter}>Exporter</Button></Tooltip>
+            <Menu anchorEl={anchorExporter} open={Boolean(anchorExporter)} onClose={fermerMenuExporter}><MenuItem>CSV</MenuItem><MenuItem>Excel</MenuItem></Menu>
+            <Tooltip title="Télécharger au format"><Button variant="outlined" startIcon={<FileDownloadIcon />} onClick={ouvrirMenuTelecharger}>Télécharger</Button></Tooltip>
+            <Menu anchorEl={anchorTelecharger} open={Boolean(anchorTelecharger)} onClose={fermerMenuTelecharger}><MenuItem>UBL</MenuItem><MenuItem>CII</MenuItem><MenuItem>Factur-X</MenuItem></Menu>
+            <TextField placeholder="Rechercher..." variant="standard" size="small" value={rechercheRapide} onChange={(e) => setRechercheRapide(e.target.value)} InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>) }} sx={{ flexGrow: 1, minWidth: '200px' }} />
+            <Tooltip title="Gérer les colonnes"><Button variant="outlined" startIcon={<ViewColumnIcon />} onClick={ouvrirModaleColonnes}>Colonnes</Button></Tooltip>
+            <Tooltip title="Réinitialiser les filtres et colonnes"><Button variant="outlined" startIcon={<RestartAltIcon />} onClick={reinitialiser}>Réinitialiser</Button></Tooltip>
+          </Toolbar>
+        </Paper>
 
-  // Handler pour le tri
-  const demanderTri = (colonne: keyof Facture) => {
-    const estAsc = ordreTriColonne === colonne && directionTri === 'asc';
-    setDirectionTri(estAsc ? 'desc' : 'asc');
-    setOrdreTriColonne(colonne);
-  };
-
-  // Fonction de tri des factures
-  const facturesTriees = [...factures].sort((a, b) => {
-    const valeurA = a[ordreTriColonne];
-    const valeurB = b[ordreTriColonne];
-
-    if (typeof valeurA === 'string' && typeof valeurB === 'string') {
-      return directionTri === 'asc'
-        ? valeurA.localeCompare(valeurB)
-        : valeurB.localeCompare(valeurA);
-    }
-
-    if (typeof valeurA === 'number' && typeof valeurB === 'number') {
-      return directionTri === 'asc'
-        ? valeurA - valeurB
-        : valeurB - valeurA;
-    }
-
-    return 0;
-  });
-
-  // Handler pour basculer la visibilité d'une colonne
-  const toggleVisibiliteColonne = (colonneId: keyof Facture) => {
-    setColonnes(
-      colonnes.map((col) =>
-        col.id === colonneId ? { ...col, visible: !col.visible } : col
-      )
-    );
-  };
-
-  // Handler pour réinitialiser les filtres et colonnes
-  const reinitialiser = () => {
-    setColonnes(colonnesParDefaut);
-    setFacturesSelectionnees([]);
-    setCritereRecherche({
-      numero: '',
-      destinataire: '',
-      dateDebut: '',
-      dateFin: '',
-    });
-  };
-
-  // Handler pour appliquer la recherche
-  const appliquerRecherche = () => {
-    let resultats = [...facturesFictives];
-
-    if (critereRecherche.numero) {
-      resultats = resultats.filter((f) =>
-        f.numero.toLowerCase().includes(critereRecherche.numero.toLowerCase())
-      );
-    }
-
-    if (critereRecherche.destinataire) {
-      resultats = resultats.filter((f) =>
-        f.destinataire.toLowerCase().includes(critereRecherche.destinataire.toLowerCase())
-      );
-    }
-
-    if (critereRecherche.dateDebut) {
-      resultats = resultats.filter((f) => f.dateEmission >= critereRecherche.dateDebut);
-    }
-
-    if (critereRecherche.dateFin) {
-      resultats = resultats.filter((f) => f.dateEmission <= critereRecherche.dateFin);
-    }
-
-    setFactures(resultats);
-    fermerModaleRecherche();
-  };
-
-  // Formater le montant en euros
-  const formaterMontant = (montant: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(montant);
-  };
-
-  const contenu = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* Barre d'actions supérieure */}
-      <Paper
-        elevation={0}
-        sx={{
-          borderRadius: 0,
-          mt: 2,
-        }}
-      >
-        <Toolbar
-          sx={{
-            gap: 1,
-            flexWrap: 'wrap',
-          }}
-        >
-          <Tooltip title="Créer une nouvelle facture">
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={ouvrirModaleCreation}
-            >
-              Créer
-            </Button>
-          </Tooltip>
-
-          <Tooltip title="Importer un fichier UBL/CII/Factur-X">
-            <Button
-              variant="outlined"
-              startIcon={<UploadIcon />}
-              onClick={ouvrirModaleImport}
-            >
-              Importer
-            </Button>
-          </Tooltip>
-
-          <Tooltip title="Transmettre les factures sélectionnées">
-            <span>
-              <Button
-                variant="outlined"
-                startIcon={<SendIcon />}
-                disabled={facturesSelectionnees.length === 0}
-              >
-                Transmettre
-              </Button>
-            </span>
-          </Tooltip>
-
-          <Tooltip title="Supprimer les factures sélectionnées">
-            <span>
-              <Button
-                variant="outlined"
-                color="error"
-                startIcon={<DeleteIcon />}
-                onClick={supprimerFactures}
-                disabled={facturesSelectionnees.length === 0}
-              >
-                Supprimer
-              </Button>
-            </span>
-          </Tooltip>
-
-          <Tooltip title="Rechercher des factures">
-            <Button
-              variant="outlined"
-              startIcon={<SearchIcon />}
-              onClick={ouvrirModaleRecherche}
-            >
-              Rechercher
-            </Button>
-          </Tooltip>
-
-          <Tooltip title="Exporter les factures">
-            <Button
-              variant="outlined"
-              startIcon={<FileUploadIcon />}
-              onClick={ouvrirMenuExporter}
-            >
-              Exporter
-            </Button>
-          </Tooltip>
-          <Menu
-            anchorEl={anchorExporter}
-            open={Boolean(anchorExporter)}
-            onClose={fermerMenuExporter}
-          >
-            <MenuItem onClick={fermerMenuExporter}>CSV</MenuItem>
-            <MenuItem onClick={fermerMenuExporter}>Excel</MenuItem>
-            <MenuItem onClick={fermerMenuExporter}>Mail</MenuItem>
-          </Menu>
-
-          <Tooltip title="Télécharger au format">
-            <Button
-              variant="outlined"
-              startIcon={<FileDownloadIcon />}
-              onClick={ouvrirMenuTelecharger}
-            >
-              Télécharger
-            </Button>
-          </Tooltip>
-          <Menu
-            anchorEl={anchorTelecharger}
-            open={Boolean(anchorTelecharger)}
-            onClose={fermerMenuTelecharger}
-          >
-            <MenuItem onClick={fermerMenuTelecharger}>UBL</MenuItem>
-            <MenuItem onClick={fermerMenuTelecharger}>CII</MenuItem>
-            <MenuItem onClick={fermerMenuTelecharger}>Factur-X</MenuItem>
-            <MenuItem onClick={fermerMenuTelecharger}>PDF</MenuItem>
-          </Menu>
-
-          {/* Zone de recherche rapide */}
-          <TextField
-            placeholder="Rechercher..."
-            variant="standard"
-            size="small"
-            value={rechercheRapide}
-            onChange={(e) => setRechercheRapide(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" />
-                </InputAdornment>
-              ),
-            }}
-            sx={{ flexGrow: 1, minWidth: '200px' }}
-          />
-
-          <Tooltip title="Gérer les colonnes">
-            <Button
-              variant="outlined"
-              startIcon={<ViewColumnIcon />}
-              onClick={ouvrirModaleColonnes}
-            >
-              Colonnes
-            </Button>
-          </Tooltip>
-
-          <Tooltip title="Réinitialiser les filtres et colonnes">
-            <Button
-              variant="outlined"
-              startIcon={<RestartAltIcon />}
-              onClick={reinitialiser}
-            >
-              Réinitialiser
-            </Button>
-          </Tooltip>
-        </Toolbar>
-      </Paper>
-
-      {/* Tableau des factures */}
-      <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
-        <TableContainer component={Paper} sx={{ borderRadius: 0 }}>
-          <Table stickyHeader>
-            <TableHead>
-              <TableRow>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    indeterminate={
-                      facturesSelectionnees.length > 0 &&
-                      facturesSelectionnees.length < factures.length
-                    }
-                    checked={
-                      factures.length > 0 &&
-                      facturesSelectionnees.length === factures.length
-                    }
-                    onChange={toggleSelectionTout}
-                  />
+        <Box sx={{ flexGrow: 1, overflow: 'auto', mt: 1 }}>
+          <TableContainer component={Paper} sx={{ borderRadius: 0 }}><Table stickyHeader size="small">
+            <TableHead><TableRow>
+              <TableCell padding="checkbox"><Checkbox indeterminate={facturesSelectionnees.length > 0 && facturesSelectionnees.length < facturesTriees.length} checked={facturesTriees.length > 0 && facturesSelectionnees.length === facturesTriees.length} onChange={toggleSelectionTout} /></TableCell>
+              {colonnes.filter((col) => col.visible).map((col) => (
+                <TableCell key={col.id}>
+                  <TableSortLabel active={ordreTriColonne === col.id} direction={ordreTriColonne === col.id ? directionTri : 'asc'} onClick={() => demanderTri(col.id)}>{col.label}</TableSortLabel>
                 </TableCell>
-                {colonnes
-                  .filter((col) => col.visible)
-                  .map((col) => (
-                    <TableCell key={col.id}>
-                      {col.sortable ? (
-                        <TableSortLabel
-                          active={ordreTriColonne === col.id}
-                          direction={ordreTriColonne === col.id ? directionTri : 'asc'}
-                          onClick={() => demanderTri(col.id)}
-                        >
-                          {col.label}
-                        </TableSortLabel>
-                      ) : (
-                        col.label
-                      )}
-                    </TableCell>
-                  ))}
-              </TableRow>
-            </TableHead>
+              ))}
+            </TableRow></TableHead>
             <TableBody>
               {facturesTriees.map((facture) => (
-                <TableRow
-                  key={facture.id}
-                  hover
-                  selected={facturesSelectionnees.includes(facture.id)}
-                >
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={facturesSelectionnees.includes(facture.id)}
-                      onChange={() => toggleSelectionFacture(facture.id)}
-                    />
-                  </TableCell>
-                  {colonnes
-                    .filter((col) => col.visible)
-                    .map((col) => (
-                      <TableCell key={col.id}>
-                        {col.id === 'montantHT' ||
-                          col.id === 'montantTVA' ||
-                          col.id === 'montantTTC' ? (
-                          formaterMontant(facture[col.id] as number)
-                        ) : (
-                          facture[col.id]
-                        )}
-                      </TableCell>
-                    ))}
+                <TableRow key={facture.id} hover onClick={() => handleOuvrirModaleEdition(facture)} selected={facturesSelectionnees.includes(facture.id)} sx={{ cursor: 'pointer' }}>
+                  <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}><Checkbox checked={facturesSelectionnees.includes(facture.id)} onChange={() => toggleSelectionFacture(facture.id)} /></TableCell>
+                  {colonnes.filter((col) => col.visible).map((col) => (
+                    <TableCell key={col.id}>{
+                      (() => {
+                        switch (col.id) {
+                          case 'vendeur': return facture.vendeur?.nom;
+                          case 'acheteur': return facture.acheteur?.nom;
+                          case 'montantTTC': return formaterMontant(facture.totaux?.montantTotalTTC || 0);
+                          case 'montantDu': return formaterMontant(facture.totaux?.montantDu || 0);
+                          case 'devise': return facture.codeDevise;
+                          case 'nombreLignes': return facture.lignes?.length || 0;
+                          case 'dateEmission': return formaterDateAffichage(facture.dateEmission);
+                          case 'typeDocument': return TYPE_DOCUMENT_LABELS[facture.typeDocument] || facture.typeDocument;
+                          case 'typeFacture': return <Chip label={facture.typeFacture} size="small" color={facture.typeFacture === 'VENTE' ? 'primary' : 'secondary'} />;
+                          default: return facture[col.id as keyof FactureElectronique] as string;
+                        }
+                      })()
+                    }</TableCell>
+                  ))}
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
-        </TableContainer>
+          </Table></TableContainer>
+        </Box>
+
+        <Dialog open={modaleFactureOuverte} onClose={handleFermerModale} maxWidth={false} PaperProps={{ sx: { width: '90vw', height: '90vh' } }}>
+          <DialogTitle>{modeEdition ? 'Modifier la facture' : 'Préparer une facture'}</DialogTitle>
+          <DialogContent sx={{ overflow: 'auto' }}>
+            {!modeEdition && (
+              <Box sx={{ pt: 2, mb: 3 }}>
+                <ToggleButtonGroup value={modePreparation} exclusive fullWidth onChange={(_, newMode) => { if (newMode) setModePreparation(newMode); }} aria-label="mode de préparation">
+                  <ToggleButton color='primary' value="manuel"><AddIcon sx={{ mr: 1 }} />Création manuelle</ToggleButton>
+                  <ToggleButton color='primary' value="import"><UploadIcon sx={{ mr: 1 }} />Importer un fichier</ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
+            )}
+
+            {modePreparation === 'manuel' ? (
+              <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {!modeEdition && (
+                  <Box>
+                    <Typography variant="h6" gutterBottom>Type de facture</Typography>
+                    <ToggleButtonGroup value={factureActive.typeFacture || 'VENTE'} exclusive fullWidth onChange={(_, newType: TypeFacture | null) => { if (newType) setFactureActive({ ...factureActive, typeFacture: newType, vendeur: newType === 'VENTE' ? VENDEUR_EXEMPLE : ACHETEUR_EXEMPLE, acheteur: newType === 'ACHAT' ? VENDEUR_EXEMPLE : ACHETEUR_EXEMPLE });}} aria-label="type de facture">
+                      <ToggleButton color='primary' value="VENTE"><SellIcon sx={{ mr: 1 }} />Facture de vente</ToggleButton>
+                      <ToggleButton color='primary' value="ACHAT"><ShoppingCartIcon sx={{ mr: 1 }} />Facture d'achat</ToggleButton>
+                    </ToggleButtonGroup>
+                  </Box>
+                )}
+                <Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2 }}>{factureActive.typeFacture === 'VENTE' ? 'Informations du client (Acheteur)' : 'Informations du fournisseur (Vendeur)'}</Typography>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+                    <ChampFactureAvecCode codeBT={factureActive.typeFacture === 'VENTE' ? 'BT-44' : 'BT-27'} label="Nom" obligatoire textFieldProps={{ value: (factureActive.typeFacture === 'VENTE' ? factureActive.acheteur?.nom : factureActive.vendeur?.nom) || '', onChange: (e) => handlePartieChange(factureActive.typeFacture === 'VENTE' ? 'acheteur' : 'vendeur', 'nom', e.target.value) }} />
+                    <ChampFactureAvecCode codeBT={factureActive.typeFacture === 'VENTE' ? 'BT-46' : 'BT-29'} label="SIRET" textFieldProps={{ value: (factureActive.typeFacture === 'VENTE' ? factureActive.acheteur?.siret : factureActive.vendeur?.siret) || '', onChange: (e) => handlePartieChange(factureActive.typeFacture === 'VENTE' ? 'acheteur' : 'vendeur', 'siret', e.target.value) }} />
+                    <ChampFactureAvecCode codeBT="BT-50" label="Adresse" textFieldProps={{ value: (factureActive.typeFacture === 'VENTE' ? factureActive.acheteur?.adressePostale?.ligne1 : factureActive.vendeur?.adressePostale?.ligne1) || '', onChange: (e) => handleAdresseChange(factureActive.typeFacture === 'VENTE' ? 'acheteur' : 'vendeur', 'ligne1', e.target.value) }} />
+                    <ChampFactureAvecCode codeBT="BT-53" label="Code Postal" textFieldProps={{ value: (factureActive.typeFacture === 'VENTE' ? factureActive.acheteur?.adressePostale?.codePostal : factureActive.vendeur?.adressePostale?.codePostal) || '', onChange: (e) => handleAdresseChange(factureActive.typeFacture === 'VENTE' ? 'acheteur' : 'vendeur', 'codePostal', e.target.value) }} />
+                    <ChampFactureAvecCode codeBT="BT-52" label="Ville" textFieldProps={{ value: (factureActive.typeFacture === 'VENTE' ? factureActive.acheteur?.adressePostale?.ville : factureActive.vendeur?.adressePostale?.ville) || '', onChange: (e) => handleAdresseChange(factureActive.typeFacture === 'VENTE' ? 'acheteur' : 'vendeur', 'ville', e.target.value) }} />
+                    <ChampFactureAvecCode codeBT="BT-55" label="Pays" obligatoire textFieldProps={{ value: (factureActive.typeFacture === 'VENTE' ? factureActive.acheteur?.adressePostale?.codePays : factureActive.vendeur?.adressePostale?.codePays) || 'FR', onChange: (e) => handleAdresseChange(factureActive.typeFacture === 'VENTE' ? 'acheteur' : 'vendeur', 'codePays', e.target.value) }} />
+                  </Box>
+                </Box>
+                <Box>
+                  <Typography variant="h6" gutterBottom>Informations générales de la facture</Typography>
+                  <Divider sx={{ mb: 3 }} />
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+                    <ChampFactureAvecCode codeBT="BT-1" label="Numéro de facture" obligatoire textFieldProps={{ value: factureActive.numero || '', onChange: (e) => setFactureActive({ ...factureActive, numero: e.target.value }), error: !validerFormatIdentifiant(factureActive.numero || ''), helperText: factureActive.numero && !validerFormatIdentifiant(factureActive.numero) ? 'Format invalide' : '' }} />
+                    <ChampFactureAvecCode codeBT="BT-2" label="Date d'émission" obligatoire textFieldProps={{ type: 'date', value: factureActive.dateEmission ? `${factureActive.dateEmission.substring(0, 4)}-${factureActive.dateEmission.substring(4, 6)}-${factureActive.dateEmission.substring(6, 8)}` : '', onChange: (e) => { const [y, m, d] = e.target.value.split('-'); setFactureActive({ ...factureActive, dateEmission: `${y}${m}${d}` }); }, InputLabelProps: { shrink: true } }} />
+                    <ChampFactureAvecCode codeBT="BT-3" label="Type de document" obligatoire textFieldProps={{ select: true, value: factureActive.typeDocument || '380', onChange: (e) => setFactureActive({ ...factureActive, typeDocument: e.target.value as CodeTypeDocument }), children: CODES_TYPE_DOCUMENT_FILTRES.map((code) => (<MenuItem key={code} value={code}>{`${code} - ${TYPE_DOCUMENT_LABELS[code]}`}</MenuItem>)) }} />
+                    <ChampFactureAvecCode codeBT="BT-23" label="Mode de facturation" textFieldProps={{ select: true, value: factureActive.modeFacturation || 'B1', onChange: (e) => setFactureActive({ ...factureActive, modeFacturation: e.target.value as ModeFacturation }), children: MODES_FACTURATION.map((mode) => (<MenuItem key={mode} value={mode}>{MODE_FACTURATION_LABELS[mode]}</MenuItem>)) }} />
+                    <ChampFactureAvecCode codeBT="BT-5" label="Devise" obligatoire textFieldProps={{ select: true, value: factureActive.codeDevise || 'EUR', onChange: (e) => setFactureActive({ ...factureActive, codeDevise: e.target.value }), children: [<MenuItem key="EUR" value="EUR">EUR</MenuItem>, <MenuItem key="USD" value="USD">USD</MenuItem>] }} />
+                  </Box>
+                </Box>
+                <GestionLignesFacture lignes={factureActive.lignes || []} onChange={handleLignesChange} />
+                <Box>
+                  <Typography variant="h6" gutterBottom>Récapitulatif</Typography>
+                  <Divider sx={{ mb: 3 }} />
+                  <Paper sx={{ p: 2, borderRadius: 0 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}><Typography>Total HT</Typography><Typography sx={{ fontWeight: 'bold' }}>{formaterMontant(factureActive.totaux?.montantTotalHT || 0)}</Typography></Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}><Typography>Total TVA</Typography><Typography sx={{ fontWeight: 'bold' }}>{formaterMontant(factureActive.totaux?.montantTotalTVA || 0)}</Typography></Box>
+                    <Divider sx={{ my: 1 }} />
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}><Typography variant="h6">Total TTC</Typography><Typography variant="h6" sx={{ fontWeight: 'bold' }}>{formaterMontant(factureActive.totaux?.montantTotalTTC || 0)}</Typography></Box>
+                  </Paper>
+                </Box>
+              </Box>
+            ) : (
+              <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
+                <Typography variant="h6" gutterBottom>Importer une facture existante</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', maxWidth: '600px', mb: 3 }}>
+                  Formats acceptés : UBL, CII, Factur-X, PDF.
+                  <br />
+                  Si le fichier n'est pas une facture structurée (ex: PDF image), une reconnaissance optique de caractères (OCR) sera effectuée pour en extraire les données.
+                </Typography>
+                <Button variant="contained" component="label" startIcon={<UploadIcon />} size="large">
+                  Sélectionner un fichier
+                  <input type="file" hidden accept=".xml,.pdf" />
+                </Button>
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions sx={{ p: 2, gap: 1 }}>
+            <Button onClick={handleFermerModale}>Annuler</Button>
+            <Button variant="contained" onClick={modePreparation === 'manuel' ? handleSauvegarderFacture : handleFermerModale} disabled={modePreparation === 'manuel' && (!factureActive.numero || !factureActive.lignes || factureActive.lignes.length === 0)}>{modeEdition ? 'Enregistrer' : (modePreparation === 'manuel' ? 'Créer' : 'Importer')}</Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog open={modaleRechercheOuverte} onClose={fermerModaleRecherche} maxWidth="sm" fullWidth>
+          <DialogTitle>Rechercher des factures</DialogTitle>
+          <DialogContent><Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+            <TextField label="Type" select value={critereRecherche.typeFacture} onChange={(e) => setCritereRecherche({ ...critereRecherche, typeFacture: e.target.value as 'TOUS' | TypeFacture })} fullWidth><MenuItem value="TOUS">Tous</MenuItem><MenuItem value="VENTE">Ventes</MenuItem><MenuItem value="ACHAT">Achats</MenuItem></TextField>
+            <TextField label="Numéro facture" value={critereRecherche.numero} onChange={(e) => setCritereRecherche({ ...critereRecherche, numero: e.target.value })} fullWidth />
+            <TextField label="Vendeur" value={critereRecherche.vendeur} onChange={(e) => setCritereRecherche({ ...critereRecherche, vendeur: e.target.value })} fullWidth />
+            <TextField label="Acheteur" value={critereRecherche.acheteur} onChange={(e) => setCritereRecherche({ ...critereRecherche, acheteur: e.target.value })} fullWidth />
+          </Box></DialogContent>
+          <DialogActions><Button onClick={fermerModaleRecherche}>Annuler</Button><Button onClick={appliquerRecherche} variant="contained">Rechercher</Button></DialogActions>
+        </Dialog>
+
+        <Dialog open={modaleColonnesOuverte} onClose={fermerModaleColonnes} maxWidth="xs" fullWidth>
+          <DialogTitle>Gérer les colonnes</DialogTitle>
+          <DialogContent><FormGroup>
+            {colonnes.map((col) => <FormControlLabel key={col.id} control={<Checkbox checked={col.visible} onChange={() => toggleVisibiliteColonne(col.id)} />} label={col.label} />)}
+          </FormGroup></DialogContent>
+          <DialogActions><Button onClick={fermerModaleColonnes}>Fermer</Button></DialogActions>
+        </Dialog>
+
       </Box>
-
-      {/* Modale de création de facture */}
-      <Dialog
-        open={modaleCreationOuverte}
-        onClose={fermerModaleCreation}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>Créer une nouvelle facture</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
-            <TextField
-              label="Numéro de facture"
-              variant='standard'
-              value={nouvelleFacture.numero}
-              onChange={(e) =>
-                setNouvelleFacture({ ...nouvelleFacture, numero: e.target.value })
-              }
-              fullWidth
-              required
-            />
-            <TextField
-              label="Destinataire"
-              variant='standard'
-              value={nouvelleFacture.destinataire}
-              onChange={(e) =>
-                setNouvelleFacture({ ...nouvelleFacture, destinataire: e.target.value })
-              }
-              fullWidth
-              required
-            />
-            <TextField
-              label="Date d'émission"
-              variant='standard'
-              type="date"
-              value={nouvelleFacture.dateEmission}
-              onChange={(e) =>
-                setNouvelleFacture({ ...nouvelleFacture, dateEmission: e.target.value })
-              }
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              required
-            />
-            <TextField
-              label="Date d'échéance"
-              variant='standard'
-              type="date"
-              value={nouvelleFacture.dateEcheance}
-              onChange={(e) =>
-                setNouvelleFacture({ ...nouvelleFacture, dateEcheance: e.target.value })
-              }
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              required
-            />
-            <TextField
-              label="Montant HT"
-              variant='standard'
-              type="number"
-              value={nouvelleFacture.montantHT}
-              onChange={(e) => {
-                const montantHT = parseFloat(e.target.value) || 0;
-                const montantTVA = montantHT * 0.2;
-                const montantTTC = montantHT + montantTVA;
-                setNouvelleFacture({
-                  ...nouvelleFacture,
-                  montantHT,
-                  montantTVA,
-                  montantTTC,
-                });
-              }}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">€</InputAdornment>,
-              }}
-              fullWidth
-              required
-            />
-            <TextField
-              label="Montant TVA (20%)"
-              variant='standard'
-              type="number"
-              value={nouvelleFacture.montantTVA}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">€</InputAdornment>,
-                readOnly: true,
-              }}
-              fullWidth
-            />
-            <TextField
-              label="Montant TTC"
-              variant='standard'
-              type="number"
-              value={nouvelleFacture.montantTTC}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">€</InputAdornment>,
-                readOnly: true,
-              }}
-              fullWidth
-            />
-            <TextField
-              label="Référence"
-              variant='standard'
-              value={nouvelleFacture.reference}
-              onChange={(e) =>
-                setNouvelleFacture({ ...nouvelleFacture, reference: e.target.value })
-              }
-              fullWidth
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={fermerModaleCreation}>Annuler</Button>
-          <Button onClick={creerFacture} variant="contained">
-            Créer
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Modale d'import de fichier */}
-      <Dialog open={modaleImportOuverte} onClose={fermerModaleImport} maxWidth="sm" fullWidth>
-        <DialogTitle>Importer une facture</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
-            <Typography variant="body2" color="text.secondary">
-              Formats acceptés : UBL, CII, Factur-X (conformes à la réforme de la
-              facturation électronique 2026)
-            </Typography>
-            <Button variant="outlined" component="label" startIcon={<UploadIcon />}>
-              Sélectionner un fichier
-              <input type="file" hidden accept=".xml,.pdf" />
-            </Button>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={fermerModaleImport}>Annuler</Button>
-          <Button onClick={fermerModaleImport} variant="contained">
-            Importer
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Modale de recherche */}
-      <Dialog
-        open={modaleRechercheOuverte}
-        onClose={fermerModaleRecherche}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Rechercher des factures</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
-            <TextField
-              label="Numéro de facture"
-              value={critereRecherche.numero}
-              onChange={(e) =>
-                setCritereRecherche({ ...critereRecherche, numero: e.target.value })
-              }
-              fullWidth
-            />
-            <TextField
-              label="Destinataire"
-              value={critereRecherche.destinataire}
-              onChange={(e) =>
-                setCritereRecherche({ ...critereRecherche, destinataire: e.target.value })
-              }
-              fullWidth
-            />
-            <TextField
-              label="Date de début"
-              type="date"
-              value={critereRecherche.dateDebut}
-              onChange={(e) =>
-                setCritereRecherche({ ...critereRecherche, dateDebut: e.target.value })
-              }
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-            />
-            <TextField
-              label="Date de fin"
-              type="date"
-              value={critereRecherche.dateFin}
-              onChange={(e) =>
-                setCritereRecherche({ ...critereRecherche, dateFin: e.target.value })
-              }
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-            />
-            <Button
-              startIcon={<ClearIcon />}
-              onClick={() =>
-                setCritereRecherche({
-                  numero: '',
-                  destinataire: '',
-                  dateDebut: '',
-                  dateFin: '',
-                })
-              }
-            >
-              Effacer les critères
-            </Button>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={fermerModaleRecherche}>Annuler</Button>
-          <Button onClick={appliquerRecherche} variant="contained">
-            Rechercher
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Modale de gestion des colonnes */}
-      <Dialog
-        open={modaleColonnesOuverte}
-        onClose={fermerModaleColonnes}
-        maxWidth="xs"
-        fullWidth
-      >
-        <DialogTitle>Gérer les colonnes</DialogTitle>
-        <DialogContent>
-          <FormGroup>
-            {colonnes.map((col) => (
-              <FormControlLabel
-                key={col.id}
-                control={
-                  <Checkbox
-                    checked={col.visible}
-                    onChange={() => toggleVisibiliteColonne(col.id)}
-                  />
-                }
-                label={col.label}
-              />
-            ))}
-          </FormGroup>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={fermerModaleColonnes}>Fermer</Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
-  );
-
-  return (
-    <UtilisateurIxBus
-      titre="Préparer iXFacture"
-      sousTitre="Gestion et préparation des factures de vente"
-    >
-      {contenu}
     </UtilisateurIxBus>
   );
 };

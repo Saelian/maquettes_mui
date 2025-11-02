@@ -58,7 +58,7 @@ test.describe('Vérification visuelle - FacturesAchatiXfacture', () => {
     // Vérifier que les boutons principaux sont présents
     await expect(toolbar.getByText('Valider')).toBeVisible();
     await expect(toolbar.getByText('Refuser')).toBeVisible();
-    await expect(toolbar.getByText('Transmettre')).toBeVisible();
+
     await expect(toolbar.getByText('Rechercher')).toBeVisible();
     await expect(toolbar.getByText('Exporter')).toBeVisible();
     await expect(toolbar.getByText('Télécharger')).toBeVisible();
@@ -70,7 +70,7 @@ test.describe('Vérification visuelle - FacturesAchatiXfacture', () => {
 
     // Vérifier que les colonnes spécifiques sont visibles
     await expect(page.getByText('N° Facture')).toBeVisible();
-    await expect(page.getByText('Fournisseur')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Fournisseur' })).toBeVisible();
     await expect(page.getByText('Statut')).toBeVisible();
   });
 

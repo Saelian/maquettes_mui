@@ -27,7 +27,7 @@ interface UtilisateurIxBusProps {
  * Note : Pour les maquettes avec le menu Administrateur, un template AdministrateurIxBus sera créé.
  */
 export default function UtilisateurIxBus({ children, titre, sousTitre }: UtilisateurIxBusProps) {
-  const [drawerOuvert, setDrawerOuvert] = useState(true);
+  const [drawerOuvert, setDrawerOuvert] = useState(false);
   const [moduleOuvert, setModuleOuvert] = useState<string | null>('iXFacture');
 
   const toggleDrawer = () => {

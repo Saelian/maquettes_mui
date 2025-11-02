@@ -27,7 +27,7 @@ interface AdminIxBusProps {
  * apportées aux composants MenuLateral, BarreApplication et BoutonSommaire.
  */
 export default function AdminIxBus({ children, titre, sousTitre, moduleParDefaut = 'Général', sousSectionSelectionnee }: AdminIxBusProps) {
-  const [drawerOuvert, setDrawerOuvert] = useState(true);
+  const [drawerOuvert, setDrawerOuvert] = useState(false);
   const [moduleOuvert, setModuleOuvert] = useState<string | null>(moduleParDefaut);
 
   const toggleDrawer = () => {

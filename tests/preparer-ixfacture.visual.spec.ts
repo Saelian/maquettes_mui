@@ -57,8 +57,7 @@ test.describe('Vérification visuelle des maquettes', () => {
     }
 
     // Vérifier que les boutons principaux sont présents
-    await expect(toolbar.getByText('Créer')).toBeVisible();
-    await expect(toolbar.getByText('Importer')).toBeVisible();
+    await expect(toolbar.getByText('Préparer')).toBeVisible();
     await expect(toolbar.getByText('Transmettre')).toBeVisible();
     await expect(toolbar.getByText('Supprimer')).toBeVisible();
     await expect(toolbar.getByText('Rechercher')).toBeVisible();
