@@ -944,10 +944,10 @@ const FacturesAchatiXfacture = () => {
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Barre d'actions supérieure */}
       <Paper
-        elevation={0}
+        elevation={1}
         sx={{
           borderRadius: 0,
-          mt: 2,
+          mt: 1,
         }}
       >
         <Toolbar
@@ -1077,7 +1077,7 @@ const FacturesAchatiXfacture = () => {
       </Paper>
 
       {/* Tableau des factures */}
-      <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
+      <Box sx={{ flexGrow: 1, mt: 1, overflow: 'auto' }}>
         <TableContainer component={Paper} sx={{ borderRadius: 0 }}>
           <Table stickyHeader>
             <TableHead>
@@ -1246,10 +1246,10 @@ const FacturesAchatiXfacture = () => {
                         </Typography>
                       </Box>
                     </Box>
-                  </Paper>
+
 
                   {/* Informations générales de la facture */}
-                  <Paper elevation={2} sx={{ p: 2 }}>
+
                     <Typography variant="h6" gutterBottom>
                       Informations de la facture
                     </Typography>
@@ -1274,11 +1274,11 @@ const FacturesAchatiXfacture = () => {
                         <Typography variant="body2">{factureSelectionnee?.codeDevise || '-'}</Typography>
                       </Box>
                     </Box>
-                  </Paper>
+
 
                   {/* Lignes de facturation */}
                   {factureSelectionnee?.lignes && factureSelectionnee.lignes.length > 0 && (
-                    <Paper elevation={2} sx={{ p: 2 }}>
+                    <>
                       <Typography variant="h6" gutterBottom>
                         Lignes de facturation ({factureSelectionnee.lignes.length})
                       </Typography>
@@ -1329,8 +1329,9 @@ const FacturesAchatiXfacture = () => {
                           </Typography>
                         </Box>
                       </Box>
-                    </Paper>
+                    </>
                   )}
+                  </Paper>
                 </Box>
               )}
 

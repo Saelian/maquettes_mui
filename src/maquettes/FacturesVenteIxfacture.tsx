@@ -426,10 +426,10 @@ const FacturesVenteIxfacture = () => {
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Barre d'actions supérieure */}
       <Paper
-        elevation={0}
+        elevation={1}
         sx={{
           borderRadius: 0,
-          mt: 2,
+          mt: 1,
         }}
       >
         <Toolbar
@@ -527,7 +527,7 @@ const FacturesVenteIxfacture = () => {
       </Paper>
 
       {/* Tableau des factures */}
-      <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
+      <Box sx={{ flexGrow: 1, mt: 1, overflow: 'auto' }}>
         <TableContainer component={Paper} sx={{ borderRadius: 0 }}>
           <Table stickyHeader>
             <TableHead>

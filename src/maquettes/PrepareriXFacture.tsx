@@ -365,7 +365,7 @@ const PrepareriXFacture = () => {
   return (
     <UtilisateurIxBus titre="Préparer iXFacture" sousTitre="">
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <Paper elevation={0} sx={{ borderRadius: 0, mt: 1 }}>
+        <Paper elevation={1} sx={{ borderRadius: 0, mt: 1 }}>
           <Toolbar sx={{ gap: 1, flexWrap: 'wrap' }}>
             <Tooltip title="Préparer une nouvelle facture"><Button variant="contained" startIcon={<AddIcon />} onClick={handleOuvrirModaleCreation}>Préparer</Button></Tooltip>
             <Tooltip title="Transmettre les factures sélectionnées"><span><Button variant="outlined" startIcon={<SendIcon />} disabled={facturesSelectionnees.length === 0}>Transmettre</Button></span></Tooltip>
@@ -382,7 +382,7 @@ const PrepareriXFacture = () => {
         </Paper>
 
         <Box sx={{ flexGrow: 1, overflow: 'auto', mt: 1 }}>
-          <TableContainer component={Paper} sx={{ borderRadius: 0 }}><Table stickyHeader size="small">
+          <TableContainer component={Paper} sx={{ borderRadius: 0 }}><Table stickyHeader>
             <TableHead><TableRow>
               <TableCell padding="checkbox"><Checkbox indeterminate={facturesSelectionnees.length > 0 && facturesSelectionnees.length < facturesTriees.length} checked={facturesTriees.length > 0 && facturesSelectionnees.length === facturesTriees.length} onChange={toggleSelectionTout} /></TableCell>
               {colonnes.filter((col) => col.visible).map((col) => (
