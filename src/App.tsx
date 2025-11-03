@@ -11,6 +11,7 @@ import FacturesVenteIxfacture from './maquettes/FacturesVenteIxfacture';
 import ConfigurationsAPIIXFacture from './maquettes/ConfigurationsAPIIXFacture';
 import MetadonneesIXFacture from './maquettes/MetadonneesIXFacture';
 import InterfacesIXFacture from './maquettes/InterfacesIXFacture';
+import ConsultationAnnuaireIXFacture from './maquettes/ConsultationAnnuaireIXFacture';
 import TodoList from './maquettes/TodoList';
 import OTP from './maquettes/OTP';
 import UtilisateurIxBus from './templates/UtilisateurIxBus';
@@ -21,6 +22,7 @@ const maquettes = [
   { nom: 'Préparer iXFacture', chemin: '/preparer-ixfacture', composant: <PrepareriXFacture /> },
   { nom: 'Factures d\'achat iXfacture', chemin: '/factures-achat-ixfacture', composant: <FacturesAchatiXfacture /> },
   { nom: 'Factures de vente iXfacture', chemin: '/factures-vente-ixfacture', composant: <FacturesVenteIxfacture /> },
+  { nom: 'Consultation annuaire iXFacture', chemin: '/consultation-annuaire-ixfacture', composant: <ConsultationAnnuaireIXFacture /> },
   { nom: 'Configurations API IXFacture', chemin: '/config-api-ixfacture', composant: <ConfigurationsAPIIXFacture /> },
   { nom: 'Métadonnées iXFacture', chemin: '/metadonnees-ixfacture', composant: <MetadonneesIXFacture /> },
   { nom: 'Interfaces iXFacture', chemin: '/interfaces-ixfacture', composant: <InterfacesIXFacture /> },
