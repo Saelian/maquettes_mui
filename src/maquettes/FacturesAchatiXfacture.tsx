@@ -29,6 +29,8 @@ import {
   List,
   ListItem,
   ListItemText,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -38,7 +40,6 @@ import {
   RestartAlt as RestartAltIcon,
   Clear as ClearIcon,
   CheckCircle as CheckCircleIcon,
-  PictureAsPdf as PictureAsPdfIcon,
 } from '@mui/icons-material';
 import UtilisateurIxBus from '../templates/UtilisateurIxBus';
 import type { FactureElectronique, Partie, LigneFacture } from '../types/factureEN16931';
@@ -602,6 +603,9 @@ const FacturesAchatiXfacture = () => {
   // État pour la recherche rapide dans la barre d'actions
   const [rechercheRapide, setRechercheRapide] = useState('');
 
+  // État pour l'onglet actif dans la modale de détail
+  const [ongletActif, setOngletActif] = useState(0);
+
   // Handlers pour les menus déroulants
   const ouvrirMenuStatuer = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorStatuer(event.currentTarget);
@@ -683,6 +687,7 @@ const FacturesAchatiXfacture = () => {
   const fermerModaleDetail = () => {
     setModaleDetailOuverte(false);
     setFactureSelectionnee(null);
+    setOngletActif(0); // Réinitialiser l'onglet actif
   };
 
   // Handler pour sélectionner/désélectionner une facture
@@ -1120,139 +1125,248 @@ const FacturesAchatiXfacture = () => {
       <Dialog
         open={modaleDetailOuverte}
         onClose={fermerModaleDetail}
-        maxWidth="lg"
-        fullWidth
+        maxWidth={false}
+        sx={{
+          '& .MuiDialog-paper': {
+            width: '95vw',
+            height: '95vh',
+            maxWidth: '95vw',
+            maxHeight: '95vh',
+          },
+        }}
       >
         <DialogTitle>
           Détail de la facture {factureSelectionnee?.numero}
+          <Chip
+            label={factureSelectionnee?.statut}
+            color={obtenirCouleurStatut(factureSelectionnee?.statut || 'Reçue de la plateforme')}
+            size="small"
+            sx={{ ml: 2 }}
+          />
         </DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', gap: 3, mt: 1, flexWrap: { xs: 'wrap', md: 'nowrap' } }}>
-            {/* Colonne gauche - Aperçu PDF */}
-            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 50%' } }}>
-              <Paper
-                elevation={3}
-                sx={{
-                  height: 600,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  bgcolor: 'grey.100',
-                  p: 2,
-                }}
-              >
-                <PictureAsPdfIcon sx={{ fontSize: 80, color: 'error.main', mb: 2 }} />
-                <Typography variant="h6" gutterBottom>
-                  Aperçu de la facture PDF
-                </Typography>
-                <Typography variant="body2" color="text.secondary" align="center">
-                  Facture {factureSelectionnee?.numero}
-                  <br />
-                  {factureSelectionnee?.vendeur?.nom}
-                  <br />
-                  {formaterMontant(factureSelectionnee?.totaux?.montantTotalTTC || 0)}
-                </Typography>
-                <Button
-                  variant="outlined"
-                  startIcon={<FileDownloadIcon />}
-                  sx={{ mt: 3 }}
-                >
-                  Télécharger le PDF
-                </Button>
-              </Paper>
-            </Box>
+        <DialogContent sx={{ p: 0, display: 'flex', height: 'calc(95vh - 140px)' }}>
+          {/* Partie gauche - 2/3 avec onglets */}
+          <Box sx={{ flex: '0 0 66.666%', display: 'flex', flexDirection: 'column', borderRight: 1, borderColor: 'divider' }}>
+            <Tabs
+              value={ongletActif}
+              onChange={(_, newValue) => setOngletActif(newValue)}
+              sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}
+            >
+              <Tab label="Vue métier" />
+              <Tab label="Vue lisible" />
+              <Tab label="Informations" />
+            </Tabs>
 
-            {/* Colonne droite - Informations de la facture */}
-            <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 50%' } }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                {/* Informations du fournisseur */}
-                <Paper elevation={2} sx={{ p: 2 }}>
-                  <Typography variant="h6" gutterBottom>
-                    Informations du fournisseur
-                  </Typography>
-                  <Divider sx={{ mb: 2 }} />
-                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 1.5 }}>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">Nom (BT-27)</Typography>
-                      <Typography variant="body2">{factureSelectionnee?.vendeur?.nom || '-'}</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">SIRET (BT-29)</Typography>
-                      <Typography variant="body2">{factureSelectionnee?.vendeur?.siret || '-'}</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">N° TVA (BT-31)</Typography>
-                      <Typography variant="body2">{factureSelectionnee?.vendeur?.numeroTVA || '-'}</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">Adresse (BT-35)</Typography>
-                      <Typography variant="body2">
-                        {factureSelectionnee?.vendeur?.adressePostale?.ligne1 || ''}<br />
-                        {factureSelectionnee?.vendeur?.adressePostale?.codePostal || ''} {factureSelectionnee?.vendeur?.adressePostale?.ville || ''}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Paper>
-
-                {/* Informations générales de la facture */}
-                <Paper elevation={2} sx={{ p: 2 }}>
-                  <Typography variant="h6" gutterBottom>
-                    Informations de la facture
-                  </Typography>
-                  <Divider sx={{ mb: 2 }} />
-                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">Numéro (BT-1)</Typography>
-                      <Typography variant="body2">{factureSelectionnee?.numero || '-'}</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">Date émission (BT-2)</Typography>
-                      <Typography variant="body2">{formaterDateAffichage(factureSelectionnee?.dateEmission)}</Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">Type document (BT-3)</Typography>
-                      <Typography variant="body2">
-                        {factureSelectionnee?.typeDocument ? TYPE_DOCUMENT_LABELS[factureSelectionnee.typeDocument] : '-'}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">Devise (BT-5)</Typography>
-                      <Typography variant="body2">{factureSelectionnee?.codeDevise || '-'}</Typography>
-                    </Box>
-                    <Box sx={{ gridColumn: '1 / -1' }}>
-                      <Typography variant="caption" color="text.secondary">Statut</Typography>
-                      <Box sx={{ mt: 0.5 }}>
-                        <Chip
-                          label={factureSelectionnee?.statut}
-                          color={obtenirCouleurStatut(factureSelectionnee?.statut || 'Reçue de la plateforme')}
-                          size="small"
-                        />
-                      </Box>
-                    </Box>
-                  </Box>
-                </Paper>
-
-                {/* Lignes de facturation */}
-                {factureSelectionnee?.lignes && factureSelectionnee.lignes.length > 0 && (
+            {/* Contenu des onglets */}
+            <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
+              {/* Onglet Vue métier */}
+              {ongletActif === 0 && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  {/* Informations du fournisseur */}
                   <Paper elevation={2} sx={{ p: 2 }}>
                     <Typography variant="h6" gutterBottom>
-                      Lignes de facturation ({factureSelectionnee.lignes.length})
+                      Informations du fournisseur
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
-                    <TableContainer>
-                      <Table size="small">
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">Nom (BT-27)</Typography>
+                        <Typography variant="body2">{factureSelectionnee?.vendeur?.nom || '-'}</Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">SIRET (BT-29)</Typography>
+                        <Typography variant="body2">{factureSelectionnee?.vendeur?.siret || '-'}</Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">N° TVA (BT-31)</Typography>
+                        <Typography variant="body2">{factureSelectionnee?.vendeur?.numeroTVA || '-'}</Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">Adresse (BT-35)</Typography>
+                        <Typography variant="body2">
+                          {factureSelectionnee?.vendeur?.adressePostale?.ligne1 || ''}<br />
+                          {factureSelectionnee?.vendeur?.adressePostale?.codePostal || ''} {factureSelectionnee?.vendeur?.adressePostale?.ville || ''}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Paper>
+
+                  {/* Informations générales de la facture */}
+                  <Paper elevation={2} sx={{ p: 2 }}>
+                    <Typography variant="h6" gutterBottom>
+                      Informations de la facture
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">Numéro (BT-1)</Typography>
+                        <Typography variant="body2">{factureSelectionnee?.numero || '-'}</Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">Date émission (BT-2)</Typography>
+                        <Typography variant="body2">{formaterDateAffichage(factureSelectionnee?.dateEmission)}</Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">Type document (BT-3)</Typography>
+                        <Typography variant="body2">
+                          {factureSelectionnee?.typeDocument ? TYPE_DOCUMENT_LABELS[factureSelectionnee.typeDocument] : '-'}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">Devise (BT-5)</Typography>
+                        <Typography variant="body2">{factureSelectionnee?.codeDevise || '-'}</Typography>
+                      </Box>
+                    </Box>
+                  </Paper>
+
+                  {/* Lignes de facturation */}
+                  {factureSelectionnee?.lignes && factureSelectionnee.lignes.length > 0 && (
+                    <Paper elevation={2} sx={{ p: 2 }}>
+                      <Typography variant="h6" gutterBottom>
+                        Lignes de facturation ({factureSelectionnee.lignes.length})
+                      </Typography>
+                      <Divider sx={{ mb: 2 }} />
+                      <TableContainer>
+                        <Table size="small">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Description</TableCell>
+                              <TableCell align="right">Quantité</TableCell>
+                              <TableCell align="right">Prix unit.</TableCell>
+                              <TableCell align="right">TVA</TableCell>
+                              <TableCell align="right">Montant</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {factureSelectionnee.lignes.map((ligne) => (
+                              <TableRow key={ligne.numeroLigne}>
+                                <TableCell>{ligne.article.nom}</TableCell>
+                                <TableCell align="right">{ligne.quantite}</TableCell>
+                                <TableCell align="right">{formaterMontant(ligne.prixUnitaireNet)}</TableCell>
+                                <TableCell align="right">{ligne.informationTVA.taux}%</TableCell>
+                                <TableCell align="right">{formaterMontant(ligne.montantNet)}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                      <Divider sx={{ my: 2 }} />
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <Typography>Total HT</Typography>
+                          <Typography sx={{ fontWeight: 'bold' }}>
+                            {formaterMontant(factureSelectionnee.totaux?.montantTotalHT || 0)}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <Typography>Total TVA</Typography>
+                          <Typography sx={{ fontWeight: 'bold' }}>
+                            {formaterMontant(factureSelectionnee.totaux?.montantTotalTVA || 0)}
+                          </Typography>
+                        </Box>
+                        <Divider />
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <Typography variant="h6">Total TTC</Typography>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                            {formaterMontant(factureSelectionnee.totaux?.montantTotalTTC || 0)}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Paper>
+                  )}
+                </Box>
+              )}
+
+              {/* Onglet Vue lisible */}
+              {ongletActif === 1 && (
+                <Box>
+                  <Paper elevation={3} sx={{ p: 4, maxWidth: 800, mx: 'auto' }}>
+                    {/* En-tête de la facture */}
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4, pb: 3, borderBottom: 2, borderColor: 'primary.main' }}>
+                      <Box>
+                        <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 1 }}>
+                          FACTURE
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {TYPE_DOCUMENT_LABELS[factureSelectionnee?.typeDocument || '380']}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ textAlign: 'right' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                          {factureSelectionnee?.numero}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Date : {formaterDateAffichage(factureSelectionnee?.dateEmission)}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    {/* Informations vendeur et acheteur */}
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, mb: 4 }}>
+                      <Box>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>
+                          Fournisseur
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                          {factureSelectionnee?.vendeur?.nom}
+                        </Typography>
+                        <Typography variant="body2">
+                          {factureSelectionnee?.vendeur?.adressePostale?.ligne1}
+                        </Typography>
+                        <Typography variant="body2">
+                          {factureSelectionnee?.vendeur?.adressePostale?.codePostal} {factureSelectionnee?.vendeur?.adressePostale?.ville}
+                        </Typography>
+                        {factureSelectionnee?.vendeur?.siret && (
+                          <Typography variant="body2" sx={{ mt: 1 }}>
+                            SIRET : {factureSelectionnee.vendeur.siret}
+                          </Typography>
+                        )}
+                        {factureSelectionnee?.vendeur?.numeroTVA && (
+                          <Typography variant="body2">
+                            N° TVA : {factureSelectionnee.vendeur.numeroTVA}
+                          </Typography>
+                        )}
+                      </Box>
+                      <Box>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>
+                          Client
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                          {factureSelectionnee?.acheteur?.nom}
+                        </Typography>
+                        <Typography variant="body2">
+                          {factureSelectionnee?.acheteur?.adressePostale?.ligne1}
+                        </Typography>
+                        <Typography variant="body2">
+                          {factureSelectionnee?.acheteur?.adressePostale?.codePostal} {factureSelectionnee?.acheteur?.adressePostale?.ville}
+                        </Typography>
+                        {factureSelectionnee?.acheteur?.siret && (
+                          <Typography variant="body2" sx={{ mt: 1 }}>
+                            SIRET : {factureSelectionnee.acheteur.siret}
+                          </Typography>
+                        )}
+                        {factureSelectionnee?.acheteur?.numeroTVA && (
+                          <Typography variant="body2">
+                            N° TVA : {factureSelectionnee.acheteur.numeroTVA}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
+
+                    {/* Lignes de la facture */}
+                    <TableContainer sx={{ mb: 3 }}>
+                      <Table>
                         <TableHead>
-                          <TableRow>
-                            <TableCell>Description</TableCell>
-                            <TableCell align="right">Quantité</TableCell>
-                            <TableCell align="right">Prix unit.</TableCell>
-                            <TableCell align="right">TVA</TableCell>
-                            <TableCell align="right">Montant</TableCell>
+                          <TableRow sx={{ bgcolor: 'primary.main' }}>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Description</TableCell>
+                            <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>Qté</TableCell>
+                            <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>Prix unit.</TableCell>
+                            <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>TVA</TableCell>
+                            <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>Montant HT</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {factureSelectionnee.lignes.map((ligne) => (
+                          {factureSelectionnee?.lignes?.map((ligne) => (
                             <TableRow key={ligne.numeroLigne}>
                               <TableCell>{ligne.article.nom}</TableCell>
                               <TableCell align="right">{ligne.quantite}</TableCell>
@@ -1264,113 +1378,147 @@ const FacturesAchatiXfacture = () => {
                         </TableBody>
                       </Table>
                     </TableContainer>
-                    <Divider sx={{ my: 2 }} />
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography>Total HT</Typography>
-                        <Typography sx={{ fontWeight: 'bold' }}>
-                          {formaterMontant(factureSelectionnee.totaux?.montantTotalHT || 0)}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography>Total TVA</Typography>
-                        <Typography sx={{ fontWeight: 'bold' }}>
-                          {formaterMontant(factureSelectionnee.totaux?.montantTotalTVA || 0)}
-                        </Typography>
-                      </Box>
-                      <Divider />
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="h6">Total TTC</Typography>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                          {formaterMontant(factureSelectionnee.totaux?.montantTotalTTC || 0)}
-                        </Typography>
+
+                    {/* Pied de facture avec totaux */}
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2, borderTop: 1, borderColor: 'divider' }}>
+                      <Box sx={{ minWidth: 300 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                          <Typography variant="body2">Total HT :</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                            {formaterMontant(factureSelectionnee?.totaux?.montantTotalHT || 0)}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                          <Typography variant="body2">Total TVA :</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                            {formaterMontant(factureSelectionnee?.totaux?.montantTotalTVA || 0)}
+                          </Typography>
+                        </Box>
+                        <Divider sx={{ my: 1 }} />
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', bgcolor: 'primary.light', p: 1, borderRadius: 1 }}>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Total TTC :</Typography>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                            {formaterMontant(factureSelectionnee?.totaux?.montantTotalTTC || 0)}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                          <Typography variant="body2" sx={{ fontWeight: 'bold' }}>Montant dû :</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                            {formaterMontant(factureSelectionnee?.totaux?.montantDu || 0)}
+                          </Typography>
+                        </Box>
                       </Box>
                     </Box>
+
+                    {/* Note de bas de page */}
+                    <Box sx={{ mt: 4, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+                      <Typography variant="caption" color="text.secondary" align="center" display="block">
+                        Facture conforme à la norme EN16931 - Identifiant : {factureSelectionnee?.identifiantSpecification}
+                      </Typography>
+                    </Box>
                   </Paper>
-                )}
+                </Box>
+              )}
 
-                {/* Historique */}
-                <Paper elevation={2} sx={{ p: 2 }}>
-                  <Typography variant="h6" gutterBottom>
-                    Historique de la facture
-                  </Typography>
-                  <Divider sx={{ mb: 2 }} />
-                  <List dense>
-                    {historiqueFactureFictif.map((evenement, index) => (
-                      <ListItem key={index} sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                        <ListItemText
-                          primary={
-                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                              <Chip
-                                label={evenement.statut}
-                                size="small"
-                                color="primary"
-                                variant="outlined"
-                              />
-                              <Typography variant="caption" color="text.secondary">
-                                {evenement.date}
-                              </Typography>
-                            </Box>
-                          }
-                          secondary={
-                            <>
-                              <Typography variant="body2" component="span" sx={{ fontWeight: 'bold' }}>
-                                {evenement.utilisateur}
-                              </Typography>
-                              {evenement.commentaire && (
-                                <Typography variant="body2" component="span" sx={{ display: 'block', mt: 0.5 }}>
-                                  {evenement.commentaire}
+              {/* Onglet Informations */}
+              {ongletActif === 2 && (
+                <Box>
+                  <Paper elevation={2} sx={{ p: 2 }}>
+                    <Typography variant="h6" gutterBottom>
+                      Historique de la facture
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
+                    <List dense>
+                      {historiqueFactureFictif.map((evenement, index) => (
+                        <ListItem key={index} sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                          <ListItemText
+                            primary={
+                              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                <Chip
+                                  label={evenement.statut}
+                                  size="small"
+                                  color="primary"
+                                  variant="outlined"
+                                />
+                                <Typography variant="caption" color="text.secondary">
+                                  {evenement.date}
                                 </Typography>
-                              )}
-                            </>
-                          }
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                </Paper>
-
-                {/* Métadonnées */}
-                <Paper elevation={2} sx={{ p: 2 }}>
-                  <Typography variant="h6" gutterBottom>
-                    Métadonnées supplémentaires
-                  </Typography>
-                  <Divider sx={{ mb: 2 }} />
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    {metadonnees.map((meta) => (
-                      <Box key={meta.id}>
-                        {meta.type === 'select' ? (
-                          <TextField
-                            select
-                            label={meta.label}
-                            value={meta.valeur}
-                            onChange={(e) => mettreAJourMetadonnee(meta.id, e.target.value)}
-                            fullWidth
-                            size="small"
-                          >
-                            {meta.options?.map((option) => (
-                              <MenuItem key={option} value={option}>
-                                {option}
-                              </MenuItem>
-                            ))}
-                          </TextField>
-                        ) : (
-                          <TextField
-                            label={meta.label}
-                            type={meta.type}
-                            value={meta.valeur}
-                            onChange={(e) => mettreAJourMetadonnee(meta.id, e.target.value)}
-                            fullWidth
-                            size="small"
-                            InputLabelProps={meta.type === 'date' ? { shrink: true } : undefined}
+                              </Box>
+                            }
+                            secondary={
+                              <>
+                                <Typography variant="body2" component="span" sx={{ fontWeight: 'bold' }}>
+                                  {evenement.utilisateur}
+                                </Typography>
+                                {evenement.commentaire && (
+                                  <Typography variant="body2" component="span" sx={{ display: 'block', mt: 0.5 }}>
+                                    {evenement.commentaire}
+                                  </Typography>
+                                )}
+                              </>
+                            }
                           />
-                        )}
-                      </Box>
-                    ))}
-                  </Box>
-                </Paper>
-              </Box>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Paper>
+                </Box>
+              )}
             </Box>
+          </Box>
+
+          {/* Partie droite - 1/3 */}
+          <Box sx={{ flex: '0 0 33.333%', display: 'flex', flexDirection: 'column', overflow: 'auto', p: 3, gap: 3 }}>
+            {/* Pièces jointes */}
+            <Paper elevation={2} sx={{ p: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                Pièces jointes
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+              <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 2 }}>
+                Pas de pièces jointes
+              </Typography>
+            </Paper>
+
+            {/* Métadonnées */}
+            <Paper elevation={2} sx={{ p: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                Métadonnées supplémentaires
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {metadonnees.map((meta) => (
+                  <Box key={meta.id}>
+                    {meta.type === 'select' ? (
+                      <TextField
+                        select
+                        label={meta.label}
+                        value={meta.valeur}
+                        onChange={(e) => mettreAJourMetadonnee(meta.id, e.target.value)}
+                        fullWidth
+                        size="small"
+                      >
+                        {meta.options?.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    ) : (
+                      <TextField
+                        label={meta.label}
+                        type={meta.type}
+                        value={meta.valeur}
+                        onChange={(e) => mettreAJourMetadonnee(meta.id, e.target.value)}
+                        fullWidth
+                        size="small"
+                        InputLabelProps={meta.type === 'date' ? { shrink: true } : undefined}
+                      />
+                    )}
+                  </Box>
+                ))}
+              </Box>
+            </Paper>
           </Box>
         </DialogContent>
         <DialogActions>
