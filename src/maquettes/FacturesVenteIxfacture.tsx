@@ -186,46 +186,21 @@ const historiqueFactureFictif: EvenementHistorique[] = [
   },
 ];
 
-// Métadonnées fictives
+// Métadonnées fictives - Conformes au paramétrage dans MetadonneesIXFacture
+// Pour les Factures Sortantes (FS = Factures de Vente), seules les métadonnées avec visibiliteFS sont affichées
 const metadonneesFictives: Metadonnee[] = [
   {
     id: '1',
-    label: 'Centre de profit',
+    label: 'Code projet',
     type: 'select',
-    valeur: 'CP-001',
-    options: ['CP-001', 'CP-002', 'CP-003', 'CP-004'],
+    valeur: 'Projet A',
+    options: ['Projet A', 'Projet B', 'Projet C'],
   },
   {
     id: '2',
-    label: 'Projet',
-    type: 'select',
-    valeur: 'PRJ-2025-15',
-    options: ['PRJ-2025-15', 'PRJ-2025-16', 'PRJ-2025-17'],
-  },
-  {
-    id: '3',
-    label: 'Commercial responsable',
+    label: 'Commentaire interne',
     type: 'text',
-    valeur: 'Sophie Durand',
-  },
-  {
-    id: '4',
-    label: 'Date de paiement attendue',
-    type: 'date',
-    valeur: '2025-10-30',
-  },
-  {
-    id: '5',
-    label: 'Montant HT initial',
-    type: 'number',
-    valeur: '15000',
-  },
-  {
-    id: '6',
-    label: 'Type de vente',
-    type: 'select',
-    valeur: 'Prestation de service',
-    options: ['Prestation de service', 'Vente de biens', 'Location', 'Maintenance'],
+    valeur: 'Facture envoyée au client, en attente de validation',
   },
 ];
 
@@ -720,6 +695,18 @@ const FacturesVenteIxfacture = () => {
                               </MenuItem>
                             ))}
                           </TextField>
+                        ) : meta.label === 'Commentaire interne' ? (
+                          <TextField
+                            label={meta.label}
+                            type={meta.type}
+                            value={meta.valeur}
+                            onChange={(e) => mettreAJourMetadonnee(meta.id, e.target.value)}
+                            fullWidth
+                            size="small"
+                            multiline
+                            rows={3}
+                            InputLabelProps={meta.type === 'date' ? { shrink: true } : undefined}
+                          />
                         ) : (
                           <TextField
                             label={meta.label}
