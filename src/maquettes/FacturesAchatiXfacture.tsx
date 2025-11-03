@@ -67,11 +67,15 @@ type StatutFacture = StatutTechnique | StatutMetier;
 // Type pour l'origine de la facture
 type OrigineFacture = 'PA' | 'Hors PA';
 
+// Type pour la nature de la facture
+type NatureFacture = 'Factures_ERP1' | 'Factures_ERP2' | 'Factures_General';
+
 // Interface pour une facture d'achat conforme EN16931 + statuts métiers
 interface FactureAchat extends FactureElectronique {
   id: string;
   statut: StatutFacture;
   origine: OrigineFacture; // PA = Plateforme Agréée, Hors PA = Canal tiers
+  nature: NatureFacture; // Nature de routage de la facture
   dateReception?: string; // Date de réception par l'acheteur (format YYYYMMDD)
 }
 
@@ -102,7 +106,7 @@ const TYPE_DOCUMENT_LABELS: Record<string, string> = {
 
 // Colonnes disponibles pour le tableau - Conformes EN16931
 interface Colonne {
-  id: 'numero' | 'dateEmission' | 'dateReception' | 'typeDocument' | 'vendeur' | 'montantTTC' | 'montantDu' | 'devise' | 'nombreLignes' | 'statut' | 'origine';
+  id: 'numero' | 'dateEmission' | 'dateReception' | 'typeDocument' | 'vendeur' | 'montantTTC' | 'montantDu' | 'devise' | 'nombreLignes' | 'statut' | 'origine' | 'nature';
   label: string;
   codeBT: string;
   visible: boolean;
@@ -208,8 +212,9 @@ const facturesAchatFictives: FactureAchat[] = [
       montantDu: 828.0,
       detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 690.0, montantTVA: 138.0 }],
     },
-    statut: 'Reçue de la plateforme',
+    statut: 'Mise à disposition',
     origine: 'PA',
+    nature: 'Factures_ERP1',
   },
   {
     id: '2',
@@ -236,6 +241,7 @@ const facturesAchatFictives: FactureAchat[] = [
     },
     statut: 'Mise à disposition',
     origine: 'Hors PA',
+    nature: 'Factures_ERP2',
   },
   {
     id: '3',
@@ -261,6 +267,7 @@ const facturesAchatFictives: FactureAchat[] = [
     },
     statut: 'Rejetée',
     origine: 'PA',
+    nature: 'Factures_General',
   },
   {
     id: '4',
@@ -287,6 +294,7 @@ const facturesAchatFictives: FactureAchat[] = [
     },
     statut: 'Prise en charge',
     origine: 'PA',
+    nature: 'Factures_ERP1',
   },
   {
     id: '5',
@@ -312,6 +320,7 @@ const facturesAchatFictives: FactureAchat[] = [
     },
     statut: 'Approuvée',
     origine: 'PA',
+    nature: 'Factures_ERP1',
   },
   {
     id: '6',
@@ -335,8 +344,9 @@ const facturesAchatFictives: FactureAchat[] = [
       montantDu: 1560.0,
       detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 1300.0, montantTVA: 260.0 }],
     },
-    statut: 'Mise à disposition',
-    origine: 'Hors PA',
+    statut: 'Approuvée partiellement',
+    origine: 'PA',
+    nature: 'Factures_ERP2',
   },
   {
     id: '7',
@@ -362,6 +372,7 @@ const facturesAchatFictives: FactureAchat[] = [
     },
     statut: 'En litige',
     origine: 'PA',
+    nature: 'Factures_General',
   },
   {
     id: '8',
@@ -387,6 +398,7 @@ const facturesAchatFictives: FactureAchat[] = [
     },
     statut: 'Suspendue',
     origine: 'PA',
+    nature: 'Factures_ERP1',
   },
   {
     id: '9',
@@ -412,6 +424,7 @@ const facturesAchatFictives: FactureAchat[] = [
     },
     statut: 'Refusée',
     origine: 'PA',
+    nature: 'Factures_ERP1',
   },
   {
     id: '10',
@@ -437,6 +450,7 @@ const facturesAchatFictives: FactureAchat[] = [
     },
     statut: 'Paiement transmis',
     origine: 'PA',
+    nature: 'Factures_ERP2',
   },
 ];
 
@@ -453,6 +467,7 @@ const colonnesParDefaut: Colonne[] = [
   { id: 'nombreLignes', label: 'Nb lignes', codeBT: 'BG-25', visible: true, sortable: true },
   { id: 'statut', label: 'Statut', codeBT: '-', visible: true, sortable: true },
   { id: 'origine', label: 'Origine', codeBT: '-', visible: true, sortable: true },
+  { id: 'nature', label: 'Nature', codeBT: '-', visible: true, sortable: true },
 ];
 
 // Historique fictif pour une facture
@@ -519,6 +534,20 @@ const metadonneesFictives: Metadonnee[] = [
     options: ['Fonctionnement', 'Investissement', 'Sous-traitance', 'Honoraires'],
   },
 ];
+
+// Fonction pour obtenir le numéro de règle de routage selon la nature
+const obtenirNumeroRegle = (nature: NatureFacture): string => {
+  switch (nature) {
+    case 'Factures_ERP1':
+      return '1';
+    case 'Factures_ERP2':
+      return '2';
+    case 'Factures_General':
+      return '3';
+    default:
+      return '-';
+  }
+};
 
 // Fonction pour obtenir les statuts métiers disponibles selon le statut actuel
 // Les statuts techniques (Reçue de la plateforme, Mise à disposition, Rejetée) ne sont pas dans la liste
@@ -779,6 +808,10 @@ const FacturesAchatiXfacture = () => {
       case 'origine':
         valeurA = a.origine;
         valeurB = b.origine;
+        break;
+      case 'nature':
+        valeurA = a.nature;
+        valeurB = b.nature;
         break;
       default:
         valeurA = '';
@@ -1135,6 +1168,14 @@ const FacturesAchatiXfacture = () => {
                                   variant="outlined"
                                 />
                               );
+                            case 'nature':
+                              return (
+                                <Chip
+                                  label={facture.nature}
+                                  color="secondary"
+                                  size="small"
+                                />
+                              );
                             case 'numero':
                               return facture.numero;
                             default:
@@ -1474,6 +1515,27 @@ const FacturesAchatiXfacture = () => {
                         Cette facture a été réceptionnée par un canal tiers (courrier papier, mail, API) et non via une plateforme agréée. Elle ne fera donc pas l'objet de mise à jour de statuts sur la plateforme agréée.
                       </Alert>
                     )}
+                  </Paper>
+
+                  {/* Nature de la facture */}
+                  <Paper elevation={2} sx={{ p: 2 }}>
+                    <Typography variant="h6" gutterBottom>
+                      Nature de la facture
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Cette facture a été routée vers la nature :
+                      </Typography>
+                      <Chip
+                        label={factureSelectionnee?.nature}
+                        color="secondary"
+                        size="medium"
+                      />
+                    </Box>
+                    <Alert severity="info" sx={{ mt: 2 }}>
+                      Le routage vers cette nature a été effectué automatiquement par la Règle #{factureSelectionnee?.nature ? obtenirNumeroRegle(factureSelectionnee.nature) : '-'}, configurée par un administrateur.
+                    </Alert>
                   </Paper>
 
                   {/* Historique de la facture */}
