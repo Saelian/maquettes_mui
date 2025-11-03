@@ -38,10 +38,26 @@ import {
   RestartAlt as RestartAltIcon,
   Clear as ClearIcon,
   CheckCircle as CheckCircleIcon,
-  Cancel as CancelIcon,
   PictureAsPdf as PictureAsPdfIcon,
 } from '@mui/icons-material';
 import UtilisateurIxBus from '../templates/UtilisateurIxBus';
+
+// Types de statuts de facture d'achat
+type StatutTechnique =
+  | 'Reçue de la plateforme'
+  | 'Mise à disposition'
+  | 'Rejetée';
+
+type StatutMetier =
+  | 'Prise en charge'
+  | 'Approuvée'
+  | 'Approuvée partiellement'
+  | 'En litige'
+  | 'Suspendue'
+  | 'Refusée'
+  | 'Paiement transmis';
+
+type StatutFacture = StatutTechnique | StatutMetier;
 
 // Interface pour une facture d'achat
 interface FactureAchat {
@@ -54,7 +70,7 @@ interface FactureAchat {
   montantHT: number;
   montantTVA: number;
   montantTTC: number;
-  statut: 'En attente' | 'Validée' | 'Refusée' | 'Payée';
+  statut: StatutFacture;
   reference: string;
 }
 
@@ -83,7 +99,7 @@ interface Colonne {
   sortable: boolean;
 }
 
-// Données fictives de factures d'achat
+// Données fictives de factures d'achat - Au minimum une facture par statut
 const facturesAchatFictives: FactureAchat[] = [
   {
     id: '1',
@@ -95,7 +111,7 @@ const facturesAchatFictives: FactureAchat[] = [
     montantHT: 3250.00,
     montantTVA: 650.00,
     montantTTC: 3900.00,
-    statut: 'En attente',
+    statut: 'Reçue de la plateforme',
     reference: 'CMD-ACH-045',
   },
   {
@@ -108,7 +124,7 @@ const facturesAchatFictives: FactureAchat[] = [
     montantHT: 8400.00,
     montantTVA: 1680.00,
     montantTTC: 10080.00,
-    statut: 'En attente',
+    statut: 'Mise à disposition',
     reference: 'CMD-ACH-046',
   },
   {
@@ -121,7 +137,7 @@ const facturesAchatFictives: FactureAchat[] = [
     montantHT: 1890.50,
     montantTVA: 378.10,
     montantTTC: 2268.60,
-    statut: 'Validée',
+    statut: 'Rejetée',
     reference: 'CMD-ACH-047',
   },
   {
@@ -134,7 +150,7 @@ const facturesAchatFictives: FactureAchat[] = [
     montantHT: 12670.00,
     montantTVA: 2534.00,
     montantTTC: 15204.00,
-    statut: 'En attente',
+    statut: 'Prise en charge',
     reference: 'CMD-ACH-048',
   },
   {
@@ -147,8 +163,73 @@ const facturesAchatFictives: FactureAchat[] = [
     montantHT: 5340.75,
     montantTVA: 1068.15,
     montantTTC: 6408.90,
-    statut: 'Refusée',
+    statut: 'Approuvée',
     reference: 'CMD-ACH-049',
+  },
+  {
+    id: '6',
+    numero: 'FA-2025-006',
+    fournisseur: 'Consulting Partners Ltd',
+    type: 'Entreprise privée',
+    dateReception: '2025-10-06',
+    dateEcheance: '2025-11-06',
+    montantHT: 7850.00,
+    montantTVA: 1570.00,
+    montantTTC: 9420.00,
+    statut: 'Approuvée partiellement',
+    reference: 'CMD-ACH-050',
+  },
+  {
+    id: '7',
+    numero: 'FA-2025-007',
+    fournisseur: 'Services Généraux SA',
+    type: 'Entreprise privée',
+    dateReception: '2025-10-07',
+    dateEcheance: '2025-11-07',
+    montantHT: 4230.50,
+    montantTVA: 846.10,
+    montantTTC: 5076.60,
+    statut: 'En litige',
+    reference: 'CMD-ACH-051',
+  },
+  {
+    id: '8',
+    numero: 'FA-2025-008',
+    fournisseur: 'Matériel Professionnel SARL',
+    type: 'Entité publique',
+    dateReception: '2025-10-08',
+    dateEcheance: '2025-11-08',
+    montantHT: 6780.00,
+    montantTVA: 1356.00,
+    montantTTC: 8136.00,
+    statut: 'Suspendue',
+    reference: 'CMD-ACH-052',
+  },
+  {
+    id: '9',
+    numero: 'FA-2025-009',
+    fournisseur: 'Prestataires Associés',
+    type: 'Entreprise privée',
+    dateReception: '2025-10-09',
+    dateEcheance: '2025-11-09',
+    montantHT: 2150.00,
+    montantTVA: 430.00,
+    montantTTC: 2580.00,
+    statut: 'Refusée',
+    reference: 'CMD-ACH-053',
+  },
+  {
+    id: '10',
+    numero: 'FA-2025-010',
+    fournisseur: 'Achats Centralisés Group',
+    type: 'Entité publique',
+    dateReception: '2025-10-10',
+    dateEcheance: '2025-11-10',
+    montantHT: 9340.00,
+    montantTVA: 1868.00,
+    montantTTC: 11208.00,
+    statut: 'Paiement transmis',
+    reference: 'CMD-ACH-054',
   },
 ];
 
@@ -231,6 +312,72 @@ const metadonneesFictives: Metadonnee[] = [
   },
 ];
 
+// Fonction pour obtenir les statuts métiers disponibles selon le statut actuel
+// Les statuts techniques (Reçue de la plateforme, Mise à disposition, Rejetée) ne sont pas dans la liste
+// car ils ne peuvent pas être déclenchés par l'utilisateur
+const obtenirStatutsDisponibles = (statutActuel: StatutFacture): StatutMetier[] => {
+  switch (statutActuel) {
+    case 'Reçue de la plateforme':
+      // Statut technique, l'utilisateur ne peut rien faire
+      return [];
+
+    case 'Mise à disposition':
+      // Depuis "Mise à disposition", mêmes règles que "Prise en charge" + possibilité de passer à "Prise en charge"
+      return [
+        'Prise en charge',
+        'Approuvée',
+        'Approuvée partiellement',
+        'En litige',
+        'Suspendue',
+        'Refusée',
+        'Paiement transmis',
+      ];
+
+    case 'Rejetée':
+      // Statut technique définitif, l'utilisateur ne peut rien faire
+      return [];
+
+    case 'Prise en charge':
+      // Depuis "Prise en charge", on peut : Approuver, Approuver partiellement, En litige, Suspendre, Refuser, Paiement transmis
+      return [
+        'Approuvée',
+        'Approuvée partiellement',
+        'En litige',
+        'Suspendue',
+        'Refusée',
+        'Paiement transmis',
+      ];
+
+    case 'Approuvée':
+      // Depuis "Approuvée", on ne peut plus utiliser Approuvée partiellement ou En litige
+      // On peut : Paiement transmis, Refuser
+      return ['Paiement transmis', 'Refusée'];
+
+    case 'Approuvée partiellement':
+      // Depuis "Approuvée partiellement", on peut : Approuver, En litige, Suspendre, Refuser
+      return ['Approuvée', 'En litige', 'Suspendue', 'Refusée'];
+
+    case 'En litige':
+      // Depuis "En litige", on peut : Approuver, Approuver partiellement, Suspendre, Refuser
+      return ['Approuvée', 'Approuvée partiellement', 'Suspendue', 'Refusée'];
+
+    case 'Suspendue':
+      // Depuis "Suspendue", on peut : Approuver, Approuver partiellement, En litige, Refuser
+      return ['Approuvée', 'Approuvée partiellement', 'En litige', 'Refusée'];
+
+    case 'Refusée':
+      // Statut définitif, on ne peut plus rien faire
+      return [];
+
+    case 'Paiement transmis':
+      // Statut final, on ne peut rien faire après
+      return [];
+
+    default:
+      return [];
+  }
+};
+
 const FacturesAchatiXfacture = () => {
   // États pour les modales
   const [modaleRechercheOuverte, setModaleRechercheOuverte] = useState(false);
@@ -238,7 +385,7 @@ const FacturesAchatiXfacture = () => {
   const [modaleDetailOuverte, setModaleDetailOuverte] = useState(false);
 
   // États pour les menus déroulants
-  const [anchorValider, setAnchorValider] = useState<null | HTMLElement>(null);
+  const [anchorStatuer, setAnchorStatuer] = useState<null | HTMLElement>(null);
   const [anchorExporter, setAnchorExporter] = useState<null | HTMLElement>(null);
   const [anchorTelecharger, setAnchorTelecharger] = useState<null | HTMLElement>(null);
 
@@ -265,22 +412,53 @@ const FacturesAchatiXfacture = () => {
   const [rechercheRapide, setRechercheRapide] = useState('');
 
   // Handlers pour les menus déroulants
-  const ouvrirMenuValider = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorValider(event.currentTarget);
+  const ouvrirMenuStatuer = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorStatuer(event.currentTarget);
   };
 
-  const fermerMenuValider = () => {
-    setAnchorValider(null);
+  const fermerMenuStatuer = () => {
+    setAnchorStatuer(null);
   };
 
-  const changerStatut = (nouveauStatut: FactureAchat['statut']) => {
+  // Obtenir les statuts communs disponibles pour toutes les factures sélectionnées
+  const obtenirStatutsCommunsDisponibles = (): StatutMetier[] => {
+    if (facturesSelectionnees.length === 0) {
+      return [];
+    }
+
+    const facturesSelectionneesList = factures.filter((f) =>
+      facturesSelectionnees.includes(f.id)
+    );
+
+    if (facturesSelectionneesList.length === 0) {
+      return [];
+    }
+
+    // Obtenir les statuts disponibles pour la première facture
+    const premiereFacture = facturesSelectionneesList[0];
+    let statutsCommuns = obtenirStatutsDisponibles(premiereFacture.statut);
+
+    // Trouver l'intersection avec les statuts disponibles des autres factures
+    for (let i = 1; i < facturesSelectionneesList.length; i++) {
+      const statutsDisponibles = obtenirStatutsDisponibles(
+        facturesSelectionneesList[i].statut
+      );
+      statutsCommuns = statutsCommuns.filter((statut) =>
+        statutsDisponibles.includes(statut)
+      );
+    }
+
+    return statutsCommuns;
+  };
+
+  const changerStatut = (nouveauStatut: StatutMetier) => {
     facturesSelectionnees.forEach((id) => {
       setFactures((prev) =>
         prev.map((f) => (f.id === id ? { ...f, statut: nouveauStatut } : f))
       );
     });
     setFacturesSelectionnees([]);
-    fermerMenuValider();
+    fermerMenuStatuer();
   };
 
   const ouvrirMenuExporter = (event: React.MouseEvent<HTMLElement>) => {
@@ -314,16 +492,6 @@ const FacturesAchatiXfacture = () => {
   const fermerModaleDetail = () => {
     setModaleDetailOuverte(false);
     setFactureSelectionnee(null);
-  };
-
-  // Handler pour refuser les factures sélectionnées
-  const refuserFactures = () => {
-    facturesSelectionnees.forEach((id) => {
-      setFactures((prev) =>
-        prev.map((f) => (f.id === id ? { ...f, statut: 'Refusée' } : f))
-      );
-    });
-    setFacturesSelectionnees([]);
   };
 
   // Handler pour sélectionner/désélectionner une facture
@@ -429,16 +597,32 @@ const FacturesAchatiXfacture = () => {
   };
 
   // Obtenir la couleur du chip de statut
-  const obtenirCouleurStatut = (statut: FactureAchat['statut']) => {
+  const obtenirCouleurStatut = (statut: StatutFacture) => {
     switch (statut) {
-      case 'En attente':
-        return 'warning';
-      case 'Validée':
+      // Statuts techniques
+      case 'Reçue de la plateforme':
+        return 'info';
+      case 'Mise à disposition':
+        return 'primary';
+      case 'Rejetée':
+        return 'error';
+
+      // Statuts métiers
+      case 'Prise en charge':
+        return 'info';
+      case 'Approuvée':
         return 'success';
+      case 'Approuvée partiellement':
+        return 'success';
+      case 'En litige':
+        return 'warning';
+      case 'Suspendue':
+        return 'warning';
       case 'Refusée':
         return 'error';
-      case 'Payée':
-        return 'info';
+      case 'Paiement transmis':
+        return 'success';
+
       default:
         return 'default';
     }
@@ -467,42 +651,37 @@ const FacturesAchatiXfacture = () => {
             flexWrap: 'wrap',
           }}
         >
-          <Tooltip title="Valider et changer le statut">
+          <Tooltip title="Changer le statut des factures sélectionnées">
             <span>
               <Button
                 variant="contained"
-                color="success"
+                color="primary"
                 startIcon={<CheckCircleIcon />}
-                onClick={ouvrirMenuValider}
-                disabled={facturesSelectionnees.length === 0}
+                onClick={ouvrirMenuStatuer}
+                disabled={
+                  facturesSelectionnees.length === 0 ||
+                  obtenirStatutsCommunsDisponibles().length === 0
+                }
               >
-                Valider
+                Statuer
               </Button>
             </span>
           </Tooltip>
           <Menu
-            anchorEl={anchorValider}
-            open={Boolean(anchorValider)}
-            onClose={fermerMenuValider}
+            anchorEl={anchorStatuer}
+            open={Boolean(anchorStatuer)}
+            onClose={fermerMenuStatuer}
           >
-            <MenuItem onClick={() => changerStatut('Validée')}>Validée</MenuItem>
-            <MenuItem onClick={() => changerStatut('En attente')}>En attente</MenuItem>
-            <MenuItem onClick={() => changerStatut('Payée')}>Payée</MenuItem>
+            {obtenirStatutsCommunsDisponibles().length === 0 ? (
+              <MenuItem disabled>Aucun statut disponible</MenuItem>
+            ) : (
+              obtenirStatutsCommunsDisponibles().map((statut) => (
+                <MenuItem key={statut} onClick={() => changerStatut(statut)}>
+                  {statut}
+                </MenuItem>
+              ))
+            )}
           </Menu>
-
-          <Tooltip title="Refuser les factures sélectionnées">
-            <span>
-              <Button
-                variant="outlined"
-                color="error"
-                startIcon={<CancelIcon />}
-                onClick={refuserFactures}
-                disabled={facturesSelectionnees.length === 0}
-              >
-                Refuser
-              </Button>
-            </span>
-          </Tooltip>
 
           <Tooltip title="Rechercher des factures">
             <Button
