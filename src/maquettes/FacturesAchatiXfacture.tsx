@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  Alert,
   Box,
   Button,
   Menu,
@@ -63,10 +64,14 @@ type StatutMetier =
 
 type StatutFacture = StatutTechnique | StatutMetier;
 
+// Type pour l'origine de la facture
+type OrigineFacture = 'PA' | 'Hors PA';
+
 // Interface pour une facture d'achat conforme EN16931 + statuts métiers
 interface FactureAchat extends FactureElectronique {
   id: string;
   statut: StatutFacture;
+  origine: OrigineFacture; // PA = Plateforme Agréée, Hors PA = Canal tiers
   dateReception?: string; // Date de réception par l'acheteur (format YYYYMMDD)
 }
 
@@ -97,7 +102,7 @@ const TYPE_DOCUMENT_LABELS: Record<string, string> = {
 
 // Colonnes disponibles pour le tableau - Conformes EN16931
 interface Colonne {
-  id: 'numero' | 'dateEmission' | 'dateReception' | 'typeDocument' | 'vendeur' | 'montantTTC' | 'montantDu' | 'devise' | 'nombreLignes' | 'statut';
+  id: 'numero' | 'dateEmission' | 'dateReception' | 'typeDocument' | 'vendeur' | 'montantTTC' | 'montantDu' | 'devise' | 'nombreLignes' | 'statut' | 'origine';
   label: string;
   codeBT: string;
   visible: boolean;
@@ -204,6 +209,7 @@ const facturesAchatFictives: FactureAchat[] = [
       detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 690.0, montantTVA: 138.0 }],
     },
     statut: 'Reçue de la plateforme',
+    origine: 'PA',
   },
   {
     id: '2',
@@ -229,6 +235,7 @@ const facturesAchatFictives: FactureAchat[] = [
       detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 3000.0, montantTVA: 600.0 }],
     },
     statut: 'Mise à disposition',
+    origine: 'Hors PA',
   },
   {
     id: '3',
@@ -253,6 +260,7 @@ const facturesAchatFictives: FactureAchat[] = [
       detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 600.0, montantTVA: 120.0 }],
     },
     statut: 'Rejetée',
+    origine: 'PA',
   },
   {
     id: '4',
@@ -278,6 +286,7 @@ const facturesAchatFictives: FactureAchat[] = [
       detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 1130.0, montantTVA: 226.0 }],
     },
     statut: 'Prise en charge',
+    origine: 'PA',
   },
   {
     id: '5',
@@ -302,6 +311,7 @@ const facturesAchatFictives: FactureAchat[] = [
       detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 890.0, montantTVA: 178.0 }],
     },
     statut: 'Approuvée',
+    origine: 'PA',
   },
   {
     id: '6',
@@ -325,7 +335,8 @@ const facturesAchatFictives: FactureAchat[] = [
       montantDu: 1560.0,
       detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 1300.0, montantTVA: 260.0 }],
     },
-    statut: 'Approuvée partiellement',
+    statut: 'Mise à disposition',
+    origine: 'Hors PA',
   },
   {
     id: '7',
@@ -350,6 +361,7 @@ const facturesAchatFictives: FactureAchat[] = [
       detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 2400.0, montantTVA: 480.0 }],
     },
     statut: 'En litige',
+    origine: 'PA',
   },
   {
     id: '8',
@@ -374,6 +386,7 @@ const facturesAchatFictives: FactureAchat[] = [
       detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 5400.0, montantTVA: 1080.0 }],
     },
     statut: 'Suspendue',
+    origine: 'PA',
   },
   {
     id: '9',
@@ -398,6 +411,7 @@ const facturesAchatFictives: FactureAchat[] = [
       detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 350.0, montantTVA: 70.0 }],
     },
     statut: 'Refusée',
+    origine: 'PA',
   },
   {
     id: '10',
@@ -422,6 +436,7 @@ const facturesAchatFictives: FactureAchat[] = [
       detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 3000.0, montantTVA: 600.0 }],
     },
     statut: 'Paiement transmis',
+    origine: 'PA',
   },
 ];
 
@@ -437,6 +452,7 @@ const colonnesParDefaut: Colonne[] = [
   { id: 'devise', label: 'Devise', codeBT: 'BT-5', visible: false, sortable: true },
   { id: 'nombreLignes', label: 'Nb lignes', codeBT: 'BG-25', visible: true, sortable: true },
   { id: 'statut', label: 'Statut', codeBT: '-', visible: true, sortable: true },
+  { id: 'origine', label: 'Origine', codeBT: '-', visible: true, sortable: true },
 ];
 
 // Historique fictif pour une facture
@@ -759,6 +775,10 @@ const FacturesAchatiXfacture = () => {
       case 'statut':
         valeurA = a.statut;
         valeurB = b.statut;
+        break;
+      case 'origine':
+        valeurA = a.origine;
+        valeurB = b.origine;
         break;
       default:
         valeurA = '';
@@ -1106,6 +1126,15 @@ const FacturesAchatiXfacture = () => {
                                   size="small"
                                 />
                               );
+                            case 'origine':
+                              return (
+                                <Chip
+                                  label={facture.origine}
+                                  color={facture.origine === 'PA' ? 'primary' : 'default'}
+                                  size="small"
+                                  variant="outlined"
+                                />
+                              );
                             case 'numero':
                               return facture.numero;
                             default:
@@ -1422,7 +1451,32 @@ const FacturesAchatiXfacture = () => {
 
               {/* Onglet Informations */}
               {ongletActif === 2 && (
-                <Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  {/* Origine de la facture */}
+                  <Paper elevation={2} sx={{ p: 2 }}>
+                    <Typography variant="h6" gutterBottom>
+                      Origine de la facture
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Cette facture provient de :
+                      </Typography>
+                      <Chip
+                        label={factureSelectionnee?.origine === 'PA' ? 'Plateforme Agréée (PA)' : 'Canal tiers (Hors PA)'}
+                        color={factureSelectionnee?.origine === 'PA' ? 'primary' : 'default'}
+                        size="medium"
+                        variant="outlined"
+                      />
+                    </Box>
+                    {factureSelectionnee?.origine === 'Hors PA' && (
+                      <Alert severity="warning" sx={{ mt: 2 }}>
+                        Cette facture a été réceptionnée par un canal tiers (courrier papier, mail, API) et non via une plateforme agréée. Elle ne fera donc pas l'objet de mise à jour de statuts sur la plateforme agréée.
+                      </Alert>
+                    )}
+                  </Paper>
+
+                  {/* Historique de la facture */}
                   <Paper elevation={2} sx={{ p: 2 }}>
                     <Typography variant="h6" gutterBottom>
                       Historique de la facture
