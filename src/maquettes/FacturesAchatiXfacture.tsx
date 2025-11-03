@@ -41,6 +41,9 @@ import {
   PictureAsPdf as PictureAsPdfIcon,
 } from '@mui/icons-material';
 import UtilisateurIxBus from '../templates/UtilisateurIxBus';
+import type { FactureElectronique, Partie, LigneFacture } from '../types/factureEN16931';
+import { arrondirMontant } from '../utils/validationFacture';
+import { ACHETEUR_EXEMPLE } from '../utils/donneesExemplesFactures';
 
 // Types de statuts de facture d'achat
 type StatutTechnique =
@@ -59,19 +62,11 @@ type StatutMetier =
 
 type StatutFacture = StatutTechnique | StatutMetier;
 
-// Interface pour une facture d'achat
-interface FactureAchat {
+// Interface pour une facture d'achat conforme EN16931 + statuts métiers
+interface FactureAchat extends FactureElectronique {
   id: string;
-  numero: string;
-  fournisseur: string;
-  type: 'Entreprise privée' | 'Entité publique';
-  dateReception: string;
-  dateEcheance: string;
-  montantHT: number;
-  montantTVA: number;
-  montantTTC: number;
   statut: StatutFacture;
-  reference: string;
+  dateReception?: string; // Date de réception par l'acheteur (format YYYYMMDD)
 }
 
 // Interface pour l'historique d'une facture
@@ -91,160 +86,356 @@ interface Metadonnee {
   options?: string[];
 }
 
-// Colonnes disponibles pour le tableau
+// Mapping des codes types de documents
+const TYPE_DOCUMENT_LABELS: Record<string, string> = {
+  '380': 'Facture commerciale',
+  '381': 'Avoir',
+  '384': 'Facture rectificative',
+  '386': "Facture d'acompte",
+};
+
+// Colonnes disponibles pour le tableau - Conformes EN16931
 interface Colonne {
-  id: keyof FactureAchat;
+  id: 'numero' | 'dateEmission' | 'dateReception' | 'typeDocument' | 'vendeur' | 'montantTTC' | 'montantDu' | 'devise' | 'nombreLignes' | 'statut';
   label: string;
+  codeBT: string;
   visible: boolean;
   sortable: boolean;
 }
 
-// Données fictives de factures d'achat - Au minimum une facture par statut
+// Fournisseurs d'exemple
+const FOURNISSEUR_1: Partie = {
+  nom: 'Fournitures Bureau SA',
+  siret: '11111111100001',
+  numeroTVA: 'FR11111111111',
+  adressePostale: {
+    ligne1: '10 Rue du Commerce',
+    ville: 'Marseille',
+    codePostal: '13001',
+    codePays: 'FR',
+  },
+};
+
+const FOURNISSEUR_2: Partie = {
+  nom: 'Solutions Informatiques SARL',
+  siret: '22222222200002',
+  numeroTVA: 'FR22222222222',
+  adressePostale: {
+    ligne1: '25 Avenue des Technologies',
+    ville: 'Toulouse',
+    codePostal: '31000',
+    codePays: 'FR',
+  },
+};
+
+const FOURNISSEUR_3: Partie = {
+  nom: 'Équipements Pro & Cie',
+  siret: '33333333300003',
+  adressePostale: {
+    ligne1: '5 Boulevard des Industries',
+    ville: 'Lille',
+    codePostal: '59000',
+    codePays: 'FR',
+  },
+};
+
+const FOURNISSEUR_4: Partie = {
+  nom: 'Maintenance Services Plus',
+  siret: '44444444400004',
+  numeroTVA: 'FR44444444444',
+  adressePostale: {
+    ligne1: '78 Rue de la Maintenance',
+    ville: 'Nantes',
+    codePostal: '44000',
+    codePays: 'FR',
+  },
+};
+
+// Fonction helper pour créer des lignes de facture
+const creerLigneFacture = (
+  numero: number,
+  nom: string,
+  quantite: number,
+  prixUnitaireNet: number,
+  tauxTVA: number
+): LigneFacture => {
+  const montantNet = arrondirMontant(quantite * prixUnitaireNet);
+  return {
+    numeroLigne: numero,
+    article: {
+      nom,
+    },
+    quantite,
+    uniteMesure: 'C62', // Code UN/ECE pour "unité"
+    prixUnitaireNet,
+    montantNet,
+    informationTVA: {
+      codeCategorie: 'S',
+      taux: tauxTVA,
+    },
+  };
+};
+
+// Données fictives de factures d'achat conformes EN16931 - Au minimum une facture par statut
 const facturesAchatFictives: FactureAchat[] = [
   {
     id: '1',
+    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
+    modeFacturation: 'B1',
     numero: 'FA-2025-001',
-    fournisseur: 'Fournitures Bureau SA',
-    type: 'Entreprise privée',
-    dateReception: '2025-10-01',
-    dateEcheance: '2025-10-31',
-    montantHT: 3250.00,
-    montantTVA: 650.00,
-    montantTTC: 3900.00,
+    dateEmission: '20251001',
+    dateReception: '20251001',
+    typeDocument: '380',
+    codeDevise: 'EUR',
+    vendeur: FOURNISSEUR_1,
+    acheteur: ACHETEUR_EXEMPLE,
+    lignes: [
+      creerLigneFacture(1, 'Ramettes papier A4 - Lot de 10', 5, 25.0, 20),
+      creerLigneFacture(2, 'Cartouches d\'encre - Pack de 4', 10, 45.0, 20),
+      creerLigneFacture(3, 'Classeurs à levier', 20, 3.5, 20),
+    ],
+    totaux: {
+      sommeMontsNetsLignes: 690.0,
+      montantTotalHT: 690.0,
+      montantTotalTVA: 138.0,
+      montantTotalTTC: 828.0,
+      montantDu: 828.0,
+      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 690.0, montantTVA: 138.0 }],
+    },
     statut: 'Reçue de la plateforme',
-    reference: 'CMD-ACH-045',
   },
   {
     id: '2',
+    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
+    modeFacturation: 'B1',
     numero: 'FA-2025-002',
-    fournisseur: 'Solutions Informatiques SARL',
-    type: 'Entreprise privée',
-    dateReception: '2025-10-02',
-    dateEcheance: '2025-11-02',
-    montantHT: 8400.00,
-    montantTVA: 1680.00,
-    montantTTC: 10080.00,
+    dateEmission: '20251002',
+    dateReception: '20251002',
+    typeDocument: '380',
+    codeDevise: 'EUR',
+    vendeur: FOURNISSEUR_2,
+    acheteur: ACHETEUR_EXEMPLE,
+    lignes: [
+      creerLigneFacture(1, 'Licence logicielle annuelle', 1, 1200.0, 20),
+      creerLigneFacture(2, 'Support technique premium', 12, 150.0, 20),
+    ],
+    totaux: {
+      sommeMontsNetsLignes: 3000.0,
+      montantTotalHT: 3000.0,
+      montantTotalTVA: 600.0,
+      montantTotalTTC: 3600.0,
+      montantDu: 3600.0,
+      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 3000.0, montantTVA: 600.0 }],
+    },
     statut: 'Mise à disposition',
-    reference: 'CMD-ACH-046',
   },
   {
     id: '3',
+    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
+    modeFacturation: 'B1',
     numero: 'FA-2025-003',
-    fournisseur: 'Équipements Pro & Cie',
-    type: 'Entité publique',
-    dateReception: '2025-10-03',
-    dateEcheance: '2025-11-03',
-    montantHT: 1890.50,
-    montantTVA: 378.10,
-    montantTTC: 2268.60,
+    dateEmission: '20251003',
+    dateReception: '20251003',
+    typeDocument: '380',
+    codeDevise: 'EUR',
+    vendeur: FOURNISSEUR_3,
+    acheteur: ACHETEUR_EXEMPLE,
+    lignes: [
+      creerLigneFacture(1, 'Équipement de sécurité', 5, 120.0, 20),
+    ],
+    totaux: {
+      sommeMontsNetsLignes: 600.0,
+      montantTotalHT: 600.0,
+      montantTotalTVA: 120.0,
+      montantTotalTTC: 720.0,
+      montantDu: 720.0,
+      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 600.0, montantTVA: 120.0 }],
+    },
     statut: 'Rejetée',
-    reference: 'CMD-ACH-047',
   },
   {
     id: '4',
+    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
+    modeFacturation: 'B1',
     numero: 'FA-2025-004',
-    fournisseur: 'Maintenance Services Plus',
-    type: 'Entreprise privée',
-    dateReception: '2025-10-04',
-    dateEcheance: '2025-11-04',
-    montantHT: 12670.00,
-    montantTVA: 2534.00,
-    montantTTC: 15204.00,
+    dateEmission: '20251004',
+    dateReception: '20251004',
+    typeDocument: '380',
+    codeDevise: 'EUR',
+    vendeur: FOURNISSEUR_4,
+    acheteur: ACHETEUR_EXEMPLE,
+    lignes: [
+      creerLigneFacture(1, 'Intervention maintenance préventive', 8, 85.0, 20),
+      creerLigneFacture(2, 'Pièces de rechange', 1, 450.0, 20),
+    ],
+    totaux: {
+      sommeMontsNetsLignes: 1130.0,
+      montantTotalHT: 1130.0,
+      montantTotalTVA: 226.0,
+      montantTotalTTC: 1356.0,
+      montantDu: 1356.0,
+      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 1130.0, montantTVA: 226.0 }],
+    },
     statut: 'Prise en charge',
-    reference: 'CMD-ACH-048',
   },
   {
     id: '5',
+    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
+    modeFacturation: 'B1',
     numero: 'FA-2025-005',
-    fournisseur: 'Distribution Logistique Express',
-    type: 'Entité publique',
-    dateReception: '2025-10-05',
-    dateEcheance: '2025-11-05',
-    montantHT: 5340.75,
-    montantTVA: 1068.15,
-    montantTTC: 6408.90,
+    dateEmission: '20251005',
+    dateReception: '20251005',
+    typeDocument: '380',
+    codeDevise: 'EUR',
+    vendeur: FOURNISSEUR_1,
+    acheteur: ACHETEUR_EXEMPLE,
+    lignes: [
+      creerLigneFacture(1, 'Matériel de bureau divers', 1, 890.0, 20),
+    ],
+    totaux: {
+      sommeMontsNetsLignes: 890.0,
+      montantTotalHT: 890.0,
+      montantTotalTVA: 178.0,
+      montantTotalTTC: 1068.0,
+      montantDu: 1068.0,
+      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 890.0, montantTVA: 178.0 }],
+    },
     statut: 'Approuvée',
-    reference: 'CMD-ACH-049',
   },
   {
     id: '6',
+    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
+    modeFacturation: 'B1',
     numero: 'FA-2025-006',
-    fournisseur: 'Consulting Partners Ltd',
-    type: 'Entreprise privée',
-    dateReception: '2025-10-06',
-    dateEcheance: '2025-11-06',
-    montantHT: 7850.00,
-    montantTVA: 1570.00,
-    montantTTC: 9420.00,
+    dateEmission: '20251006',
+    dateReception: '20251006',
+    typeDocument: '380',
+    codeDevise: 'EUR',
+    vendeur: FOURNISSEUR_2,
+    acheteur: ACHETEUR_EXEMPLE,
+    lignes: [
+      creerLigneFacture(1, 'Formation professionnelle', 2, 650.0, 20),
+    ],
+    totaux: {
+      sommeMontsNetsLignes: 1300.0,
+      montantTotalHT: 1300.0,
+      montantTotalTVA: 260.0,
+      montantTotalTTC: 1560.0,
+      montantDu: 1560.0,
+      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 1300.0, montantTVA: 260.0 }],
+    },
     statut: 'Approuvée partiellement',
-    reference: 'CMD-ACH-050',
   },
   {
     id: '7',
+    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
+    modeFacturation: 'B1',
     numero: 'FA-2025-007',
-    fournisseur: 'Services Généraux SA',
-    type: 'Entreprise privée',
-    dateReception: '2025-10-07',
-    dateEcheance: '2025-11-07',
-    montantHT: 4230.50,
-    montantTVA: 846.10,
-    montantTTC: 5076.60,
+    dateEmission: '20251007',
+    dateReception: '20251007',
+    typeDocument: '380',
+    codeDevise: 'EUR',
+    vendeur: FOURNISSEUR_3,
+    acheteur: ACHETEUR_EXEMPLE,
+    lignes: [
+      creerLigneFacture(1, 'Prestation de services', 1, 2400.0, 20),
+    ],
+    totaux: {
+      sommeMontsNetsLignes: 2400.0,
+      montantTotalHT: 2400.0,
+      montantTotalTVA: 480.0,
+      montantTotalTTC: 2880.0,
+      montantDu: 2880.0,
+      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 2400.0, montantTVA: 480.0 }],
+    },
     statut: 'En litige',
-    reference: 'CMD-ACH-051',
   },
   {
     id: '8',
+    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
+    modeFacturation: 'B1',
     numero: 'FA-2025-008',
-    fournisseur: 'Matériel Professionnel SARL',
-    type: 'Entité publique',
-    dateReception: '2025-10-08',
-    dateEcheance: '2025-11-08',
-    montantHT: 6780.00,
-    montantTVA: 1356.00,
-    montantTTC: 8136.00,
+    dateEmission: '20251008',
+    dateReception: '20251008',
+    typeDocument: '380',
+    codeDevise: 'EUR',
+    vendeur: FOURNISSEUR_4,
+    acheteur: ACHETEUR_EXEMPLE,
+    lignes: [
+      creerLigneFacture(1, 'Équipement industriel', 1, 5400.0, 20),
+    ],
+    totaux: {
+      sommeMontsNetsLignes: 5400.0,
+      montantTotalHT: 5400.0,
+      montantTotalTVA: 1080.0,
+      montantTotalTTC: 6480.0,
+      montantDu: 6480.0,
+      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 5400.0, montantTVA: 1080.0 }],
+    },
     statut: 'Suspendue',
-    reference: 'CMD-ACH-052',
   },
   {
     id: '9',
+    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
+    modeFacturation: 'B1',
     numero: 'FA-2025-009',
-    fournisseur: 'Prestataires Associés',
-    type: 'Entreprise privée',
-    dateReception: '2025-10-09',
-    dateEcheance: '2025-11-09',
-    montantHT: 2150.00,
-    montantTVA: 430.00,
-    montantTTC: 2580.00,
+    dateEmission: '20251009',
+    dateReception: '20251009',
+    typeDocument: '380',
+    codeDevise: 'EUR',
+    vendeur: FOURNISSEUR_1,
+    acheteur: ACHETEUR_EXEMPLE,
+    lignes: [
+      creerLigneFacture(1, 'Consommables divers', 1, 350.0, 20),
+    ],
+    totaux: {
+      sommeMontsNetsLignes: 350.0,
+      montantTotalHT: 350.0,
+      montantTotalTVA: 70.0,
+      montantTotalTTC: 420.0,
+      montantDu: 420.0,
+      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 350.0, montantTVA: 70.0 }],
+    },
     statut: 'Refusée',
-    reference: 'CMD-ACH-053',
   },
   {
     id: '10',
+    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
+    modeFacturation: 'B1',
     numero: 'FA-2025-010',
-    fournisseur: 'Achats Centralisés Group',
-    type: 'Entité publique',
-    dateReception: '2025-10-10',
-    dateEcheance: '2025-11-10',
-    montantHT: 9340.00,
-    montantTVA: 1868.00,
-    montantTTC: 11208.00,
+    dateEmission: '20251010',
+    dateReception: '20251010',
+    typeDocument: '380',
+    codeDevise: 'EUR',
+    vendeur: FOURNISSEUR_2,
+    acheteur: ACHETEUR_EXEMPLE,
+    lignes: [
+      creerLigneFacture(1, 'Abonnement cloud mensuel', 12, 250.0, 20),
+    ],
+    totaux: {
+      sommeMontsNetsLignes: 3000.0,
+      montantTotalHT: 3000.0,
+      montantTotalTVA: 600.0,
+      montantTotalTTC: 3600.0,
+      montantDu: 3600.0,
+      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 3000.0, montantTVA: 600.0 }],
+    },
     statut: 'Paiement transmis',
-    reference: 'CMD-ACH-054',
   },
 ];
 
-// Configuration des colonnes par défaut
+// Configuration des colonnes par défaut - Conformes EN16931
 const colonnesParDefaut: Colonne[] = [
-  { id: 'numero', label: 'N° Facture', visible: true, sortable: true },
-  { id: 'fournisseur', label: 'Fournisseur', visible: true, sortable: true },
-  { id: 'type', label: 'Type', visible: true, sortable: true },
-  { id: 'dateReception', label: 'Date réception', visible: true, sortable: true },
-  { id: 'dateEcheance', label: 'Date échéance', visible: true, sortable: true },
-  { id: 'montantHT', label: 'Montant HT', visible: true, sortable: true },
-  { id: 'montantTVA', label: 'TVA', visible: false, sortable: true },
-  { id: 'montantTTC', label: 'Montant TTC', visible: true, sortable: true },
-  { id: 'statut', label: 'Statut', visible: true, sortable: true },
-  { id: 'reference', label: 'Référence', visible: true, sortable: true },
+  { id: 'numero', label: 'Numéro facture', codeBT: 'BT-1', visible: true, sortable: true },
+  { id: 'dateEmission', label: 'Date émission', codeBT: 'BT-2', visible: true, sortable: true },
+  { id: 'dateReception', label: 'Date réception', codeBT: '-', visible: true, sortable: true },
+  { id: 'typeDocument', label: 'Type document', codeBT: 'BT-3', visible: true, sortable: true },
+  { id: 'vendeur', label: 'Fournisseur', codeBT: 'BT-27', visible: true, sortable: true },
+  { id: 'montantTTC', label: 'Montant TTC', codeBT: 'BT-112', visible: true, sortable: true },
+  { id: 'montantDu', label: 'Montant dû', codeBT: 'BT-115', visible: true, sortable: true },
+  { id: 'devise', label: 'Devise', codeBT: 'BT-5', visible: false, sortable: true },
+  { id: 'nombreLignes', label: 'Nb lignes', codeBT: 'BG-25', visible: true, sortable: true },
+  { id: 'statut', label: 'Statut', codeBT: '-', visible: true, sortable: true },
 ];
 
 // Historique fictif pour une facture
@@ -393,7 +584,7 @@ const FacturesAchatiXfacture = () => {
   const [factures, setFactures] = useState<FactureAchat[]>(facturesAchatFictives);
   const [facturesSelectionnees, setFacturesSelectionnees] = useState<string[]>([]);
   const [colonnes, setColonnes] = useState<Colonne[]>(colonnesParDefaut);
-  const [ordreTriColonne, setOrdreTriColonne] = useState<keyof FactureAchat>('numero');
+  const [ordreTriColonne, setOrdreTriColonne] = useState<Colonne['id']>('numero');
   const [directionTri, setDirectionTri] = useState<'asc' | 'desc'>('asc');
 
   // États pour la facture sélectionnée
@@ -513,7 +704,7 @@ const FacturesAchatiXfacture = () => {
   };
 
   // Handler pour le tri
-  const demanderTri = (colonne: keyof FactureAchat) => {
+  const demanderTri = (colonne: Colonne['id']) => {
     const estAsc = ordreTriColonne === colonne && directionTri === 'asc';
     setDirectionTri(estAsc ? 'desc' : 'asc');
     setOrdreTriColonne(colonne);
@@ -521,8 +712,56 @@ const FacturesAchatiXfacture = () => {
 
   // Fonction de tri des factures
   const facturesTriees = [...factures].sort((a, b) => {
-    const valeurA = a[ordreTriColonne];
-    const valeurB = b[ordreTriColonne];
+    let valeurA: string | number | undefined, valeurB: string | number | undefined;
+
+    switch (ordreTriColonne) {
+      case 'vendeur':
+        valeurA = a.vendeur?.nom;
+        valeurB = b.vendeur?.nom;
+        break;
+      case 'montantTTC':
+        valeurA = a.totaux?.montantTotalTTC;
+        valeurB = b.totaux?.montantTotalTTC;
+        break;
+      case 'montantDu':
+        valeurA = a.totaux?.montantDu;
+        valeurB = b.totaux?.montantDu;
+        break;
+      case 'devise':
+        valeurA = a.codeDevise;
+        valeurB = b.codeDevise;
+        break;
+      case 'nombreLignes':
+        valeurA = a.lignes?.length;
+        valeurB = b.lignes?.length;
+        break;
+      case 'dateEmission':
+        valeurA = a.dateEmission;
+        valeurB = b.dateEmission;
+        break;
+      case 'dateReception':
+        valeurA = a.dateReception;
+        valeurB = b.dateReception;
+        break;
+      case 'typeDocument':
+        valeurA = a.typeDocument;
+        valeurB = b.typeDocument;
+        break;
+      case 'numero':
+        valeurA = a.numero;
+        valeurB = b.numero;
+        break;
+      case 'statut':
+        valeurA = a.statut;
+        valeurB = b.statut;
+        break;
+      default:
+        valeurA = '';
+        valeurB = '';
+    }
+
+    valeurA = valeurA ?? '';
+    valeurB = valeurB ?? '';
 
     if (typeof valeurA === 'string' && typeof valeurB === 'string') {
       return directionTri === 'asc'
@@ -540,7 +779,7 @@ const FacturesAchatiXfacture = () => {
   });
 
   // Handler pour basculer la visibilité d'une colonne
-  const toggleVisibiliteColonne = (colonneId: keyof FactureAchat) => {
+  const toggleVisibiliteColonne = (colonneId: Colonne['id']) => {
     setColonnes(
       colonnes.map((col) =>
         col.id === colonneId ? { ...col, visible: !col.visible } : col
@@ -572,16 +811,18 @@ const FacturesAchatiXfacture = () => {
 
     if (critereRecherche.fournisseur) {
       resultats = resultats.filter((f) =>
-        f.fournisseur.toLowerCase().includes(critereRecherche.fournisseur.toLowerCase())
+        f.vendeur?.nom.toLowerCase().includes(critereRecherche.fournisseur.toLowerCase())
       );
     }
 
     if (critereRecherche.dateDebut) {
-      resultats = resultats.filter((f) => f.dateReception >= critereRecherche.dateDebut);
+      const dateDebut = critereRecherche.dateDebut.replace(/-/g, '');
+      resultats = resultats.filter((f) => f.dateReception && f.dateReception >= dateDebut);
     }
 
     if (critereRecherche.dateFin) {
-      resultats = resultats.filter((f) => f.dateReception <= critereRecherche.dateFin);
+      const dateFin = critereRecherche.dateFin.replace(/-/g, '');
+      resultats = resultats.filter((f) => f.dateReception && f.dateReception <= dateFin);
     }
 
     setFactures(resultats);
@@ -594,6 +835,12 @@ const FacturesAchatiXfacture = () => {
       style: 'currency',
       currency: 'EUR',
     }).format(montant);
+  };
+
+  // Formater une date YYYYMMDD en DD/MM/YYYY
+  const formaterDateAffichage = (dateStr: string | undefined) => {
+    if (!dateStr) return '';
+    return `${dateStr.substring(6, 8)}/${dateStr.substring(4, 6)}/${dateStr.substring(0, 4)}`;
   };
 
   // Obtenir la couleur du chip de statut
@@ -828,19 +1075,38 @@ const FacturesAchatiXfacture = () => {
                     .filter((col) => col.visible)
                     .map((col) => (
                       <TableCell key={col.id}>
-                        {col.id === 'montantHT' ||
-                        col.id === 'montantTVA' ||
-                        col.id === 'montantTTC' ? (
-                          formaterMontant(facture[col.id] as number)
-                        ) : col.id === 'statut' ? (
-                          <Chip
-                            label={facture.statut}
-                            color={obtenirCouleurStatut(facture.statut)}
-                            size="small"
-                          />
-                        ) : (
-                          facture[col.id]
-                        )}
+                        {(() => {
+                          switch (col.id) {
+                            case 'vendeur':
+                              return facture.vendeur?.nom;
+                            case 'montantTTC':
+                              return formaterMontant(facture.totaux?.montantTotalTTC || 0);
+                            case 'montantDu':
+                              return formaterMontant(facture.totaux?.montantDu || 0);
+                            case 'devise':
+                              return facture.codeDevise;
+                            case 'nombreLignes':
+                              return facture.lignes?.length || 0;
+                            case 'dateEmission':
+                              return formaterDateAffichage(facture.dateEmission);
+                            case 'dateReception':
+                              return formaterDateAffichage(facture.dateReception);
+                            case 'typeDocument':
+                              return TYPE_DOCUMENT_LABELS[facture.typeDocument] || facture.typeDocument;
+                            case 'statut':
+                              return (
+                                <Chip
+                                  label={facture.statut}
+                                  color={obtenirCouleurStatut(facture.statut)}
+                                  size="small"
+                                />
+                              );
+                            case 'numero':
+                              return facture.numero;
+                            default:
+                              return '';
+                          }
+                        })()}
                       </TableCell>
                     ))}
                 </TableRow>
@@ -883,9 +1149,9 @@ const FacturesAchatiXfacture = () => {
                 <Typography variant="body2" color="text.secondary" align="center">
                   Facture {factureSelectionnee?.numero}
                   <br />
-                  {factureSelectionnee?.fournisseur}
+                  {factureSelectionnee?.vendeur?.nom}
                   <br />
-                  {formaterMontant(factureSelectionnee?.montantTTC || 0)}
+                  {formaterMontant(factureSelectionnee?.totaux?.montantTotalTTC || 0)}
                 </Typography>
                 <Button
                   variant="outlined"
@@ -897,9 +1163,132 @@ const FacturesAchatiXfacture = () => {
               </Paper>
             </Box>
 
-            {/* Colonne droite - Historique et Métadonnées */}
+            {/* Colonne droite - Informations de la facture */}
             <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 50%' } }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                {/* Informations du fournisseur */}
+                <Paper elevation={2} sx={{ p: 2 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Informations du fournisseur
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 1.5 }}>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">Nom (BT-27)</Typography>
+                      <Typography variant="body2">{factureSelectionnee?.vendeur?.nom || '-'}</Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">SIRET (BT-29)</Typography>
+                      <Typography variant="body2">{factureSelectionnee?.vendeur?.siret || '-'}</Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">N° TVA (BT-31)</Typography>
+                      <Typography variant="body2">{factureSelectionnee?.vendeur?.numeroTVA || '-'}</Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">Adresse (BT-35)</Typography>
+                      <Typography variant="body2">
+                        {factureSelectionnee?.vendeur?.adressePostale?.ligne1 || ''}<br />
+                        {factureSelectionnee?.vendeur?.adressePostale?.codePostal || ''} {factureSelectionnee?.vendeur?.adressePostale?.ville || ''}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Paper>
+
+                {/* Informations générales de la facture */}
+                <Paper elevation={2} sx={{ p: 2 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Informations de la facture
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">Numéro (BT-1)</Typography>
+                      <Typography variant="body2">{factureSelectionnee?.numero || '-'}</Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">Date émission (BT-2)</Typography>
+                      <Typography variant="body2">{formaterDateAffichage(factureSelectionnee?.dateEmission)}</Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">Type document (BT-3)</Typography>
+                      <Typography variant="body2">
+                        {factureSelectionnee?.typeDocument ? TYPE_DOCUMENT_LABELS[factureSelectionnee.typeDocument] : '-'}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">Devise (BT-5)</Typography>
+                      <Typography variant="body2">{factureSelectionnee?.codeDevise || '-'}</Typography>
+                    </Box>
+                    <Box sx={{ gridColumn: '1 / -1' }}>
+                      <Typography variant="caption" color="text.secondary">Statut</Typography>
+                      <Box sx={{ mt: 0.5 }}>
+                        <Chip
+                          label={factureSelectionnee?.statut}
+                          color={obtenirCouleurStatut(factureSelectionnee?.statut || 'Reçue de la plateforme')}
+                          size="small"
+                        />
+                      </Box>
+                    </Box>
+                  </Box>
+                </Paper>
+
+                {/* Lignes de facturation */}
+                {factureSelectionnee?.lignes && factureSelectionnee.lignes.length > 0 && (
+                  <Paper elevation={2} sx={{ p: 2 }}>
+                    <Typography variant="h6" gutterBottom>
+                      Lignes de facturation ({factureSelectionnee.lignes.length})
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
+                    <TableContainer>
+                      <Table size="small">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>Description</TableCell>
+                            <TableCell align="right">Quantité</TableCell>
+                            <TableCell align="right">Prix unit.</TableCell>
+                            <TableCell align="right">TVA</TableCell>
+                            <TableCell align="right">Montant</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {factureSelectionnee.lignes.map((ligne) => (
+                            <TableRow key={ligne.numeroLigne}>
+                              <TableCell>{ligne.article.nom}</TableCell>
+                              <TableCell align="right">{ligne.quantite}</TableCell>
+                              <TableCell align="right">{formaterMontant(ligne.prixUnitaireNet)}</TableCell>
+                              <TableCell align="right">{ligne.informationTVA.taux}%</TableCell>
+                              <TableCell align="right">{formaterMontant(ligne.montantNet)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                    <Divider sx={{ my: 2 }} />
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography>Total HT</Typography>
+                        <Typography sx={{ fontWeight: 'bold' }}>
+                          {formaterMontant(factureSelectionnee.totaux?.montantTotalHT || 0)}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography>Total TVA</Typography>
+                        <Typography sx={{ fontWeight: 'bold' }}>
+                          {formaterMontant(factureSelectionnee.totaux?.montantTotalTVA || 0)}
+                        </Typography>
+                      </Box>
+                      <Divider />
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography variant="h6">Total TTC</Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                          {formaterMontant(factureSelectionnee.totaux?.montantTotalTTC || 0)}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Paper>
+                )}
+
                 {/* Historique */}
                 <Paper elevation={2} sx={{ p: 2 }}>
                   <Typography variant="h6" gutterBottom>
