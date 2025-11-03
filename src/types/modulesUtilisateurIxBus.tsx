@@ -5,7 +5,6 @@ import {
   Receipt,
   History,
   TableChart,
-  Description,
   School,
   Visibility as VisibilityIcon,
   CheckCircle,
@@ -64,9 +63,7 @@ export const modulesUtilisateurIxBus: Module[] = [
       { texte: 'Préparer', icone: <Add />, lien: '/preparer-ixfacture' },
       { texte: 'Factures d\'achat', icone: <FileDownload />, lien: '/factures-achat-ixfacture' },
       { texte: 'Factures de vente', icone: <FileUpload />, lien: '/factures-vente-ixfacture' },
-      { texte: 'Autres factures entrantes', icone: <Description /> },
-      { texte: 'E-reporting', icone: <AttachMoney /> },
-      { texte: 'Historique', icone: <History /> },
+      { texte: 'E-reporting', icone: <AttachMoney /> }
     ],
   },
    {

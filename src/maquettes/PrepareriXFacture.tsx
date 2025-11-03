@@ -159,7 +159,19 @@ const PrepareriXFacture = () => {
   const [colonnes, setColonnes] = useState<Colonne[]>(colonnesParDefaut);
   const [ordreTriColonne, setOrdreTriColonne] = useState<Colonne['id']>('numero');
   const [directionTri, setDirectionTri] = useState<'asc' | 'desc'>('asc');
-  const [critereRecherche, setCritereRecherche] = useState({ numero: '', vendeur: '', acheteur: '', dateDebut: '', dateFin: '', typeFacture: 'TOUS' as 'TOUS' | TypeFacture });
+  const [critereRecherche, setCritereRecherche] = useState({
+    numero: '',
+    vendeur: '',
+    acheteur: '',
+    dateDebut: '',
+    dateFin: '',
+    typeFacture: 'TOUS' as 'TOUS' | TypeFacture,
+    typesDocument: [] as string[],
+    montantMin: '',
+    montantMax: '',
+    devise: 'TOUS',
+    modeFacturation: 'TOUS'
+  });
   const [rechercheRapide, setRechercheRapide] = useState('');
 
   // --- HANDLERS & LOGIC ---
@@ -195,12 +207,54 @@ const PrepareriXFacture = () => {
   const facturesTriees = useMemo(() => {
     return [...factures]
       .filter((f) => {
+        // Filtre par type de facture (Achat/Vente/Tous)
         if (critereRecherche.typeFacture !== 'TOUS' && f.typeFacture !== critereRecherche.typeFacture) return false;
+
+        // Filtre par numéro de facture
+        if (critereRecherche.numero && !f.numero.toLowerCase().includes(critereRecherche.numero.toLowerCase())) return false;
+
+        // Filtre par type de document
+        if (critereRecherche.typesDocument.length > 0 && !critereRecherche.typesDocument.includes(f.typeDocument)) return false;
+
+        // Filtre par vendeur
+        if (critereRecherche.vendeur && !f.vendeur?.nom.toLowerCase().includes(critereRecherche.vendeur.toLowerCase())) return false;
+
+        // Filtre par acheteur
+        if (critereRecherche.acheteur && !f.acheteur?.nom.toLowerCase().includes(critereRecherche.acheteur.toLowerCase())) return false;
+
+        // Filtre par dates
+        if (critereRecherche.dateDebut) {
+          const dateDebut = critereRecherche.dateDebut.replace(/-/g, '');
+          if (f.dateEmission < dateDebut) return false;
+        }
+        if (critereRecherche.dateFin) {
+          const dateFin = critereRecherche.dateFin.replace(/-/g, '');
+          if (f.dateEmission > dateFin) return false;
+        }
+
+        // Filtre par montant TTC
+        if (critereRecherche.montantMin) {
+          const montantMin = parseFloat(critereRecherche.montantMin);
+          if ((f.totaux?.montantTotalTTC || 0) < montantMin) return false;
+        }
+        if (critereRecherche.montantMax) {
+          const montantMax = parseFloat(critereRecherche.montantMax);
+          if ((f.totaux?.montantTotalTTC || 0) > montantMax) return false;
+        }
+
+        // Filtre par devise
+        if (critereRecherche.devise !== 'TOUS' && f.codeDevise !== critereRecherche.devise) return false;
+
+        // Filtre par mode de facturation
+        if (critereRecherche.modeFacturation !== 'TOUS' && f.modeFacturation !== critereRecherche.modeFacturation) return false;
+
+        // Recherche rapide (barre de recherche)
         if (rechercheRapide) {
           const terms = rechercheRapide.toLowerCase().split(' ');
           const searchableContent = [f.numero, f.vendeur?.nom, f.acheteur?.nom, f.totaux?.montantTotalTTC?.toString()].join(' ').toLowerCase();
           return terms.every(term => searchableContent.includes(term));
         }
+
         return true;
       })
       .sort((a, b) => {
@@ -273,7 +327,24 @@ const PrepareriXFacture = () => {
   const toggleSelectionFacture = (id: string) => setFacturesSelectionnees(facturesSelectionnees.includes(id) ? facturesSelectionnees.filter((fid) => fid !== id) : [...facturesSelectionnees, id]);
   const toggleSelectionTout = () => setFacturesSelectionnees(facturesSelectionnees.length === factures.length ? [] : factures.map((f) => f.id));
   const supprimerFactures = () => { setFactures(factures.filter((f) => !facturesSelectionnees.includes(f.id))); setFacturesSelectionnees([]); };
-  const reinitialiser = () => { setColonnes(colonnesParDefaut); setFacturesSelectionnees([]); setCritereRecherche({ numero: '', vendeur: '', acheteur: '', dateDebut: '', dateFin: '', typeFacture: 'TOUS' }); setRechercheRapide(''); };
+  const reinitialiser = () => {
+    setColonnes(colonnesParDefaut);
+    setFacturesSelectionnees([]);
+    setCritereRecherche({
+      numero: '',
+      vendeur: '',
+      acheteur: '',
+      dateDebut: '',
+      dateFin: '',
+      typeFacture: 'TOUS',
+      typesDocument: [],
+      montantMin: '',
+      montantMax: '',
+      devise: 'TOUS',
+      modeFacturation: 'TOUS'
+    });
+    setRechercheRapide('');
+  };
   const formaterMontant = (montant: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(montant);
   const formaterDateAffichage = (dateStr: string) => dateStr ? `${dateStr.substring(6, 8)}/${dateStr.substring(4, 6)}/${dateStr.substring(0, 4)}` : '';
 
@@ -292,7 +363,7 @@ const PrepareriXFacture = () => {
   };
 
   return (
-    <UtilisateurIxBus titre="Préparer iXFacture" sousTitre="Préparation et gestion des factures avant transmission">
+    <UtilisateurIxBus titre="Préparer iXFacture" sousTitre="">
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         <Paper elevation={0} sx={{ borderRadius: 0, mt: 1 }}>
           <Toolbar sx={{ gap: 1, flexWrap: 'wrap' }}>
@@ -426,15 +497,208 @@ const PrepareriXFacture = () => {
           </DialogActions>
         </Dialog>
 
-        <Dialog open={modaleRechercheOuverte} onClose={fermerModaleRecherche} maxWidth="sm" fullWidth>
-          <DialogTitle>Rechercher des factures</DialogTitle>
-          <DialogContent><Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
-            <TextField label="Type" select value={critereRecherche.typeFacture} onChange={(e) => setCritereRecherche({ ...critereRecherche, typeFacture: e.target.value as 'TOUS' | TypeFacture })} fullWidth><MenuItem value="TOUS">Tous</MenuItem><MenuItem value="VENTE">Ventes</MenuItem><MenuItem value="ACHAT">Achats</MenuItem></TextField>
-            <TextField label="Numéro facture" value={critereRecherche.numero} onChange={(e) => setCritereRecherche({ ...critereRecherche, numero: e.target.value })} fullWidth />
-            <TextField label="Vendeur" value={critereRecherche.vendeur} onChange={(e) => setCritereRecherche({ ...critereRecherche, vendeur: e.target.value })} fullWidth />
-            <TextField label="Acheteur" value={critereRecherche.acheteur} onChange={(e) => setCritereRecherche({ ...critereRecherche, acheteur: e.target.value })} fullWidth />
-          </Box></DialogContent>
-          <DialogActions><Button onClick={fermerModaleRecherche}>Annuler</Button><Button onClick={appliquerRecherche} variant="contained">Rechercher</Button></DialogActions>
+        <Dialog open={modaleRechercheOuverte} onClose={fermerModaleRecherche} maxWidth="md" fullWidth>
+          <DialogTitle>Recherche avancée de factures</DialogTitle>
+          <DialogContent>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 2 }}>
+              {/* Section 1: Type de facture */}
+              <Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Type de facture</Typography>
+                <TextField
+                  label="Type"
+                  select
+                  value={critereRecherche.typeFacture}
+                  onChange={(e) => setCritereRecherche({ ...critereRecherche, typeFacture: e.target.value as 'TOUS' | TypeFacture })}
+                  fullWidth
+                  size="small"
+                >
+                  <MenuItem value="TOUS">Tous (Achat et Vente)</MenuItem>
+                  <MenuItem value="VENTE">Factures de vente uniquement</MenuItem>
+                  <MenuItem value="ACHAT">Factures d'achat uniquement</MenuItem>
+                </TextField>
+              </Box>
+
+              <Divider />
+
+              {/* Section 2: Identification */}
+              <Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Identification</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                  <TextField
+                    label="Numéro de facture"
+                    value={critereRecherche.numero}
+                    onChange={(e) => setCritereRecherche({ ...critereRecherche, numero: e.target.value })}
+                    fullWidth
+                    size="small"
+                    placeholder="Ex: FACT-2025-0001"
+                  />
+                  <TextField
+                    label="Type de document"
+                    select
+                    value={critereRecherche.typesDocument.length === 0 ? 'TOUS' : critereRecherche.typesDocument[0]}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setCritereRecherche({
+                        ...critereRecherche,
+                        typesDocument: val === 'TOUS' ? [] : [val]
+                      });
+                    }}
+                    fullWidth
+                    size="small"
+                  >
+                    <MenuItem value="TOUS">Tous les types</MenuItem>
+                    {CODES_TYPE_DOCUMENT_FILTRES.map((code) => (
+                      <MenuItem key={code} value={code}>{`${code} - ${TYPE_DOCUMENT_LABELS[code]}`}</MenuItem>
+                    ))}
+                  </TextField>
+                </Box>
+              </Box>
+
+              <Divider />
+
+              {/* Section 3: Parties */}
+              <Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Parties (Vendeur / Acheteur)</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                  <TextField
+                    label="Vendeur"
+                    value={critereRecherche.vendeur}
+                    onChange={(e) => setCritereRecherche({ ...critereRecherche, vendeur: e.target.value })}
+                    fullWidth
+                    size="small"
+                    placeholder="Nom du vendeur"
+                  />
+                  <TextField
+                    label="Acheteur"
+                    value={critereRecherche.acheteur}
+                    onChange={(e) => setCritereRecherche({ ...critereRecherche, acheteur: e.target.value })}
+                    fullWidth
+                    size="small"
+                    placeholder="Nom de l'acheteur"
+                  />
+                </Box>
+              </Box>
+
+              <Divider />
+
+              {/* Section 4: Dates */}
+              <Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Période d'émission</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                  <TextField
+                    label="Date de début"
+                    type="date"
+                    value={critereRecherche.dateDebut}
+                    onChange={(e) => setCritereRecherche({ ...critereRecherche, dateDebut: e.target.value })}
+                    fullWidth
+                    size="small"
+                    InputLabelProps={{ shrink: true }}
+                  />
+                  <TextField
+                    label="Date de fin"
+                    type="date"
+                    value={critereRecherche.dateFin}
+                    onChange={(e) => setCritereRecherche({ ...critereRecherche, dateFin: e.target.value })}
+                    fullWidth
+                    size="small"
+                    InputLabelProps={{ shrink: true }}
+                  />
+                </Box>
+              </Box>
+
+              <Divider />
+
+              {/* Section 5: Montants */}
+              <Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Montants (TTC)</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                  <TextField
+                    label="Montant minimum"
+                    type="number"
+                    value={critereRecherche.montantMin}
+                    onChange={(e) => setCritereRecherche({ ...critereRecherche, montantMin: e.target.value })}
+                    fullWidth
+                    size="small"
+                    InputProps={{
+                      endAdornment: <InputAdornment position="end">€</InputAdornment>
+                    }}
+                    placeholder="0.00"
+                  />
+                  <TextField
+                    label="Montant maximum"
+                    type="number"
+                    value={critereRecherche.montantMax}
+                    onChange={(e) => setCritereRecherche({ ...critereRecherche, montantMax: e.target.value })}
+                    fullWidth
+                    size="small"
+                    InputProps={{
+                      endAdornment: <InputAdornment position="end">€</InputAdornment>
+                    }}
+                    placeholder="0.00"
+                  />
+                </Box>
+              </Box>
+
+              <Divider />
+
+              {/* Section 6: Devise et Mode */}
+              <Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Devise et Mode de facturation</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                  <TextField
+                    label="Devise"
+                    select
+                    value={critereRecherche.devise}
+                    onChange={(e) => setCritereRecherche({ ...critereRecherche, devise: e.target.value })}
+                    fullWidth
+                    size="small"
+                  >
+                    <MenuItem value="TOUS">Toutes les devises</MenuItem>
+                    <MenuItem value="EUR">EUR - Euro</MenuItem>
+                    <MenuItem value="USD">USD - Dollar américain</MenuItem>
+                  </TextField>
+                  <TextField
+                    label="Mode de facturation"
+                    select
+                    value={critereRecherche.modeFacturation}
+                    onChange={(e) => setCritereRecherche({ ...critereRecherche, modeFacturation: e.target.value })}
+                    fullWidth
+                    size="small"
+                  >
+                    <MenuItem value="TOUS">Tous les modes</MenuItem>
+                    {MODES_FACTURATION.slice(0, 5).map((mode) => (
+                      <MenuItem key={mode} value={mode}>{MODE_FACTURATION_LABELS[mode]}</MenuItem>
+                    ))}
+                  </TextField>
+                </Box>
+              </Box>
+            </Box>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
+            <Button
+              onClick={() => {
+                setCritereRecherche({
+                  numero: '',
+                  vendeur: '',
+                  acheteur: '',
+                  dateDebut: '',
+                  dateFin: '',
+                  typeFacture: 'TOUS',
+                  typesDocument: [],
+                  montantMin: '',
+                  montantMax: '',
+                  devise: 'TOUS',
+                  modeFacturation: 'TOUS'
+                });
+              }}
+              startIcon={<RestartAltIcon />}
+            >
+              Réinitialiser
+            </Button>
+            <Box sx={{ flex: 1 }} />
+            <Button onClick={fermerModaleRecherche}>Annuler</Button>
+            <Button onClick={appliquerRecherche} variant="contained" startIcon={<SearchIcon />}>Rechercher</Button>
+          </DialogActions>
         </Dialog>
 
         <Dialog open={modaleColonnesOuverte} onClose={fermerModaleColonnes} maxWidth="xs" fullWidth>
