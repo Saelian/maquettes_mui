@@ -762,13 +762,12 @@ const ConsultationAnnuaireIXFacture = () => {
               <>
                 {estResultatFrancais(elementSelectionne) ? (
                   // Affichage pour l'annuaire français
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                     {/* Informations principales */}
-                    <Paper variant="outlined" sx={{ p: 2 }}>
                       <Typography color="primary" variant="h6" gutterBottom>
                         Informations principales
                       </Typography>
-                      <Divider sx={{ mb: 2 }} />
+                      
                       <List dense>
                         <ListItem>
                           <ListItemText
@@ -814,15 +813,13 @@ const ConsultationAnnuaireIXFacture = () => {
                           </ListItem>
                         )}
                       </List>
-                    </Paper>
 
                     {/* Adresse postale */}
                     {elementSelectionne.postalAddress && (
-                      <Paper variant="outlined" sx={{ p: 2 }}>
+<>
                         <Typography color="primary" variant="h6" gutterBottom>
                           Adresse postale
                         </Typography>
-                        <Divider sx={{ mb: 2 }} />
                         <List dense>
                           <ListItem>
                             <ListItemText
@@ -850,17 +847,15 @@ const ConsultationAnnuaireIXFacture = () => {
                               secondary={elementSelectionne.postalAddress.postalCode}
                             />
                           </ListItem>
-                        </List>
-                      </Paper>
+                        </List></>
                     )}
 
                     {/* Unité légale (si établissement) */}
                     {elementSelectionne.legalUnit && (
-                      <Paper variant="outlined" sx={{ p: 2 }}>
+                      <>
                         <Typography color="primary" variant="h6" gutterBottom>
                           Unité légale rattachée
                         </Typography>
-                        <Divider sx={{ mb: 2 }} />
                         <List dense>
                           <ListItem>
                             <ListItemText
@@ -881,21 +876,19 @@ const ConsultationAnnuaireIXFacture = () => {
                             />
                           </ListItem>
                         </List>
-                      </Paper>
+                      </>
                     )}
 
                     {/* Identifiants */}
                     {elementSelectionne.identifiers && elementSelectionne.identifiers.length > 0 && (
-                      <Accordion defaultExpanded>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <>
                           <Typography color="primary" variant="h6">
                             Identifiants ({elementSelectionne.identifiers.length})
                           </Typography>
-                        </AccordionSummary>
-                        <AccordionDetails>
+
                           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                             {elementSelectionne.identifiers.map((identifier, index) => (
-                              <Paper key={index} variant="outlined" sx={{ p: 2 }}>
+                              <Paper key={index} sx={{ p: 2, boxShadow: 0 }}>
                                 <Typography variant="subtitle2" gutterBottom>
                                   Identifiant #{index + 1}
                                 </Typography>
@@ -930,19 +923,18 @@ const ConsultationAnnuaireIXFacture = () => {
                               </Paper>
                             ))}
                           </Box>
-                        </AccordionDetails>
-                      </Accordion>
+                      </>
                     )}
                   </Box>
                 ) : (
                   // Affichage pour l'annuaire international
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column'}}>
                     {/* Informations principales */}
-                    <Paper variant="outlined" sx={{ p: 2 }}>
+                    
                       <Typography color="primary" variant="h6" gutterBottom>
                         Informations principales
                       </Typography>
-                      <Divider sx={{ mb: 2 }} />
+
                       <List dense>
                         <ListItem>
                           <ListItemText primary="Nom" secondary={elementSelectionne.name} />
@@ -961,21 +953,19 @@ const ConsultationAnnuaireIXFacture = () => {
                           />
                         </ListItem>
                       </List>
-                    </Paper>
+                    
 
                     {/* Contacts */}
                     {elementSelectionne.entity?.contacts &&
                       elementSelectionne.entity.contacts.length > 0 && (
-                        <Accordion defaultExpanded>
-                          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                        <>
                             <Typography color="primary" variant="h6">
                               Contacts ({elementSelectionne.entity.contacts.length})
                             </Typography>
-                          </AccordionSummary>
-                          <AccordionDetails>
+
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                               {elementSelectionne.entity.contacts.map((contact, index) => (
-                                <Paper key={index} variant="outlined" sx={{ p: 2 }}>
+                                <Paper key={index} sx={{ boxShadow:0, p: 2 }}>
                                   <Typography variant="subtitle2" gutterBottom>
                                     Contact #{index + 1}
                                   </Typography>
@@ -1000,23 +990,20 @@ const ConsultationAnnuaireIXFacture = () => {
                                 </Paper>
                               ))}
                             </Box>
-                          </AccordionDetails>
-                        </Accordion>
+                        </>
                       )}
 
                     {/* Documents autorisés */}
                     {elementSelectionne.allowedDocuments &&
                       elementSelectionne.allowedDocuments.length > 0 && (
-                        <Accordion defaultExpanded>
-                          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+<>
                             <Typography color="primary" variant="h6">
                               Documents autorisés ({elementSelectionne.allowedDocuments.length})
                             </Typography>
-                          </AccordionSummary>
-                          <AccordionDetails>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+
+                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                               {elementSelectionne.allowedDocuments.map((doc, index) => (
-                                <Paper key={index} variant="outlined" sx={{ p: 2 }}>
+                                <Paper key={index} sx={{ boxShadow:0, p: 2 }}>
                                   <Typography variant="subtitle2" gutterBottom>
                                     Document #{index + 1}
                                   </Typography>
@@ -1046,8 +1033,7 @@ const ConsultationAnnuaireIXFacture = () => {
                                 </Paper>
                               ))}
                             </Box>
-                          </AccordionDetails>
-                        </Accordion>
+</>
                       )}
                   </Box>
                 )}
