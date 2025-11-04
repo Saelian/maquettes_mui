@@ -1667,12 +1667,11 @@ const FacturesAchatiXfacture = () => {
               {ongletActif === 0 && (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   {/* Informations du fournisseur */}
-                  <Paper elevation={2} sx={{ p: 2 }}>
+                  <Paper elevation={0} sx={{ p: 2 }}>
                     <Typography variant="h6" gutterBottom>
                       Informations du fournisseur
                     </Typography>
-                    <Divider sx={{ mb: 2 }} />
-                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                    <Box sx={{ display: 'grid', mb:2, gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                       <Box>
                         <Typography variant="caption" color="text.secondary">Nom (BT-27)</Typography>
                         <Typography variant="body2">{factureSelectionnee?.vendeur?.nom || '-'}</Typography>
@@ -1700,8 +1699,7 @@ const FacturesAchatiXfacture = () => {
                     <Typography variant="h6" gutterBottom>
                       Informations de la facture
                     </Typography>
-                    <Divider sx={{ mb: 2 }} />
-                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                    <Box sx={{ display: 'grid',mb:2, gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                       <Box>
                         <Typography variant="caption" color="text.secondary">Numéro (BT-1)</Typography>
                         <Typography variant="body2">{factureSelectionnee?.numero || '-'}</Typography>
@@ -1729,7 +1727,7 @@ const FacturesAchatiXfacture = () => {
                       <Typography variant="h6" gutterBottom>
                         Lignes de facturation ({factureSelectionnee.lignes.length})
                       </Typography>
-                      <Divider sx={{ mb: 2 }} />
+                      
                       <TableContainer>
                         <Table size="small">
                           <TableHead>
@@ -1754,8 +1752,8 @@ const FacturesAchatiXfacture = () => {
                           </TableBody>
                         </Table>
                       </TableContainer>
-                      <Divider sx={{ my: 2 }} />
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      
+                      <Box sx={{ display: 'flex', mt: 2, flexDirection: 'column', gap: 1 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                           <Typography>Total HT</Typography>
                           <Typography sx={{ fontWeight: 'bold' }}>
@@ -1768,7 +1766,7 @@ const FacturesAchatiXfacture = () => {
                             {formaterMontant(factureSelectionnee.totaux?.montantTotalTVA || 0)}
                           </Typography>
                         </Box>
-                        <Divider />
+
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                           <Typography variant="h6">Total TTC</Typography>
                           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
@@ -1929,7 +1927,7 @@ const FacturesAchatiXfacture = () => {
               {ongletActif === 2 && (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   {/* Origine de la facture */}
-                  <Paper elevation={2} sx={{ p: 2 }}>
+                  <Paper elevation={0} sx={{ p: 2 }}>
                     <Typography variant="h6" gutterBottom>
                       Origine de la facture
                     </Typography>
@@ -1953,7 +1951,7 @@ const FacturesAchatiXfacture = () => {
                   </Paper>
 
                   {/* Nature de la facture */}
-                  <Paper elevation={2} sx={{ p: 2 }}>
+                  <Paper elevation={0} sx={{ p: 2 }}>
                     <Typography variant="h6" gutterBottom>
                       Nature de la facture
                     </Typography>
@@ -1974,7 +1972,7 @@ const FacturesAchatiXfacture = () => {
                   </Paper>
 
                   {/* Historique de la facture */}
-                  <Paper elevation={2} sx={{ p: 2 }}>
+                  <Paper elevation={0} sx={{ p: 2 }}>
                     <Typography variant="h6" gutterBottom>
                       Historique de la facture
                     </Typography>
@@ -2039,7 +2037,7 @@ const FacturesAchatiXfacture = () => {
           {/* Partie droite - 1/3 */}
           <Box sx={{ flex: '0 0 33.333%', display: 'flex', flexDirection: 'column', overflow: 'auto', p: 3, gap: 3 }}>
             {/* Pièces jointes */}
-            <Paper elevation={2} sx={{ p: 2 }}>
+            <Paper elevation={0} sx={{ p: 2 }}>
               <Typography variant="h6" gutterBottom>
                 Pièces jointes
               </Typography>
@@ -2050,7 +2048,7 @@ const FacturesAchatiXfacture = () => {
             </Paper>
 
             {/* Métadonnées */}
-            <Paper elevation={2} sx={{ p: 2 }}>
+            <Paper elevation={0} sx={{ p: 2 }}>
               <Typography variant="h6" gutterBottom>
                 Métadonnées supplémentaires
               </Typography>
