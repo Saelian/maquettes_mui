@@ -155,13 +155,23 @@ export interface FluxEReporting {
 }
 
 /**
- * Libellé descriptif pour chaque type de flux
+ * Libellé descriptif pour chaque type de flux (avec "Données de")
  */
 export const LIBELLE_FLUX: Record<TypeFlux, string> = {
-  '10.1': 'Données de factures B2B',
-  '10.2': 'Données de paiement de facture B2B',
+  '10.1': 'Données de factures B2B internationales',
+  '10.2': 'Données de paiement de facture B2B internationales',
   '10.3': 'Données de transactions B2C',
   '10.4': 'Données de paiement de transactions B2C',
+};
+
+/**
+ * Libellé court pour chaque type de flux (sans "Données de")
+ */
+export const LIBELLE_FLUX_COURT: Record<TypeFlux, string> = {
+  '10.1': 'Factures B2B internationales',
+  '10.2': 'Paiement de facture B2B internationales',
+  '10.3': 'Transactions B2C',
+  '10.4': 'Paiement de transactions B2C',
 };
 
 /**

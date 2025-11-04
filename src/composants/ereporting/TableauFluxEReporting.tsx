@@ -2,6 +2,7 @@
  * Composant tableau affichant les flux e-reporting avec les colonnes communes
  */
 
+import { useState, useMemo } from 'react';
 import {
   Table,
   TableBody,
@@ -11,17 +12,31 @@ import {
   TableRow,
   Paper,
   Chip,
-  IconButton,
-  Tooltip,
+  TableSortLabel,
 } from '@mui/material';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import type { FluxEReporting } from '../../types/ereporting';
-import { LIBELLE_TYPE_TRANSMISSION } from '../../types/ereporting';
+import { LIBELLE_TYPE_TRANSMISSION, LIBELLE_FLUX_COURT } from '../../types/ereporting';
 
 interface TableauFluxEReportingProps {
   flux: FluxEReporting[];
   onVoirDetail: (flux: FluxEReporting) => void;
 }
+
+/**
+ * Type de colonne triable
+ */
+type ColonneTriable =
+  | 'idTransmission'
+  | 'dateHeure'
+  | 'typeTransmission'
+  | 'emetteur'
+  | 'sirenEmetteur'
+  | 'typeFlux';
+
+/**
+ * Ordre de tri
+ */
+type OrdreTri = 'asc' | 'desc';
 
 /**
  * Formate un horodatage AAAAMMJJHHMMSS en date lisible
@@ -37,24 +52,6 @@ function formaterHorodatage(horodatage: string): string {
   const secondes = horodatage.substring(12, 14);
 
   return `${jour}/${mois}/${annee} ${heures}:${minutes}:${secondes}`;
-}
-
-/**
- * Retourne la couleur du chip en fonction du type de flux
- */
-function getCouleurChipFlux(typeFlux: string): 'primary' | 'secondary' | 'success' | 'warning' {
-  switch (typeFlux) {
-    case '10.1':
-      return 'primary';
-    case '10.2':
-      return 'success';
-    case '10.3':
-      return 'secondary';
-    case '10.4':
-      return 'warning';
-    default:
-      return 'primary';
-  }
 }
 
 /**
@@ -77,41 +74,128 @@ function getCouleurChipTransmission(
   }
 }
 
+/**
+ * Fonction de comparaison pour le tri
+ */
+function comparerValeurs(a: FluxEReporting, b: FluxEReporting, colonne: ColonneTriable): number {
+  switch (colonne) {
+    case 'idTransmission':
+      return a.donneesRacine.idTransmission.localeCompare(b.donneesRacine.idTransmission);
+    case 'dateHeure':
+      return a.donneesRacine.horodatage.dateHeureChaine.localeCompare(
+        b.donneesRacine.horodatage.dateHeureChaine
+      );
+    case 'typeTransmission':
+      return a.donneesRacine.codeTypeTransmission.localeCompare(
+        b.donneesRacine.codeTypeTransmission
+      );
+    case 'emetteur':
+      return a.donneesRacine.emetteur.raisonSociale.localeCompare(
+        b.donneesRacine.emetteur.raisonSociale
+      );
+    case 'sirenEmetteur':
+      return a.donneesRacine.emetteur.id.localeCompare(b.donneesRacine.emetteur.id);
+    case 'typeFlux':
+      return a.typeFlux.localeCompare(b.typeFlux);
+    default:
+      return 0;
+  }
+}
+
 export default function TableauFluxEReporting({
   flux,
   onVoirDetail,
 }: TableauFluxEReportingProps) {
+  // État du tri
+  const [ordreTri, setOrdreTri] = useState<OrdreTri>('desc');
+  const [colonneTriee, setColonneTriee] = useState<ColonneTriable>('dateHeure');
+
+  // Gestionnaire de clic sur une en-tête
+  const handleDemanderTri = (colonne: ColonneTriable) => {
+    const estAsc = colonneTriee === colonne && ordreTri === 'asc';
+    setOrdreTri(estAsc ? 'desc' : 'asc');
+    setColonneTriee(colonne);
+  };
+
+  // Tri des flux
+  const fluxTries = useMemo(() => {
+    const fluxCopie = [...flux];
+    fluxCopie.sort((a, b) => {
+      const comparaison = comparerValeurs(a, b, colonneTriee);
+      return ordreTri === 'asc' ? comparaison : -comparaison;
+    });
+    return fluxCopie;
+  }, [flux, colonneTriee, ordreTri]);
+
   return (
     <TableContainer component={Paper} sx={{ borderRadius: 0, maxHeight: 'calc(100vh - 200px)' }}>
       <Table stickyHeader>
         <TableHead>
           <TableRow>
-            <TableCell>Type de flux</TableCell>
-            <TableCell>Identifiant transmission</TableCell>
-            <TableCell>Date/Heure</TableCell>
-            <TableCell>Type transmission</TableCell>
-            <TableCell>Émetteur</TableCell>
-            <TableCell>SIREN Émetteur</TableCell>
-            <TableCell>Déclarant</TableCell>
-            <TableCell>SIREN Déclarant</TableCell>
-            <TableCell align="center">Actions</TableCell>
+            <TableCell sortDirection={colonneTriee === 'idTransmission' ? ordreTri : false}>
+              <TableSortLabel
+                active={colonneTriee === 'idTransmission'}
+                direction={colonneTriee === 'idTransmission' ? ordreTri : 'asc'}
+                onClick={() => handleDemanderTri('idTransmission')}
+              >
+                Identifiant transmission
+              </TableSortLabel>
+            </TableCell>
+            <TableCell sortDirection={colonneTriee === 'dateHeure' ? ordreTri : false}>
+              <TableSortLabel
+                active={colonneTriee === 'dateHeure'}
+                direction={colonneTriee === 'dateHeure' ? ordreTri : 'asc'}
+                onClick={() => handleDemanderTri('dateHeure')}
+              >
+                Date/Heure
+              </TableSortLabel>
+            </TableCell>
+            <TableCell sortDirection={colonneTriee === 'typeTransmission' ? ordreTri : false}>
+              <TableSortLabel
+                active={colonneTriee === 'typeTransmission'}
+                direction={colonneTriee === 'typeTransmission' ? ordreTri : 'asc'}
+                onClick={() => handleDemanderTri('typeTransmission')}
+              >
+                Type transmission
+              </TableSortLabel>
+            </TableCell>
+            <TableCell sortDirection={colonneTriee === 'emetteur' ? ordreTri : false}>
+              <TableSortLabel
+                active={colonneTriee === 'emetteur'}
+                direction={colonneTriee === 'emetteur' ? ordreTri : 'asc'}
+                onClick={() => handleDemanderTri('emetteur')}
+              >
+                Émetteur
+              </TableSortLabel>
+            </TableCell>
+            <TableCell sortDirection={colonneTriee === 'sirenEmetteur' ? ordreTri : false}>
+              <TableSortLabel
+                active={colonneTriee === 'sirenEmetteur'}
+                direction={colonneTriee === 'sirenEmetteur' ? ordreTri : 'asc'}
+                onClick={() => handleDemanderTri('sirenEmetteur')}
+              >
+                SIREN Émetteur
+              </TableSortLabel>
+            </TableCell>
+            <TableCell sortDirection={colonneTriee === 'typeFlux' ? ordreTri : false}>
+              <TableSortLabel
+                active={colonneTriee === 'typeFlux'}
+                direction={colonneTriee === 'typeFlux' ? ordreTri : 'asc'}
+                onClick={() => handleDemanderTri('typeFlux')}
+              >
+                Type de flux
+              </TableSortLabel>
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {flux.map((fluxItem, index) => (
+          {fluxTries.map((fluxItem, index) => (
             <TableRow
               key={`${fluxItem.donneesRacine.idTransmission}-${index}`}
               hover
               sx={{ cursor: 'pointer' }}
               onClick={() => onVoirDetail(fluxItem)}
             >
-              <TableCell>
-                <Chip
-                  label={`Flux ${fluxItem.typeFlux}`}
-                  color={getCouleurChipFlux(fluxItem.typeFlux)}
-                  size="small"
-                />
-              </TableCell>
               <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
                 {fluxItem.donneesRacine.idTransmission}
               </TableCell>
@@ -132,23 +216,8 @@ export default function TableauFluxEReporting({
               <TableCell sx={{ fontFamily: 'monospace' }}>
                 {fluxItem.donneesRacine.emetteur.id}
               </TableCell>
-              <TableCell>{fluxItem.donneesRacine.declarant.raisonSociale}</TableCell>
-              <TableCell sx={{ fontFamily: 'monospace' }}>
-                {fluxItem.donneesRacine.declarant.id}
-              </TableCell>
-              <TableCell align="center">
-                <Tooltip title="Voir le détail">
-                  <IconButton
-                    size="small"
-                    color="primary"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onVoirDetail(fluxItem);
-                    }}
-                  >
-                    <VisibilityIcon />
-                  </IconButton>
-                </Tooltip>
+              <TableCell>
+                {`${fluxItem.typeFlux} - ${LIBELLE_FLUX_COURT[fluxItem.typeFlux]}`}
               </TableCell>
             </TableRow>
           ))}
