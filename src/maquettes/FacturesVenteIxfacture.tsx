@@ -49,8 +49,11 @@ import { TypeAction } from '../types/TypeAction';
 
 type StatutFacture = StatutEmission | StatutReception;
 
-// Type pour l'origine de la facture
-type OrigineFacture = 'PA' | 'Hors PA';
+// Type pour l'origine de la facture (comment la facture a été créée)
+type OrigineFacture = 'Saisie manuelle' | 'Import manuel' | 'API';
+
+// Type pour la destination de la facture (où elle est envoyée)
+type DestinationFacture = 'PA' | 'CPP';
 
 // Type pour la nature de la facture
 type NatureFacture = 'Factures_ERP1' | 'Factures_ERP2' | 'Factures_General';
@@ -69,7 +72,8 @@ export interface FactureVente {
   montantTTC: number;
   statut: StatutFacture;
   reference: string;
-  origine: OrigineFacture; // PA = Plateforme Agréée, Hors PA = Canal tiers
+  origine: OrigineFacture; // Comment la facture a été créée (Saisie manuelle, Import manuel, API)
+  destination: DestinationFacture; // Où la facture est envoyée (PA = Plateforme Agréée, CPP = Chorus Pro Portal)
   nature: NatureFacture; // Nature de routage de la facture
   lignes: LigneFactureVente[]; // Lignes de facturation
 }
@@ -112,6 +116,7 @@ const colonnesParDefaut: Colonne[] = [
   { id: 'dateEmission', label: 'Date émission', visible: true, sortable: true },
   { id: 'dateEcheance', label: 'Date échéance', visible: true, sortable: true },
   { id: 'origine', label: 'Origine', visible: true, sortable: true },
+  { id: 'destination', label: 'Destination', visible: true, sortable: true },
   { id: 'nature', label: 'Nature', visible: true, sortable: true },
   { id: 'montantHT', label: 'Montant HT', visible: true, sortable: true },
   { id: 'montantTVA', label: 'TVA', visible: false, sortable: true },
@@ -946,20 +951,42 @@ const FacturesVenteIxfacture = () => {
                     <Divider sx={{ mb: 2 }} />
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                       <Typography variant="body2" color="text.secondary">
-                        Cette facture provient de :
+                        Cette facture a été créée par :
                       </Typography>
                       <Chip
-                        label={factureSelectionnee?.origine === 'PA' ? 'Plateforme Agréée (PA)' : 'Canal tiers (Hors PA)'}
-                        color={factureSelectionnee?.origine === 'PA' ? 'primary' : 'default'}
+                        label={factureSelectionnee?.origine}
+                        color={factureSelectionnee?.origine === 'API' ? 'primary' : 'default'}
                         size="medium"
                         variant="outlined"
                       />
                     </Box>
-                    {factureSelectionnee?.origine === 'Hors PA' && (
-                      <Alert severity="warning" sx={{ mt: 2 }}>
-                        Cette facture a été émise par un canal tiers (courrier papier, mail, API) et non via une plateforme agréée. Elle ne fera donc pas l'objet de mise à jour de statuts sur la plateforme agréée.
-                      </Alert>
-                    )}
+                    <Alert severity="info" sx={{ mt: 2 }}>
+                      {factureSelectionnee?.origine === 'Saisie manuelle' && 'Cette facture a été créée manuellement dans l\'interface iXFacture.'}
+                      {factureSelectionnee?.origine === 'Import manuel' && 'Cette facture a été importée dans le système à partir d\'un fichier.'}
+                      {factureSelectionnee?.origine === 'API' && 'Cette facture a été créée automatiquement via l\'API iXFacture.'}
+                    </Alert>
+                  </Paper>
+
+                  {/* Destination de la facture */}
+                  <Paper elevation={0} sx={{ p: 2 }}>
+                    <Typography variant="h6" gutterBottom>
+                      Destination de la facture
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Cette facture est envoyée vers :
+                      </Typography>
+                      <Chip
+                        label={factureSelectionnee?.destination === 'PA' ? 'Plateforme Agréée (PA)' : 'Chorus Pro Portal (CPP)'}
+                        color={factureSelectionnee?.destination === 'PA' ? 'primary' : 'secondary'}
+                        size="medium"
+                      />
+                    </Box>
+                    <Alert severity={factureSelectionnee?.destination === 'PA' ? 'success' : 'info'} sx={{ mt: 2 }}>
+                      {factureSelectionnee?.destination === 'PA' && 'Cette facture sera transmise via une Plateforme Agréée et bénéficiera du suivi de statuts.'}
+                      {factureSelectionnee?.destination === 'CPP' && 'Cette facture sera transmise directement vers Chorus Pro Portal.'}
+                    </Alert>
                   </Paper>
 
                   {/* Nature de la facture */}

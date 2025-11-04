@@ -55,7 +55,8 @@ export const facturesVenteFictives: FactureVente[] = [
     montantTTC: 6480.00,
     statut: 'Déposée',
     reference: 'CMD-VTE-145',
-    origine: 'PA',
+    origine: 'Saisie manuelle',
+    destination: 'PA',
     nature: 'Factures_ERP1',
     lignes: [
       creerLigneFacture(1, 'Ordinateur portable Dell Latitude 5530', 5, 'pièce', 950.00, 20),
@@ -75,7 +76,8 @@ export const facturesVenteFictives: FactureVente[] = [
     montantTTC: 14760.00,
     statut: 'Emise par la plateforme',
     reference: 'CMD-VTE-146',
-    origine: 'PA',
+    origine: 'API',
+    destination: 'CPP',
     nature: 'Factures_ERP2',
     lignes: [
       creerLigneFacture(1, 'Serveur Dell PowerEdge R740', 2, 'pièce', 4500.00, 20),
@@ -95,7 +97,8 @@ export const facturesVenteFictives: FactureVente[] = [
     montantTTC: 9180.90,
     statut: 'Rejetée',
     reference: 'CMD-VTE-147',
-    origine: 'PA',
+    origine: 'Import manuel',
+    destination: 'PA',
     nature: 'Factures_General',
     lignes: [
       creerLigneFacture(1, 'Imprimante laser HP LaserJet Pro MFP', 10, 'pièce', 425.00, 20),
@@ -115,7 +118,8 @@ export const facturesVenteFictives: FactureVente[] = [
     montantTTC: 22680.00,
     statut: 'Complétée',
     reference: 'CMD-VTE-148',
-    origine: 'PA',
+    origine: 'API',
+    destination: 'CPP',
     nature: 'Factures_ERP1',
     lignes: [
       creerLigneFacture(1, 'Ordinateur portable Dell Latitude 5530', 15, 'pièce', 850.00, 20),
@@ -136,7 +140,8 @@ export const facturesVenteFictives: FactureVente[] = [
     montantTTC: 5136.60,
     statut: 'Encaissée',
     reference: 'CMD-VTE-149',
-    origine: 'PA',
+    origine: 'Saisie manuelle',
+    destination: 'PA',
     nature: 'Factures_ERP2',
     lignes: [
       creerLigneFacture(1, 'Écran Dell 24" Professional', 12, 'pièce', 265.00, 20),
@@ -157,7 +162,8 @@ export const facturesVenteFictives: FactureVente[] = [
     montantTTC: 10680.00,
     statut: 'Reçue de la plateforme',
     reference: 'CMD-VTE-150',
-    origine: 'PA',
+    origine: 'Import manuel',
+    destination: 'PA',
     nature: 'Factures_General',
     lignes: [
       creerLigneFacture(1, 'Serveur Dell PowerEdge R640', 2, 'pièce', 3600.00, 20),
@@ -177,7 +183,8 @@ export const facturesVenteFictives: FactureVente[] = [
     montantTTC: 18720.00,
     statut: 'Mise à disposition',
     reference: 'CMD-VTE-151',
-    origine: 'PA',
+    origine: 'API',
+    destination: 'CPP',
     nature: 'Factures_ERP1',
     lignes: [
       creerLigneFacture(1, 'Ordinateur portable HP EliteBook', 20, 'pièce', 600.00, 20),
@@ -197,7 +204,8 @@ export const facturesVenteFictives: FactureVente[] = [
     montantTTC: 11340.00,
     statut: 'Prise en charge',
     reference: 'CMD-VTE-152',
-    origine: 'PA',
+    origine: 'Saisie manuelle',
+    destination: 'PA',
     nature: 'Factures_ERP2',
     lignes: [
       creerLigneFacture(1, 'Ordinateur portable Dell Latitude 5430', 10, 'pièce', 750.00, 20),
@@ -217,7 +225,8 @@ export const facturesVenteFictives: FactureVente[] = [
     montantTTC: 8136.00,
     statut: 'Approuvée',
     reference: 'CMD-VTE-153',
-    origine: 'PA',
+    origine: 'API',
+    destination: 'PA',
     nature: 'Factures_General',
     lignes: [
       creerLigneFacture(1, 'Imprimante multifonction HP OfficeJet Pro', 6, 'pièce', 380.00, 20),
@@ -237,7 +246,8 @@ export const facturesVenteFictives: FactureVente[] = [
     montantTTC: 26760.00,
     statut: 'Approuvée partiellement',
     reference: 'CMD-VTE-154',
-    origine: 'PA',
+    origine: 'Import manuel',
+    destination: 'PA',
     nature: 'Factures_ERP1',
     lignes: [
       creerLigneFacture(1, 'Serveur Dell PowerEdge R740', 3, 'pièce', 4300.00, 20),
@@ -258,7 +268,8 @@ export const facturesVenteFictives: FactureVente[] = [
     montantTTC: 4668.00,
     statut: 'En litige',
     reference: 'CMD-VTE-155',
-    origine: 'PA',
+    origine: 'Saisie manuelle',
+    destination: 'PA',
     nature: 'Factures_ERP2',
     lignes: [
       creerLigneFacture(1, 'PC de caisse tout-en-un HP', 4, 'pièce', 650.00, 20),
@@ -278,7 +289,8 @@ export const facturesVenteFictives: FactureVente[] = [
     montantTTC: 13440.00,
     statut: 'Suspendue',
     reference: 'CMD-VTE-156',
-    origine: 'PA',
+    origine: 'API',
+    destination: 'CPP',
     nature: 'Factures_General',
     lignes: [
       creerLigneFacture(1, 'Ordinateur portable Lenovo ThinkPad', 12, 'pièce', 750.00, 20),
@@ -298,7 +310,8 @@ export const facturesVenteFictives: FactureVente[] = [
     montantTTC: 2940.00,
     statut: 'Refusée',
     reference: 'CMD-VTE-157',
-    origine: 'PA',
+    origine: 'Import manuel',
+    destination: 'PA',
     nature: 'Factures_ERP1',
     lignes: [
       creerLigneFacture(1, 'PC industriel durci Panasonic Toughbook', 2, 'pièce', 1050.00, 20),
@@ -317,7 +330,8 @@ export const facturesVenteFictives: FactureVente[] = [
     montantTTC: 21360.00,
     statut: 'Paiement transmis',
     reference: 'CMD-VTE-158',
-    origine: 'PA',
+    origine: 'API',
+    destination: 'CPP',
     nature: 'Factures_ERP2',
     lignes: [
       creerLigneFacture(1, 'Ordinateur portable MacBook Pro 14"', 20, 'pièce', 600.00, 20),
