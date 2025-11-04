@@ -11,20 +11,20 @@ import {
   Menu as MenuIcon,
   Visibility,
   Home,
-  HelpOutline,
 } from '@mui/icons-material';
 
 export interface BarreApplicationProps {
   onToggleDrawer: () => void;
   titre?: string;
   sousTitre?: string;
+  onAvatarClick?: () => void;
 }
 
 /**
  * Barre d'application en haut de page
  * Contient le bouton de menu, les liens d'accessibilité et les infos utilisateur
  */
-export default function BarreApplication({ onToggleDrawer, titre, sousTitre }: BarreApplicationProps) {
+export default function BarreApplication({ onToggleDrawer, titre, sousTitre, onAvatarClick }: BarreApplicationProps) {
   return (
     <AppBar position="static" sx={{ bgcolor: 'white', color: 'black', boxShadow: 1, mt: 2 }}>
       <Toolbar>
@@ -73,7 +73,15 @@ export default function BarreApplication({ onToggleDrawer, titre, sousTitre }: B
             <Typography variant="body2">Col sur Bus</Typography>
           </Button>
           <Typography variant="body2">Maryse TIPTOP</Typography>
-          <Avatar sx={{ bgcolor: '#FF9500', width: 32, height: 32 }} />
+          <IconButton
+            onClick={onAvatarClick}
+            sx={{
+              p: 0,
+              '&:hover': { opacity: 0.8 }
+            }}
+          >
+            <Avatar sx={{ bgcolor: '#FF9500', width: 32, height: 32 }} />
+          </IconButton>
         </Box>
       </Toolbar>
     </AppBar>

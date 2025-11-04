@@ -1,5 +1,6 @@
 import { useState, ReactNode } from 'react';
 import { Box } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import MenuLateral from '../composants/navigation/MenuLateral';
 import BarreApplication from '../composants/navigation/BarreApplication';
 import BoutonSommaire from '../composants/navigation/BoutonSommaire';
@@ -29,6 +30,7 @@ interface UtilisateurIxBusProps {
 export default function UtilisateurIxBus({ children, titre, sousTitre }: UtilisateurIxBusProps) {
   const [drawerOuvert, setDrawerOuvert] = useState(false);
   const [moduleOuvert, setModuleOuvert] = useState<string | null>('iXFacture');
+  const navigate = useNavigate();
 
   const toggleDrawer = () => {
     setDrawerOuvert(!drawerOuvert);
@@ -36,6 +38,10 @@ export default function UtilisateurIxBus({ children, titre, sousTitre }: Utilisa
 
   const toggleModule = (nomModule: string) => {
     setModuleOuvert(moduleOuvert === nomModule ? null : nomModule);
+  };
+
+  const handleAvatarClick = () => {
+    navigate('/natures-ixfacture');
   };
 
   return (
@@ -50,7 +56,7 @@ export default function UtilisateurIxBus({ children, titre, sousTitre }: Utilisa
       />
 
       <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', ml: 2, mr: 2 }}>
-        <BarreApplication onToggleDrawer={toggleDrawer} titre={titre} sousTitre={sousTitre} />
+        <BarreApplication onToggleDrawer={toggleDrawer} titre={titre} sousTitre={sousTitre} onAvatarClick={handleAvatarClick} />
 
         <Box
           sx={{
