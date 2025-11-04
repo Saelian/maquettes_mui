@@ -78,7 +78,7 @@ export default function InterfacesIXFacture() {
         {
           id: 1,
           sourceType: 'metadonnee',
-          sourceChamp: 'code_service',
+          sourceChamp: 'service_payeur',
           operateur: '=',
           valeur: 'DSI',
         },
@@ -96,7 +96,7 @@ export default function InterfacesIXFacture() {
         {
           id: 1,
           sourceType: 'metadonnee',
-          sourceChamp: 'code_service',
+          sourceChamp: 'service_payeur',
           operateur: '=',
           valeur: 'URBANISME',
         },
@@ -140,7 +140,7 @@ export default function InterfacesIXFacture() {
 
   // Métadonnées disponibles (exemple)
   const metadonnees = [
-    { code: 'code_service', label: 'Code service' },
+    { code: 'service_payeur', label: 'Service payeur' },
     { code: 'code_projet', label: 'Code projet' },
     { code: 'commentaire_interne', label: 'Commentaire interne' },
   ];

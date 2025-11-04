@@ -127,7 +127,7 @@ export default function MetadonneesIXFacture() {
       obligatoire: false,
       visibiliteFE: true,
       visibiliteFS: true,
-      ordre: 2,
+      ordre: 4,
     },
     {
       id: 3,
@@ -143,11 +143,12 @@ export default function MetadonneesIXFacture() {
       id: 4,
       nomChamp: 'Service payeur',
       codeTechnique: 'service_payeur',
-      typeDonnee: 'texte',
-      obligatoire: false,
+      typeDonnee: 'liste',
+      obligatoire: true,
       visibiliteFE: true,
       visibiliteFS: false,
-      ordre: 4,
+      valeursPossibles: ['DSI', 'Urbanisme'],
+      ordre: 2,
     },
   ]);
 
@@ -261,8 +262,8 @@ export default function MetadonneesIXFacture() {
 
   const getVisibiliteChips = (meta: Metadonnee) => {
     const chips = [];
-    if (meta.visibiliteFE) chips.push(<Chip key="fe" label="FE" size="small" color="primary" sx={{ mr: 0.5 }} />);
-    if (meta.visibiliteFS) chips.push(<Chip key="fs" label="FS" size="small" color="secondary" />);
+    if (meta.visibiliteFE) chips.push(<Chip key="fe" label="Achats" size="small" color="primary" sx={{ mr: 0.5 }} />);
+    if (meta.visibiliteFS) chips.push(<Chip key="fs" label="Ventes" size="small" color="secondary" />);
     return chips;
   };
 
@@ -744,7 +745,7 @@ export default function MetadonneesIXFacture() {
                             </Typography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2" sx={{ fontFamily: 'monospace', color: 'text.secondary' }}>
+                            <Typography variant="body2" fontWeight="medium" sx={{ color: 'text.secondary' }}>
                               {meta.codeTechnique}
                             </Typography>
                           </TableCell>
@@ -934,8 +935,8 @@ export default function MetadonneesIXFacture() {
                   setFormulaire({ ...formulaire, typeDonnee: e.target.value as Metadonnee['typeDonnee'] })
                 }
               >
-                <MenuItem value="texte">Texte (saisie libre courte)</MenuItem>
-                <MenuItem value="texte-long">Texte long (textarea)</MenuItem>
+                <MenuItem value="texte">Texte (saisie texte courte)</MenuItem>
+                <MenuItem value="texte-long">Texte long (zone de texte)</MenuItem>
                 <MenuItem value="nombre">Nombre (entier ou décimal)</MenuItem>
                 <MenuItem value="date">Date (calendrier)</MenuItem>
                 <MenuItem value="booleen">Booléen (case à cocher)</MenuItem>
@@ -994,7 +995,7 @@ export default function MetadonneesIXFacture() {
 
             <Box>
               <Typography variant="subtitle2" gutterBottom>
-                Visible sur
+                Cette métadonnée sera visible sur : 
               </Typography>
               <FormGroup>
                 <FormControlLabel
@@ -1004,7 +1005,7 @@ export default function MetadonneesIXFacture() {
                       onChange={(e) => setFormulaire({ ...formulaire, visibiliteFE: e.target.checked })}
                     />
                   }
-                  label="Factures entrantes"
+                  label="Factures d'achats"
                 />
                 <FormControlLabel
                   control={
@@ -1013,13 +1014,13 @@ export default function MetadonneesIXFacture() {
                       onChange={(e) => setFormulaire({ ...formulaire, visibiliteFS: e.target.checked })}
                     />
                   }
-                  label="Factures sortantes"
+                  label="Factures de ventes"
                 />
               </FormGroup>
             </Box>
 
             <TextField
-              label="Ordre d'affichage"
+              label="Ordre d'affichage de la métadonnée lors de la saisie"
               type="number"
               fullWidth
               value={formulaire.ordre}

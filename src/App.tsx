@@ -15,6 +15,7 @@ import ConsultationAnnuaireIXFacture from './maquettes/ConsultationAnnuaireIXFac
 import EReporting from './maquettes/EReporting';
 import UtilisateurIxBus from './templates/UtilisateurIxBus';
 import AdminIxBus from './templates/AdminIxBus';
+import NaturesIXFacture from './maquettes/NaturesIXFacture';
 
 const maquettes = [
   { nom: 'Tableau de bord iXfacture', chemin: '/tableau-de-bord-ixfacture', composant: <TableauDeBordIxfacture /> },
@@ -23,6 +24,7 @@ const maquettes = [
   { nom: 'Factures de vente iXfacture', chemin: '/factures-vente-ixfacture', composant: <FacturesVenteIxfacture /> },
   { nom: 'Consultation annuaire iXFacture', chemin: '/consultation-annuaire-ixfacture', composant: <ConsultationAnnuaireIXFacture /> },
   { nom: 'Configurations API IXFacture', chemin: '/config-api-ixfacture', composant: <ConfigurationsAPIIXFacture /> },
+  { nom: 'Natures IXFacture', chemin: '/natures-ixfacture', composant: <NaturesIXFacture /> },
   { nom: 'Métadonnées iXFacture', chemin: '/metadonnees-ixfacture', composant: <MetadonneesIXFacture /> },
   { nom: 'Interfaces iXFacture', chemin: '/interfaces-ixfacture', composant: <InterfacesIXFacture /> },
   { nom: 'E-Reporting', chemin: '/ereporting', composant: <EReporting /> },
