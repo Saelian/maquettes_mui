@@ -36,7 +36,6 @@ import {
   FileUpload as FileUploadIcon,
   ViewColumn as ViewColumnIcon,
   RestartAlt as RestartAltIcon,
-  Clear as ClearIcon,
   CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
 import UtilisateurIxBus from '../templates/UtilisateurIxBus';
@@ -94,6 +93,9 @@ const TYPE_DOCUMENT_LABELS: Record<string, string> = {
   '384': 'Facture rectificative',
   '386': "Facture d'acompte",
 };
+
+// Codes de types de documents filtrés (380 à 386)
+const CODES_TYPE_DOCUMENT_FILTRES = ['380', '381', '384', '386'] as const;
 
 // Colonnes disponibles pour le tableau - Conformes EN16931
 export interface Colonne {
@@ -330,6 +332,11 @@ const FacturesAchatiXfacture = () => {
     fournisseur: '',
     dateDebut: '',
     dateFin: '',
+    typesDocument: [] as string[],
+    montantMin: '',
+    montantMax: '',
+    devise: 'TOUS',
+    origine: 'TOUS' as 'TOUS' | 'PA' | 'Hors PA',
   });
 
   // État pour la recherche rapide dans la barre d'actions
@@ -539,18 +546,26 @@ const FacturesAchatiXfacture = () => {
   const appliquerRecherche = () => {
     let resultats = [...facturesAchatFictivesAchat];
 
+    // Filtre par numéro de facture
     if (critereRecherche.numero) {
       resultats = resultats.filter((f) =>
         f.numero.toLowerCase().includes(critereRecherche.numero.toLowerCase())
       );
     }
 
+    // Filtre par fournisseur
     if (critereRecherche.fournisseur) {
       resultats = resultats.filter((f) =>
         f.vendeur?.nom.toLowerCase().includes(critereRecherche.fournisseur.toLowerCase())
       );
     }
 
+    // Filtre par type de document
+    if (critereRecherche.typesDocument.length > 0) {
+      resultats = resultats.filter((f) => critereRecherche.typesDocument.includes(f.typeDocument));
+    }
+
+    // Filtre par dates de réception
     if (critereRecherche.dateDebut) {
       const dateDebut = critereRecherche.dateDebut.replace(/-/g, '');
       resultats = resultats.filter((f) => f.dateReception && f.dateReception >= dateDebut);
@@ -559,6 +574,22 @@ const FacturesAchatiXfacture = () => {
     if (critereRecherche.dateFin) {
       const dateFin = critereRecherche.dateFin.replace(/-/g, '');
       resultats = resultats.filter((f) => f.dateReception && f.dateReception <= dateFin);
+    }
+
+    // Filtre par montant TTC
+    if (critereRecherche.montantMin) {
+      const montantMin = parseFloat(critereRecherche.montantMin);
+      resultats = resultats.filter((f) => (f.totaux?.montantTotalTTC || 0) >= montantMin);
+    }
+
+    if (critereRecherche.montantMax) {
+      const montantMax = parseFloat(critereRecherche.montantMax);
+      resultats = resultats.filter((f) => (f.totaux?.montantTotalTTC || 0) <= montantMax);
+    }
+
+    // Filtre par origine
+    if (critereRecherche.origine !== 'TOUS') {
+      resultats = resultats.filter((f) => f.origine === critereRecherche.origine);
     }
 
     setFactures(resultats);
@@ -1369,68 +1400,163 @@ const FacturesAchatiXfacture = () => {
       <Dialog
         open={modaleRechercheOuverte}
         onClose={fermerModaleRecherche}
-        maxWidth="sm"
+        maxWidth="md"
         fullWidth
       >
-        <DialogTitle>Rechercher des factures</DialogTitle>
+        <DialogTitle>Recherche avancée de factures d'achat</DialogTitle>
         <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
-            <TextField
-              label="Numéro de facture"
-              value={critereRecherche.numero}
-              onChange={(e) =>
-                setCritereRecherche({ ...critereRecherche, numero: e.target.value })
-              }
-              fullWidth
-            />
-            <TextField
-              label="Fournisseur"
-              value={critereRecherche.fournisseur}
-              onChange={(e) =>
-                setCritereRecherche({ ...critereRecherche, fournisseur: e.target.value })
-              }
-              fullWidth
-            />
-            <TextField
-              label="Date de début"
-              type="date"
-              value={critereRecherche.dateDebut}
-              onChange={(e) =>
-                setCritereRecherche({ ...critereRecherche, dateDebut: e.target.value })
-              }
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-            />
-            <TextField
-              label="Date de fin"
-              type="date"
-              value={critereRecherche.dateFin}
-              onChange={(e) =>
-                setCritereRecherche({ ...critereRecherche, dateFin: e.target.value })
-              }
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-            />
-            <Button
-              startIcon={<ClearIcon />}
-              onClick={() =>
-                setCritereRecherche({
-                  numero: '',
-                  fournisseur: '',
-                  dateDebut: '',
-                  dateFin: '',
-                })
-              }
-            >
-              Effacer les critères
-            </Button>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 2 }}>
+            {/* Section 1: Identification */}
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Identification</Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                <TextField
+                  label="Numéro de facture"
+                  value={critereRecherche.numero}
+                  onChange={(e) => setCritereRecherche({ ...critereRecherche, numero: e.target.value })}
+                  fullWidth
+                  size="small"
+                  placeholder="Ex: FA-2025-0001"
+                />
+                <TextField
+                  label="Type de document"
+                  select
+                  value={critereRecherche.typesDocument.length === 0 ? 'TOUS' : critereRecherche.typesDocument[0]}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setCritereRecherche({
+                      ...critereRecherche,
+                      typesDocument: val === 'TOUS' ? [] : [val]
+                    });
+                  }}
+                  fullWidth
+                  size="small"
+                >
+                  <MenuItem value="TOUS">Tous les types</MenuItem>
+                  {CODES_TYPE_DOCUMENT_FILTRES.map((code) => (
+                    <MenuItem key={code} value={code}>{`${code} - ${TYPE_DOCUMENT_LABELS[code]}`}</MenuItem>
+                  ))}
+                </TextField>
+              </Box>
+            </Box>
+
+            <Divider />
+
+            {/* Section 2: Fournisseur */}
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Fournisseur</Typography>
+              <TextField
+                label="Nom du fournisseur"
+                value={critereRecherche.fournisseur}
+                onChange={(e) => setCritereRecherche({ ...critereRecherche, fournisseur: e.target.value })}
+                fullWidth
+                size="small"
+                placeholder="Nom du fournisseur"
+              />
+            </Box>
+
+            <Divider />
+
+            {/* Section 3: Dates */}
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Période de réception</Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                <TextField
+                  label="Date de début"
+                  type="date"
+                  value={critereRecherche.dateDebut}
+                  onChange={(e) => setCritereRecherche({ ...critereRecherche, dateDebut: e.target.value })}
+                  fullWidth
+                  size="small"
+                  InputLabelProps={{ shrink: true }}
+                />
+                <TextField
+                  label="Date de fin"
+                  type="date"
+                  value={critereRecherche.dateFin}
+                  onChange={(e) => setCritereRecherche({ ...critereRecherche, dateFin: e.target.value })}
+                  fullWidth
+                  size="small"
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Box>
+            </Box>
+
+            <Divider />
+
+            {/* Section 4: Montants */}
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Montants (TTC)</Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                <TextField
+                  label="Montant minimum"
+                  type="number"
+                  value={critereRecherche.montantMin}
+                  onChange={(e) => setCritereRecherche({ ...critereRecherche, montantMin: e.target.value })}
+                  fullWidth
+                  size="small"
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">€</InputAdornment>
+                  }}
+                  placeholder="0.00"
+                />
+                <TextField
+                  label="Montant maximum"
+                  type="number"
+                  value={critereRecherche.montantMax}
+                  onChange={(e) => setCritereRecherche({ ...critereRecherche, montantMax: e.target.value })}
+                  fullWidth
+                  size="small"
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">€</InputAdornment>
+                  }}
+                  placeholder="0.00"
+                />
+              </Box>
+            </Box>
+
+            <Divider />
+
+            {/* Section 5: Origine */}
+            <Box>
+              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Origine</Typography>
+              <TextField
+                label="Origine de la facture"
+                select
+                value={critereRecherche.origine}
+                onChange={(e) => setCritereRecherche({ ...critereRecherche, origine: e.target.value as typeof critereRecherche.origine })}
+                fullWidth
+                size="small"
+              >
+                <MenuItem value="TOUS">Toutes les origines</MenuItem>
+                <MenuItem value="PA">Plateforme Agréée (PA)</MenuItem>
+                <MenuItem value="Hors PA">Canal tiers (Hors PA)</MenuItem>
+              </TextField>
+            </Box>
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={fermerModaleRecherche}>Annuler</Button>
-          <Button onClick={appliquerRecherche} variant="contained">
-            Rechercher
+        <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
+          <Button
+            onClick={() => {
+              setCritereRecherche({
+                numero: '',
+                fournisseur: '',
+                dateDebut: '',
+                dateFin: '',
+                typesDocument: [],
+                montantMin: '',
+                montantMax: '',
+                devise: 'TOUS',
+                origine: 'TOUS',
+              });
+            }}
+            startIcon={<RestartAltIcon />}
+          >
+            Réinitialiser
           </Button>
+          <Box sx={{ flex: 1 }} />
+          <Button onClick={fermerModaleRecherche}>Annuler</Button>
+          <Button onClick={appliquerRecherche} variant="contained" startIcon={<SearchIcon />}>Rechercher</Button>
         </DialogActions>
       </Dialog>
 
