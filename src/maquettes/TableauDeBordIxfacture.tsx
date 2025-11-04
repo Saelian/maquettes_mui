@@ -27,7 +27,7 @@ export default function TableauDeBordIxfacture() {
   const [duree, setDuree] = useState('7');
 
   return (
-    <UtilisateurIxBus>
+    <UtilisateurIxBus titre="Tableau de bord">
       {/* Zone de recherche */}
       <Box sx={{ bgcolor: 'white', p: 2, boxShadow: 1, mt: 2, borderRadius: 0 }}>
         <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-end' }}>

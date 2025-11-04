@@ -62,8 +62,8 @@ export const modulesUtilisateurIxBus: Module[] = [
     sousSections: [
       { texte: 'Tableau de bord', icone: <Dashboard />, lien: '/tableau-de-bord-ixfacture' },
       { texte: 'Préparer', icone: <Add />, lien: '/preparer-ixfacture' },
-      { texte: 'Factures d\'achat', icone: <FileDownload />, lien: '/factures-achat-ixfacture' },
-      { texte: 'Factures de vente', icone: <FileUpload />, lien: '/factures-vente-ixfacture' },
+      { texte: 'Factures d\'achats', icone: <FileDownload />, lien: '/factures-achat-ixfacture' },
+      { texte: 'Factures de ventes', icone: <FileUpload />, lien: '/factures-vente-ixfacture' },
       { texte: 'E-reporting', icone: <AttachMoney />, lien: '/ereporting' },
       { texte: 'Annuaire', icone: <ManageSearch />, lien: '/consultation-annuaire-ixfacture' }
     ],

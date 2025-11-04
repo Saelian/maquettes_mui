@@ -72,16 +72,6 @@ export default function BarreApplication({ onToggleDrawer, titre, sousTitre }: B
           >
             <Typography variant="body2">Col sur Bus</Typography>
           </Button>
-          <Button
-            startIcon={<HelpOutline />}
-            sx={{
-              color: 'black',
-              textTransform: 'none',
-              '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.04)' },
-            }}
-          >
-            <Typography variant="body2">DGAR - Equipe Direction</Typography>
-          </Button>
           <Typography variant="body2">Maryse TIPTOP</Typography>
           <Avatar sx={{ bgcolor: '#FF9500', width: 32, height: 32 }} />
         </Box>

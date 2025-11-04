@@ -1486,7 +1486,7 @@ const FacturesAchatiXfacture = () => {
 
   return (
     <UtilisateurIxBus
-      titre="Factures d'achat iXFacture"
+      titre="Factures d'achats"
     >
       {contenu}
     </UtilisateurIxBus>

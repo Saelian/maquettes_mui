@@ -363,7 +363,7 @@ const PrepareriXFacture = () => {
   };
 
   return (
-    <UtilisateurIxBus titre="Préparer iXFacture" sousTitre="">
+    <UtilisateurIxBus titre="Préparer" sousTitre="">
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         <Paper elevation={1} sx={{ borderRadius: 0, mt: 1 }}>
           <Toolbar sx={{ gap: 1, flexWrap: 'wrap' }}>

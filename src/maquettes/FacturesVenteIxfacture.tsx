@@ -1310,10 +1310,7 @@ const FacturesVenteIxfacture = () => {
   );
 
   return (
-    <UtilisateurIxBus
-      titre="Factures de vente iXFacture"
-      sousTitre="Consultation et suivi des factures clients"
-    >
+    <UtilisateurIxBus titre="Factures de ventes ">
       {contenu}
     </UtilisateurIxBus>
   );
