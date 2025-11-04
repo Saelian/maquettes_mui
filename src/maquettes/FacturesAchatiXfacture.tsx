@@ -40,28 +40,14 @@ import {
   CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
 import UtilisateurIxBus from '../templates/UtilisateurIxBus';
-import type { FactureElectronique, Partie, LigneFacture } from '../types/factureEN16931';
-import { arrondirMontant } from '../utils/validationFacture';
-import { ACHETEUR_EXEMPLE } from '../utils/donneesExemplesFactures';
-
-// Types de statuts de facture d'achat
-type StatutTechnique =
-  | 'Reçue de la plateforme'
-  | 'Mise à disposition'
-  | 'Rejetée';
-
-type StatutMetier =
-  | 'Prise en charge'
-  | 'Approuvée'
-  | 'Approuvée partiellement'
-  | 'En litige'
-  | 'Suspendue'
-  | 'Refusée'
-  | 'Paiement transmis';
-
-type StatutApplicatif =
-  | 'En attente de validation iXParapheur'
-  | 'Validée dans iXParapheur';
+import type { FactureElectronique} from '../types/factureEN16931';
+import { genererHistoriqueFactureAchat } from './FEAchat/genererHistoriqueFactureAchat';
+import { facturesAchatFictivesAchat } from './FEAchat/facturesAchatFictivesAchat';
+import { StatutTechnique } from '../types/StatutTechnique';
+import { StatutMetier } from '../types/StatutMetier';
+import { StatutApplicatif } from '../types/StatutApplicatif';
+import { TypeAction } from '../types/TypeAction';
+import { colonnesParDefautAchat } from './FEAchat/colonnesParDefautAchat';
 
 type StatutFacture = StatutTechnique | StatutMetier | StatutApplicatif;
 
@@ -72,7 +58,7 @@ type OrigineFacture = 'PA' | 'Hors PA';
 type NatureFacture = 'Factures_ERP1' | 'Factures_ERP2' | 'Factures_General';
 
 // Interface pour une facture d'achat conforme EN16931 + statuts métiers
-interface FactureAchat extends FactureElectronique {
+export interface FactureAchat extends FactureElectronique {
   id: string;
   statut: StatutFacture;
   origine: OrigineFacture; // PA = Plateforme Agréée, Hors PA = Canal tiers
@@ -80,20 +66,8 @@ interface FactureAchat extends FactureElectronique {
   dateReception?: string; // Date de réception par l'acheteur (format YYYYMMDD)
 }
 
-// Types d'actions possibles dans l'historique
-type TypeAction =
-  | 'statut_technique'
-  | 'statut_metier'
-  | 'statut_application'
-  | 'consultation'
-  | 'telechargement'
-  | 'exportation'
-  | 'metadonnee'
-  | 'changement_statut_manuel'
-  | 'changement_statut_api';
-
 // Interface pour l'historique d'une facture
-interface EvenementHistorique {
+export interface EvenementHistorique {
   dateHeure: string; // Format: YYYY-MM-DD HH:mm:ss
   utilisateur: string; // Nom de l'utilisateur ou "Système"
   adresseIp?: string; // Adresse IP de l'utilisateur (optionnel pour le système)
@@ -122,7 +96,7 @@ const TYPE_DOCUMENT_LABELS: Record<string, string> = {
 };
 
 // Colonnes disponibles pour le tableau - Conformes EN16931
-interface Colonne {
+export interface Colonne {
   id: 'numero' | 'dateEmission' | 'dateReception' | 'typeDocument' | 'vendeur' | 'montantTTC' | 'montantDu' | 'devise' | 'nombreLignes' | 'statut' | 'origine' | 'nature';
   label: string;
   codeBT: string;
@@ -130,417 +104,8 @@ interface Colonne {
   sortable: boolean;
 }
 
-// Fournisseurs d'exemple
-const FOURNISSEUR_1: Partie = {
-  nom: 'Fournitures Bureau SA',
-  siret: '11111111100001',
-  numeroTVA: 'FR11111111111',
-  adressePostale: {
-    ligne1: '10 Rue du Commerce',
-    ville: 'Marseille',
-    codePostal: '13001',
-    codePays: 'FR',
-  },
-};
-
-const FOURNISSEUR_2: Partie = {
-  nom: 'Solutions Informatiques SARL',
-  siret: '22222222200002',
-  numeroTVA: 'FR22222222222',
-  adressePostale: {
-    ligne1: '25 Avenue des Technologies',
-    ville: 'Toulouse',
-    codePostal: '31000',
-    codePays: 'FR',
-  },
-};
-
-const FOURNISSEUR_3: Partie = {
-  nom: 'Équipements Pro & Cie',
-  siret: '33333333300003',
-  adressePostale: {
-    ligne1: '5 Boulevard des Industries',
-    ville: 'Lille',
-    codePostal: '59000',
-    codePays: 'FR',
-  },
-};
-
-const FOURNISSEUR_4: Partie = {
-  nom: 'Maintenance Services Plus',
-  siret: '44444444400004',
-  numeroTVA: 'FR44444444444',
-  adressePostale: {
-    ligne1: '78 Rue de la Maintenance',
-    ville: 'Nantes',
-    codePostal: '44000',
-    codePays: 'FR',
-  },
-};
-
-// Fonction helper pour créer des lignes de facture
-const creerLigneFacture = (
-  numero: number,
-  nom: string,
-  quantite: number,
-  prixUnitaireNet: number,
-  tauxTVA: number
-): LigneFacture => {
-  const montantNet = arrondirMontant(quantite * prixUnitaireNet);
-  return {
-    numeroLigne: numero,
-    article: {
-      nom,
-    },
-    quantite,
-    uniteMesure: 'C62', // Code UN/ECE pour "unité"
-    prixUnitaireNet,
-    montantNet,
-    informationTVA: {
-      codeCategorie: 'S',
-      taux: tauxTVA,
-    },
-  };
-};
-
-// Données fictives de factures d'achat conformes EN16931 - Au minimum une facture par statut
-const facturesAchatFictives: FactureAchat[] = [
-  {
-    id: '1',
-    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
-    modeFacturation: 'B1',
-    numero: 'FA-2025-001',
-    dateEmission: '20251001',
-    dateReception: '20251001',
-    typeDocument: '380',
-    codeDevise: 'EUR',
-    vendeur: FOURNISSEUR_1,
-    acheteur: ACHETEUR_EXEMPLE,
-    lignes: [
-      creerLigneFacture(1, 'Ramettes papier A4 - Lot de 10', 5, 25.0, 20),
-      creerLigneFacture(2, 'Cartouches d\'encre - Pack de 4', 10, 45.0, 20),
-      creerLigneFacture(3, 'Classeurs à levier', 20, 3.5, 20),
-    ],
-    totaux: {
-      sommeMontsNetsLignes: 690.0,
-      montantTotalHT: 690.0,
-      montantTotalTVA: 138.0,
-      montantTotalTTC: 828.0,
-      montantDu: 828.0,
-      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 690.0, montantTVA: 138.0 }],
-    },
-    statut: 'Mise à disposition',
-    origine: 'PA',
-    nature: 'Factures_ERP1',
-  },
-  {
-    id: '2',
-    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
-    modeFacturation: 'B1',
-    numero: 'FA-2025-002',
-    dateEmission: '20251002',
-    dateReception: '20251002',
-    typeDocument: '380',
-    codeDevise: 'EUR',
-    vendeur: FOURNISSEUR_2,
-    acheteur: ACHETEUR_EXEMPLE,
-    lignes: [
-      creerLigneFacture(1, 'Licence logicielle annuelle', 1, 1200.0, 20),
-      creerLigneFacture(2, 'Support technique premium', 12, 150.0, 20),
-    ],
-    totaux: {
-      sommeMontsNetsLignes: 3000.0,
-      montantTotalHT: 3000.0,
-      montantTotalTVA: 600.0,
-      montantTotalTTC: 3600.0,
-      montantDu: 3600.0,
-      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 3000.0, montantTVA: 600.0 }],
-    },
-    statut: 'Mise à disposition',
-    origine: 'Hors PA',
-    nature: 'Factures_ERP2',
-  },
-  {
-    id: '3',
-    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
-    modeFacturation: 'B1',
-    numero: 'FA-2025-003',
-    dateEmission: '20251003',
-    dateReception: '20251003',
-    typeDocument: '380',
-    codeDevise: 'EUR',
-    vendeur: FOURNISSEUR_3,
-    acheteur: ACHETEUR_EXEMPLE,
-    lignes: [
-      creerLigneFacture(1, 'Équipement de sécurité', 5, 120.0, 20),
-    ],
-    totaux: {
-      sommeMontsNetsLignes: 600.0,
-      montantTotalHT: 600.0,
-      montantTotalTVA: 120.0,
-      montantTotalTTC: 720.0,
-      montantDu: 720.0,
-      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 600.0, montantTVA: 120.0 }],
-    },
-    statut: 'Rejetée',
-    origine: 'PA',
-    nature: 'Factures_General',
-  },
-  {
-    id: '4',
-    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
-    modeFacturation: 'B1',
-    numero: 'FA-2025-004',
-    dateEmission: '20251004',
-    dateReception: '20251004',
-    typeDocument: '380',
-    codeDevise: 'EUR',
-    vendeur: FOURNISSEUR_4,
-    acheteur: ACHETEUR_EXEMPLE,
-    lignes: [
-      creerLigneFacture(1, 'Intervention maintenance préventive', 8, 85.0, 20),
-      creerLigneFacture(2, 'Pièces de rechange', 1, 450.0, 20),
-    ],
-    totaux: {
-      sommeMontsNetsLignes: 1130.0,
-      montantTotalHT: 1130.0,
-      montantTotalTVA: 226.0,
-      montantTotalTTC: 1356.0,
-      montantDu: 1356.0,
-      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 1130.0, montantTVA: 226.0 }],
-    },
-    statut: 'Prise en charge',
-    origine: 'PA',
-    nature: 'Factures_ERP1',
-  },
-  {
-    id: '5',
-    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
-    modeFacturation: 'B1',
-    numero: 'FA-2025-005',
-    dateEmission: '20251005',
-    dateReception: '20251005',
-    typeDocument: '380',
-    codeDevise: 'EUR',
-    vendeur: FOURNISSEUR_1,
-    acheteur: ACHETEUR_EXEMPLE,
-    lignes: [
-      creerLigneFacture(1, 'Matériel de bureau divers', 1, 890.0, 20),
-    ],
-    totaux: {
-      sommeMontsNetsLignes: 890.0,
-      montantTotalHT: 890.0,
-      montantTotalTVA: 178.0,
-      montantTotalTTC: 1068.0,
-      montantDu: 1068.0,
-      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 890.0, montantTVA: 178.0 }],
-    },
-    statut: 'Approuvée',
-    origine: 'PA',
-    nature: 'Factures_ERP1',
-  },
-  {
-    id: '6',
-    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
-    modeFacturation: 'B1',
-    numero: 'FA-2025-006',
-    dateEmission: '20251006',
-    dateReception: '20251006',
-    typeDocument: '380',
-    codeDevise: 'EUR',
-    vendeur: FOURNISSEUR_2,
-    acheteur: ACHETEUR_EXEMPLE,
-    lignes: [
-      creerLigneFacture(1, 'Formation professionnelle', 2, 650.0, 20),
-    ],
-    totaux: {
-      sommeMontsNetsLignes: 1300.0,
-      montantTotalHT: 1300.0,
-      montantTotalTVA: 260.0,
-      montantTotalTTC: 1560.0,
-      montantDu: 1560.0,
-      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 1300.0, montantTVA: 260.0 }],
-    },
-    statut: 'Approuvée partiellement',
-    origine: 'PA',
-    nature: 'Factures_ERP2',
-  },
-  {
-    id: '7',
-    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
-    modeFacturation: 'B1',
-    numero: 'FA-2025-007',
-    dateEmission: '20251007',
-    dateReception: '20251007',
-    typeDocument: '380',
-    codeDevise: 'EUR',
-    vendeur: FOURNISSEUR_3,
-    acheteur: ACHETEUR_EXEMPLE,
-    lignes: [
-      creerLigneFacture(1, 'Prestation de services', 1, 2400.0, 20),
-    ],
-    totaux: {
-      sommeMontsNetsLignes: 2400.0,
-      montantTotalHT: 2400.0,
-      montantTotalTVA: 480.0,
-      montantTotalTTC: 2880.0,
-      montantDu: 2880.0,
-      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 2400.0, montantTVA: 480.0 }],
-    },
-    statut: 'En litige',
-    origine: 'PA',
-    nature: 'Factures_General',
-  },
-  {
-    id: '8',
-    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
-    modeFacturation: 'B1',
-    numero: 'FA-2025-008',
-    dateEmission: '20251008',
-    dateReception: '20251008',
-    typeDocument: '380',
-    codeDevise: 'EUR',
-    vendeur: FOURNISSEUR_4,
-    acheteur: ACHETEUR_EXEMPLE,
-    lignes: [
-      creerLigneFacture(1, 'Équipement industriel', 1, 5400.0, 20),
-    ],
-    totaux: {
-      sommeMontsNetsLignes: 5400.0,
-      montantTotalHT: 5400.0,
-      montantTotalTVA: 1080.0,
-      montantTotalTTC: 6480.0,
-      montantDu: 6480.0,
-      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 5400.0, montantTVA: 1080.0 }],
-    },
-    statut: 'Suspendue',
-    origine: 'PA',
-    nature: 'Factures_ERP1',
-  },
-  {
-    id: '9',
-    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
-    modeFacturation: 'B1',
-    numero: 'FA-2025-009',
-    dateEmission: '20251009',
-    dateReception: '20251009',
-    typeDocument: '380',
-    codeDevise: 'EUR',
-    vendeur: FOURNISSEUR_1,
-    acheteur: ACHETEUR_EXEMPLE,
-    lignes: [
-      creerLigneFacture(1, 'Consommables divers', 1, 350.0, 20),
-    ],
-    totaux: {
-      sommeMontsNetsLignes: 350.0,
-      montantTotalHT: 350.0,
-      montantTotalTVA: 70.0,
-      montantTotalTTC: 420.0,
-      montantDu: 420.0,
-      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 350.0, montantTVA: 70.0 }],
-    },
-    statut: 'Refusée',
-    origine: 'PA',
-    nature: 'Factures_ERP1',
-  },
-  {
-    id: '10',
-    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
-    modeFacturation: 'B1',
-    numero: 'FA-2025-010',
-    dateEmission: '20251010',
-    dateReception: '20251010',
-    typeDocument: '380',
-    codeDevise: 'EUR',
-    vendeur: FOURNISSEUR_2,
-    acheteur: ACHETEUR_EXEMPLE,
-    lignes: [
-      creerLigneFacture(1, 'Abonnement cloud mensuel', 12, 250.0, 20),
-    ],
-    totaux: {
-      sommeMontsNetsLignes: 3000.0,
-      montantTotalHT: 3000.0,
-      montantTotalTVA: 600.0,
-      montantTotalTTC: 3600.0,
-      montantDu: 3600.0,
-      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 3000.0, montantTVA: 600.0 }],
-    },
-    statut: 'Paiement transmis',
-    origine: 'PA',
-    nature: 'Factures_ERP2',
-  },
-  {
-    id: '11',
-    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
-    modeFacturation: 'B1',
-    numero: 'FA-2025-011',
-    dateEmission: '20251011',
-    dateReception: '20251011',
-    typeDocument: '380',
-    codeDevise: 'EUR',
-    vendeur: FOURNISSEUR_3,
-    acheteur: ACHETEUR_EXEMPLE,
-    lignes: [
-      creerLigneFacture(1, 'Travaux de rénovation', 1, 8500.0, 20),
-    ],
-    totaux: {
-      sommeMontsNetsLignes: 8500.0,
-      montantTotalHT: 8500.0,
-      montantTotalTVA: 1700.0,
-      montantTotalTTC: 10200.0,
-      montantDu: 10200.0,
-      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 8500.0, montantTVA: 1700.0 }],
-    },
-    statut: 'En attente de validation iXParapheur',
-    origine: 'PA',
-    nature: 'Factures_ERP1',
-  },
-  {
-    id: '12',
-    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
-    modeFacturation: 'B1',
-    numero: 'FA-2025-012',
-    dateEmission: '20251012',
-    dateReception: '20251012',
-    typeDocument: '380',
-    codeDevise: 'EUR',
-    vendeur: FOURNISSEUR_4,
-    acheteur: ACHETEUR_EXEMPLE,
-    lignes: [
-      creerLigneFacture(1, 'Prestations de conseil', 10, 800.0, 20),
-    ],
-    totaux: {
-      sommeMontsNetsLignes: 8000.0,
-      montantTotalHT: 8000.0,
-      montantTotalTVA: 1600.0,
-      montantTotalTTC: 9600.0,
-      montantDu: 9600.0,
-      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 8000.0, montantTVA: 1600.0 }],
-    },
-    statut: 'Approuvée', // Passée par le parapheur et validée
-    origine: 'PA',
-    nature: 'Factures_ERP2',
-  },
-];
-
-// Configuration des colonnes par défaut - Conformes EN16931
-const colonnesParDefaut: Colonne[] = [
-  { id: 'numero', label: 'Numéro facture', codeBT: 'BT-1', visible: true, sortable: true },
-  { id: 'vendeur', label: 'Fournisseur', codeBT: 'BT-27', visible: true, sortable: true },
-  { id: 'typeDocument', label: 'Type document', codeBT: 'BT-3', visible: true, sortable: true },
-  { id: 'dateEmission', label: 'Date émission', codeBT: 'BT-2', visible: true, sortable: true },
-  { id: 'dateReception', label: 'Date réception', codeBT: '-', visible: true, sortable: true },
-  { id: 'origine', label: 'Origine', codeBT: '-', visible: true, sortable: true },
-  { id: 'nature', label: 'Nature', codeBT: '-', visible: true, sortable: true },
-  { id: 'montantTTC', label: 'Montant TTC', codeBT: 'BT-112', visible: true, sortable: true },
-  { id: 'statut', label: 'Statut', codeBT: '-', visible: true, sortable: true },
-  { id: 'montantDu', label: 'Montant dû', codeBT: 'BT-115', visible: false, sortable: true },
-  { id: 'devise', label: 'Devise', codeBT: 'BT-5', visible: false, sortable: true },
-  { id: 'nombreLignes', label: 'Nb lignes', codeBT: 'BG-25', visible: false, sortable: true },
-];
-
 // Fonction pour générer une phrase descriptive selon le statut ou l'action
-const genererDetailAction = (action: string, typeAction: TypeAction, metadonneeAvant?: string, metadonneeApres?: string): string => {
+export const genererDetailAction = (action: string, typeAction: TypeAction, metadonneeAvant?: string, metadonneeApres?: string): string => {
   // Pour les statuts techniques
   if (typeAction === 'statut_technique') {
     switch (action) {
@@ -616,295 +181,6 @@ const genererDetailAction = (action: string, typeAction: TypeAction, metadonneeA
   }
 
   return action;
-};
-
-// Fonction pour générer un historique cohérent en fonction de la facture
-const genererHistoriqueFacture = (facture: FactureAchat): EvenementHistorique[] => {
-  const historique: EvenementHistorique[] = [];
-  const dateEmission = facture.dateEmission || '20251001';
-  const dateBase = `${dateEmission.substring(0, 4)}-${dateEmission.substring(4, 6)}-${dateEmission.substring(6, 8)}`;
-
-  // Toutes les factures commencent par "Reçue de la plateforme"
-  historique.push({
-    dateHeure: `${dateBase} 09:15:32`,
-    utilisateur: 'Système',
-    typeAction: 'statut_technique',
-    action: 'Reçue de la plateforme',
-    detailAction: genererDetailAction('Reçue de la plateforme', 'statut_technique'),
-  });
-
-  // Si la facture est rejetée, on s'arrête là
-  if (facture.statut === 'Rejetée') {
-    historique.push({
-      dateHeure: `${dateBase} 09:16:05`,
-      utilisateur: 'Système',
-      typeAction: 'statut_technique',
-      action: 'Rejetée',
-      detailAction: genererDetailAction('Rejetée', 'statut_technique'),
-    });
-    return historique;
-  }
-
-  // Sinon, on passe à "Mise à disposition"
-  historique.push({
-    dateHeure: `${dateBase} 09:16:05`,
-    utilisateur: 'Système',
-    typeAction: 'statut_technique',
-    action: 'Mise à disposition',
-    detailAction: genererDetailAction('Mise à disposition', 'statut_technique'),
-  });
-
-  // Si le statut actuel est "Mise à disposition", on ajoute juste quelques consultations
-  if (facture.statut === 'Mise à disposition') {
-    historique.push({
-      dateHeure: `${dateBase} 10:23:17`,
-      utilisateur: 'Marie Dupont',
-      adresseIp: '192.168.1.45',
-      typeAction: 'consultation',
-      action: 'Consultation',
-      detailAction: genererDetailAction('Consultation', 'consultation'),
-    });
-    return historique;
-  }
-
-  // Ajouter une consultation
-  historique.push({
-    dateHeure: `${dateBase} 10:23:17`,
-    utilisateur: 'Marie Dupont',
-    adresseIp: '192.168.1.45',
-    typeAction: 'consultation',
-    action: 'Consultation',
-    detailAction: genererDetailAction('Consultation', 'consultation'),
-  });
-
-  // Ajouter un téléchargement
-  historique.push({
-    dateHeure: `${dateBase} 10:25:42`,
-    utilisateur: 'Marie Dupont',
-    adresseIp: '192.168.1.45',
-    typeAction: 'telechargement',
-    action: 'PDF',
-    detailAction: genererDetailAction('PDF', 'telechargement'),
-  });
-
-  // Ajouter des métadonnées
-  historique.push({
-    dateHeure: `${dateBase} 14:35:22`,
-    utilisateur: 'Jean Martin',
-    adresseIp: '192.168.1.78',
-    typeAction: 'metadonnee',
-    action: 'Service payeur',
-    detailAction: genererDetailAction('Service payeur', 'metadonnee', undefined, 'DSI'),
-    metadonneeApres: 'DSI',
-  });
-
-  // Calculer la date du lendemain
-  const dateSuivante = new Date(dateBase);
-  dateSuivante.setDate(dateSuivante.getDate() + 1);
-  const dateJ1 = dateSuivante.toISOString().split('T')[0];
-
-  // Gestion des différents statuts métiers
-  switch (facture.statut) {
-    case 'En attente de validation iXParapheur':
-      historique.push({
-        dateHeure: `${dateJ1} 09:12:45`,
-        utilisateur: 'Sophie Leclerc',
-        adresseIp: '192.168.1.92',
-        typeAction: 'changement_statut_manuel',
-        action: 'Prise en charge',
-        detailAction: genererDetailAction('Prise en charge', 'changement_statut_manuel'),
-      });
-      historique.push({
-        dateHeure: `${dateJ1} 11:48:33`,
-        utilisateur: 'Sophie Leclerc',
-        adresseIp: '192.168.1.92',
-        typeAction: 'statut_application',
-        action: 'En attente de validation iXParapheur',
-        detailAction: genererDetailAction('En attente de validation iXParapheur', 'statut_application'),
-      });
-      break;
-
-    case 'Prise en charge':
-      historique.push({
-        dateHeure: `${dateJ1} 09:12:45`,
-        utilisateur: 'Sophie Leclerc',
-        adresseIp: '192.168.1.92',
-        typeAction: 'changement_statut_manuel',
-        action: 'Prise en charge',
-        detailAction: genererDetailAction('Prise en charge', 'changement_statut_manuel'),
-      });
-      break;
-
-    case 'Approuvée': {
-      // Cas spécial pour la facture 12 : passée par le parapheur
-      if (facture.id === '12') {
-        historique.push({
-          dateHeure: `${dateJ1} 09:12:45`,
-          utilisateur: 'Sophie Leclerc',
-          adresseIp: '192.168.1.92',
-          typeAction: 'changement_statut_manuel',
-          action: 'Prise en charge',
-          detailAction: genererDetailAction('Prise en charge', 'changement_statut_manuel'),
-        });
-
-        const dateJ2 = new Date(dateSuivante);
-        dateJ2.setDate(dateJ2.getDate() + 1);
-        const dateJ2Str = dateJ2.toISOString().split('T')[0];
-
-        historique.push({
-          dateHeure: `${dateJ1} 11:48:33`,
-          utilisateur: 'Sophie Leclerc',
-          adresseIp: '192.168.1.92',
-          typeAction: 'statut_application',
-          action: 'En attente de validation iXParapheur',
-          detailAction: genererDetailAction('En attente de validation iXParapheur', 'statut_application'),
-        });
-        historique.push({
-          dateHeure: `${dateJ2Str} 08:22:19`,
-          utilisateur: 'Système',
-          typeAction: 'statut_application',
-          action: 'Facture validée dans iXParapheur',
-          detailAction: genererDetailAction('Facture validée dans iXParapheur', 'statut_application'),
-        });
-        historique.push({
-          dateHeure: `${dateJ2Str} 09:08:54`,
-          utilisateur: 'Paul Rousseau',
-          adresseIp: '192.168.1.103',
-          typeAction: 'changement_statut_manuel',
-          action: 'Approuvée',
-          detailAction: genererDetailAction('Approuvée', 'changement_statut_manuel'),
-        });
-      } else {
-        historique.push({
-          dateHeure: `${dateJ1} 09:12:45`,
-          utilisateur: 'Sophie Leclerc',
-          adresseIp: '192.168.1.92',
-          typeAction: 'changement_statut_manuel',
-          action: 'Prise en charge',
-          detailAction: genererDetailAction('Prise en charge', 'changement_statut_manuel'),
-        });
-        historique.push({
-          dateHeure: `${dateJ1} 14:22:11`,
-          utilisateur: 'Paul Rousseau',
-          adresseIp: '192.168.1.103',
-          typeAction: 'changement_statut_manuel',
-          action: 'Approuvée',
-          detailAction: genererDetailAction('Approuvée', 'changement_statut_manuel'),
-        });
-      }
-      break;
-    }
-
-    case 'Approuvée partiellement':
-      historique.push({
-        dateHeure: `${dateJ1} 09:12:45`,
-        utilisateur: 'Sophie Leclerc',
-        adresseIp: '192.168.1.92',
-        typeAction: 'changement_statut_manuel',
-        action: 'Prise en charge',
-        detailAction: genererDetailAction('Prise en charge', 'changement_statut_manuel'),
-      });
-      historique.push({
-        dateHeure: `${dateJ1} 14:30:00`,
-        utilisateur: 'Paul Rousseau',
-        adresseIp: '192.168.1.103',
-        typeAction: 'changement_statut_manuel',
-        action: 'Approuvée partiellement',
-        detailAction: genererDetailAction('Approuvée partiellement', 'changement_statut_manuel'),
-      });
-      break;
-
-    case 'En litige':
-      historique.push({
-        dateHeure: `${dateJ1} 09:12:45`,
-        utilisateur: 'Sophie Leclerc',
-        adresseIp: '192.168.1.92',
-        typeAction: 'changement_statut_manuel',
-        action: 'Prise en charge',
-        detailAction: genererDetailAction('Prise en charge', 'changement_statut_manuel'),
-      });
-      historique.push({
-        dateHeure: `${dateJ1} 15:45:00`,
-        utilisateur: 'Paul Rousseau',
-        adresseIp: '192.168.1.103',
-        typeAction: 'changement_statut_manuel',
-        action: 'En litige',
-        detailAction: genererDetailAction('En litige', 'changement_statut_manuel'),
-      });
-      break;
-
-    case 'Suspendue':
-      historique.push({
-        dateHeure: `${dateJ1} 09:12:45`,
-        utilisateur: 'Sophie Leclerc',
-        adresseIp: '192.168.1.92',
-        typeAction: 'changement_statut_manuel',
-        action: 'Prise en charge',
-        detailAction: genererDetailAction('Prise en charge', 'changement_statut_manuel'),
-      });
-      historique.push({
-        dateHeure: `${dateJ1} 16:20:00`,
-        utilisateur: 'Paul Rousseau',
-        adresseIp: '192.168.1.103',
-        typeAction: 'changement_statut_manuel',
-        action: 'Suspendue',
-        detailAction: genererDetailAction('Suspendue', 'changement_statut_manuel'),
-      });
-      break;
-
-    case 'Refusée':
-      historique.push({
-        dateHeure: `${dateJ1} 09:12:45`,
-        utilisateur: 'Sophie Leclerc',
-        adresseIp: '192.168.1.92',
-        typeAction: 'changement_statut_manuel',
-        action: 'Prise en charge',
-        detailAction: genererDetailAction('Prise en charge', 'changement_statut_manuel'),
-      });
-      historique.push({
-        dateHeure: `${dateJ1} 16:50:00`,
-        utilisateur: 'Paul Rousseau',
-        adresseIp: '192.168.1.103',
-        typeAction: 'changement_statut_manuel',
-        action: 'Refusée',
-        detailAction: genererDetailAction('Refusée', 'changement_statut_manuel'),
-      });
-      break;
-
-    case 'Paiement transmis': {
-      historique.push({
-        dateHeure: `${dateJ1} 09:12:45`,
-        utilisateur: 'Sophie Leclerc',
-        adresseIp: '192.168.1.92',
-        typeAction: 'changement_statut_manuel',
-        action: 'Prise en charge',
-        detailAction: genererDetailAction('Prise en charge', 'changement_statut_manuel'),
-      });
-      historique.push({
-        dateHeure: `${dateJ1} 14:22:11`,
-        utilisateur: 'Paul Rousseau',
-        adresseIp: '192.168.1.103',
-        typeAction: 'changement_statut_manuel',
-        action: 'Approuvée',
-        detailAction: genererDetailAction('Approuvée', 'changement_statut_manuel'),
-      });
-
-      const dateJ3 = new Date(dateSuivante);
-      dateJ3.setDate(dateJ3.getDate() + 3);
-      const dateJ3Str = dateJ3.toISOString().split('T')[0];
-
-      historique.push({
-        dateHeure: `${dateJ3Str} 10:15:42`,
-        utilisateur: 'Système',
-        typeAction: 'changement_statut_api',
-        action: 'Paiement transmis',
-        detailAction: genererDetailAction('Paiement transmis', 'changement_statut_api'),
-      });
-      break;
-    }
-  }
-
-  return historique;
 };
 
 // Métadonnées fictives - Conformes au paramétrage dans MetadonneesIXFacture
@@ -1038,9 +314,9 @@ const FacturesAchatiXfacture = () => {
   const [anchorTelecharger, setAnchorTelecharger] = useState<null | HTMLElement>(null);
 
   // États pour le tableau
-  const [factures, setFactures] = useState<FactureAchat[]>(facturesAchatFictives);
+  const [factures, setFactures] = useState<FactureAchat[]>(facturesAchatFictivesAchat);
   const [facturesSelectionnees, setFacturesSelectionnees] = useState<string[]>([]);
-  const [colonnes, setColonnes] = useState<Colonne[]>(colonnesParDefaut);
+  const [colonnes, setColonnes] = useState<Colonne[]>(colonnesParDefautAchat);
   const [ordreTriColonne, setOrdreTriColonne] = useState<Colonne['id']>('numero');
   const [directionTri, setDirectionTri] = useState<'asc' | 'desc'>('asc');
 
@@ -1258,7 +534,7 @@ const FacturesAchatiXfacture = () => {
 
   // Handler pour réinitialiser les filtres et colonnes
   const reinitialiser = () => {
-    setColonnes(colonnesParDefaut);
+    setColonnes(colonnesParDefautAchat);
     setFacturesSelectionnees([]);
     setCritereRecherche({
       numero: '',
@@ -1270,7 +546,7 @@ const FacturesAchatiXfacture = () => {
 
   // Handler pour appliquer la recherche
   const appliquerRecherche = () => {
-    let resultats = [...facturesAchatFictives];
+    let resultats = [...facturesAchatFictivesAchat];
 
     if (critereRecherche.numero) {
       resultats = resultats.filter((f) =>
@@ -1988,7 +1264,7 @@ const FacturesAchatiXfacture = () => {
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {factureSelectionnee && genererHistoriqueFacture(factureSelectionnee).map((evenement, index) => (
+                          {factureSelectionnee && genererHistoriqueFactureAchat(factureSelectionnee).map((evenement, index) => (
                             <TableRow key={index} hover>
                               <TableCell sx={{ whiteSpace: 'nowrap' }}>
                                 {evenement.dateHeure}
