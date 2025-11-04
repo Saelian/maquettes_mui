@@ -2211,7 +2211,6 @@ const FacturesAchatiXfacture = () => {
   return (
     <UtilisateurIxBus
       titre="Factures d'achat iXFacture"
-      sousTitre="Validation et gestion des factures fournisseurs"
     >
       {contenu}
     </UtilisateurIxBus>
