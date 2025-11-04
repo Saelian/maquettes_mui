@@ -288,7 +288,6 @@ export default function InterfacesIXFacture() {
   return (
     <AdminIxBus
       titre="Paramétrage des interfaces"
-      sousTitre="Définissez les règles métiers pour l'export des factures vers iXParapheur."
       moduleParDefaut="iXFacture"
       sousSectionSelectionnee="Interfaces"
     >

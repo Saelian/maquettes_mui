@@ -571,8 +571,7 @@ export default function MetadonneesIXFacture() {
 
   return (
     <AdminIxBus
-      titre="Paramétrage des métadonnées factures"
-      sousTitre="Définissez ici les champs personnalisés et les règles de calcul automatique."
+      titre="Paramétrage des métadonnées"
       moduleParDefaut="iXFacture"
       sousSectionSelectionnee="Metadonnées"
     >

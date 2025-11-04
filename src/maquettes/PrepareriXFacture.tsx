@@ -327,24 +327,7 @@ const PrepareriXFacture = () => {
   const toggleSelectionFacture = (id: string) => setFacturesSelectionnees(facturesSelectionnees.includes(id) ? facturesSelectionnees.filter((fid) => fid !== id) : [...facturesSelectionnees, id]);
   const toggleSelectionTout = () => setFacturesSelectionnees(facturesSelectionnees.length === factures.length ? [] : factures.map((f) => f.id));
   const supprimerFactures = () => { setFactures(factures.filter((f) => !facturesSelectionnees.includes(f.id))); setFacturesSelectionnees([]); };
-  const reinitialiser = () => {
-    setColonnes(colonnesParDefaut);
-    setFacturesSelectionnees([]);
-    setCritereRecherche({
-      numero: '',
-      vendeur: '',
-      acheteur: '',
-      dateDebut: '',
-      dateFin: '',
-      typeFacture: 'TOUS',
-      typesDocument: [],
-      montantMin: '',
-      montantMax: '',
-      devise: 'TOUS',
-      modeFacturation: 'TOUS'
-    });
-    setRechercheRapide('');
-  };
+  const reinitialiserColonnes = () => setColonnes(colonnesParDefaut);
   const formaterMontant = (montant: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(montant);
   const formaterDateAffichage = (dateStr: string) => dateStr ? `${dateStr.substring(6, 8)}/${dateStr.substring(4, 6)}/${dateStr.substring(0, 4)}` : '';
 
@@ -377,7 +360,6 @@ const PrepareriXFacture = () => {
             <Menu anchorEl={anchorTelecharger} open={Boolean(anchorTelecharger)} onClose={fermerMenuTelecharger}><MenuItem>UBL</MenuItem><MenuItem>CII</MenuItem><MenuItem>Factur-X</MenuItem></Menu>
             <TextField placeholder="Rechercher..." variant="standard" size="small" value={rechercheRapide} onChange={(e) => setRechercheRapide(e.target.value)} InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>) }} sx={{ flexGrow: 1, minWidth: '200px' }} />
             <Tooltip title="Gérer les colonnes"><Button variant="outlined" startIcon={<ViewColumnIcon />} onClick={ouvrirModaleColonnes}>Colonnes</Button></Tooltip>
-            <Tooltip title="Réinitialiser les filtres et colonnes"><Button variant="outlined" startIcon={<RestartAltIcon />} onClick={reinitialiser}>Réinitialiser</Button></Tooltip>
           </Toolbar>
         </Paper>
 
@@ -706,7 +688,11 @@ const PrepareriXFacture = () => {
           <DialogContent><FormGroup>
             {colonnes.map((col) => <FormControlLabel key={col.id} control={<Checkbox checked={col.visible} onChange={() => toggleVisibiliteColonne(col.id)} />} label={col.label} />)}
           </FormGroup></DialogContent>
-          <DialogActions><Button onClick={fermerModaleColonnes}>Fermer</Button></DialogActions>
+          <DialogActions>
+            <Button onClick={reinitialiserColonnes} startIcon={<RestartAltIcon />}>Réinitialiser</Button>
+            <Box sx={{ flex: 1 }} />
+            <Button onClick={fermerModaleColonnes}>Fermer</Button>
+          </DialogActions>
         </Dialog>
 
       </Box>

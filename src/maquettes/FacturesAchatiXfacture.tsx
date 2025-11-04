@@ -532,17 +532,8 @@ const FacturesAchatiXfacture = () => {
     );
   };
 
-  // Handler pour réinitialiser les filtres et colonnes
-  const reinitialiser = () => {
-    setColonnes(colonnesParDefautAchat);
-    setFacturesSelectionnees([]);
-    setCritereRecherche({
-      numero: '',
-      fournisseur: '',
-      dateDebut: '',
-      dateFin: '',
-    });
-  };
+  // Handler pour réinitialiser uniquement les colonnes
+  const reinitialiserColonnes = () => setColonnes(colonnesParDefautAchat);
 
   // Handler pour appliquer la recherche
   const appliquerRecherche = () => {
@@ -784,16 +775,6 @@ const FacturesAchatiXfacture = () => {
               onClick={ouvrirModaleColonnes}
             >
               Colonnes
-            </Button>
-          </Tooltip>
-
-          <Tooltip title="Réinitialiser les filtres et colonnes">
-            <Button
-              variant="outlined"
-              startIcon={<RestartAltIcon />}
-              onClick={reinitialiser}
-            >
-              Réinitialiser
             </Button>
           </Tooltip>
         </Toolbar>
@@ -1478,6 +1459,10 @@ const FacturesAchatiXfacture = () => {
           </FormGroup>
         </DialogContent>
         <DialogActions>
+          <Button onClick={reinitialiserColonnes} startIcon={<RestartAltIcon />}>
+            Réinitialiser
+          </Button>
+          <Box sx={{ flex: 1 }} />
           <Button onClick={fermerModaleColonnes}>Fermer</Button>
         </DialogActions>
       </Dialog>

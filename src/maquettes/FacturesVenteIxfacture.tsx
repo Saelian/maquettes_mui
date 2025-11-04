@@ -217,7 +217,8 @@ const FacturesVenteIxfacture = () => {
   };
 
   // Vérifier si au moins une facture peut être passée à "Encaissée"
-  // Seules les factures avec statut "Paiement transmis" peuvent passer à "Encaissée"
+  // Les factures avec les statuts suivants peuvent passer à "Encaissée" :
+  // Complétée, Mise à disposition, Prise en charge, Approuvée, Approuvée partiellement, Paiement transmis
   const peutPasserEncaissee = (): boolean => {
     if (facturesSelectionnees.length === 0) return false;
 
@@ -225,7 +226,16 @@ const FacturesVenteIxfacture = () => {
       facturesSelectionnees.includes(f.id)
     );
 
-    return facturesSelectionneesList.some((f) => f.statut === 'Paiement transmis');
+    const statutsAutorises: StatutFacture[] = [
+      'Complétée',
+      'Mise à disposition',
+      'Prise en charge',
+      'Approuvée',
+      'Approuvée partiellement',
+      'Paiement transmis'
+    ];
+
+    return facturesSelectionneesList.some((f) => statutsAutorises.includes(f.statut));
   };
 
   // Vérifier si au moins une facture peut être passée à "Complétée"
@@ -358,17 +368,8 @@ const FacturesVenteIxfacture = () => {
     );
   };
 
-  // Handler pour réinitialiser les filtres et colonnes
-  const reinitialiser = () => {
-    setColonnes(colonnesParDefaut);
-    setFacturesSelectionnees([]);
-    setCritereRecherche({
-      numero: '',
-      client: '',
-      dateDebut: '',
-      dateFin: '',
-    });
-  };
+  // Handler pour réinitialiser uniquement les colonnes
+  const reinitialiserColonnes = () => setColonnes(colonnesParDefaut);
 
   // Handler pour appliquer la recherche
   const appliquerRecherche = () => {
@@ -621,16 +622,6 @@ const FacturesVenteIxfacture = () => {
               onClick={ouvrirModaleColonnes}
             >
               Colonnes
-            </Button>
-          </Tooltip>
-
-          <Tooltip title="Réinitialiser les filtres et colonnes">
-            <Button
-              variant="outlined"
-              startIcon={<RestartAltIcon />}
-              onClick={reinitialiser}
-            >
-              Réinitialiser
             </Button>
           </Tooltip>
         </Toolbar>
@@ -1293,6 +1284,10 @@ const FacturesVenteIxfacture = () => {
           </FormGroup>
         </DialogContent>
         <DialogActions>
+          <Button onClick={reinitialiserColonnes} startIcon={<RestartAltIcon />}>
+            Réinitialiser
+          </Button>
+          <Box sx={{ flex: 1 }} />
           <Button onClick={fermerModaleColonnes}>Fermer</Button>
         </DialogActions>
       </Dialog>

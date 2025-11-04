@@ -29,7 +29,7 @@ export default function TableauDeBordIxfacture() {
   return (
     <UtilisateurIxBus titre="Tableau de bord">
       {/* Zone de recherche */}
-      <Box sx={{ bgcolor: 'white', p: 2, boxShadow: 1, mt: 2, borderRadius: 0 }}>
+      <Box sx={{ bgcolor: 'white', p: 2, boxShadow: 1, mt: 1, borderRadius: 0 }}>
         <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-end' }}>
           <Box sx={{ flex: 1 }}>
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
@@ -88,15 +88,15 @@ export default function TableauDeBordIxfacture() {
       </Box>
 
       {/* Disposition en deux colonnes */}
-      <Box sx={{ display: 'flex', gap: 3, pt: 2, flex: 1 }}>
+      <Box sx={{ display: 'flex', gap: 1, pt: 1, flex: 1 }}>
         
         {/* Colonne gauche - Factures d'achat */}
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <Paper sx={{ p: 2, mb: 2, borderRadius: 0 }}>
-            <Typography variant="h6">Factures d'achat</Typography>
+          <Paper sx={{ p: 2, mb: 1, borderRadius: 0 }}>
+            <Typography variant="h6">Factures d'achats</Typography>
           </Paper>
 
-          <Paper sx={{ p: 3, mb: 2, borderRadius: 0 }}>
+          <Paper sx={{ p: 3, mb: 1, borderRadius: 0 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
               <Box>
                 <Typography variant="body2" color="text.secondary">Total achats du mois</Typography>
@@ -109,7 +109,7 @@ export default function TableauDeBordIxfacture() {
             </Box>
           </Paper>
 
-          <Paper sx={{ p: 3, mb: 2, borderRadius: 0 }}>
+          <Paper sx={{ p: 3, mb: 1, borderRadius: 0 }}>
             <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 'bold' }}>
               Répartition par statut
             </Typography>
@@ -164,11 +164,11 @@ export default function TableauDeBordIxfacture() {
 
         {/* Colonne droite - Factures de vente */}
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <Paper sx={{ p: 2, mb: 2, borderRadius: 0 }}>
-            <Typography variant="h6">Factures de vente</Typography>
+          <Paper sx={{ p: 2, mb: 1, borderRadius: 0 }}>
+            <Typography variant="h6">Factures de ventes</Typography>
           </Paper>
 
-          <Paper sx={{ p: 3, mb: 2, borderRadius: 0 }}>
+          <Paper sx={{ p: 3, mb: 1, borderRadius: 0 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
               <Box>
                 <Typography variant="body2" color="text.secondary">Total ventes du mois</Typography>
@@ -181,7 +181,7 @@ export default function TableauDeBordIxfacture() {
             </Box>
           </Paper>
 
-          <Paper sx={{ p: 3, mb: 2, borderRadius: 0 }}>
+          <Paper sx={{ p: 3, mb: 1, borderRadius: 0 }}>
             <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 'bold' }}>
               Répartition par statut
             </Typography>
