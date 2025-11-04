@@ -8,7 +8,8 @@
       "Bash(npm run test:visual:*)",
       "Bash(npm run build:*)",
       "Bash(npx playwright test:*)",
-      "WebFetch(domain:docs.ppd.iopole.fr)"
+      "WebFetch(domain:docs.ppd.iopole.fr)",
+      "Bash(chmod:*)"
     ],
     "deny": [],
     "ask": []

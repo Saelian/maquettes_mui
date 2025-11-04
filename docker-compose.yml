@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: maquettes-mui
+    ports:
+      - "3000:80"
+      - "3443:443"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    volumes:
+      # Certificats SSL
+      - ./ssl/certs:/etc/nginx/ssl/certs:ro
+      - ./ssl/private:/etc/nginx/ssl/private:ro
+      # Configuration nginx avec SSL
+      - ./nginx-ssl.conf:/etc/nginx/conf.d/default.conf:ro
+    # Optionnel: volumes pour le développement en temps réel
+    # - ./dist:/usr/share/nginx/html:ro
