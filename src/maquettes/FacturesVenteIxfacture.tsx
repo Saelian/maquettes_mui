@@ -792,7 +792,7 @@ const FacturesVenteIxfacture = () => {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   <Paper elevation={0} sx={{ p: 2 }}>
                     {/* Informations du client */}
-                    <Typography variant="h6" gutterBottom>
+                    <Typography color="primary" variant="h6" gutterBottom>
                       Informations du client
                     </Typography>
                     <Box sx={{ display: 'grid', mb: 2, gridTemplateColumns: '1fr 1fr', gap: 2 }}>
@@ -807,7 +807,7 @@ const FacturesVenteIxfacture = () => {
                     </Box>
 
                     {/* Informations générales de la facture */}
-                    <Typography variant="h6" gutterBottom>
+                    <Typography color="primary" variant="h6" gutterBottom>
                       Informations de la facture
                     </Typography>
                     <Box sx={{ display: 'grid', mb: 2, gridTemplateColumns: '1fr 1fr', gap: 2 }}>
@@ -832,7 +832,7 @@ const FacturesVenteIxfacture = () => {
                     {/* Lignes de facturation */}
                     {factureSelectionnee?.lignes && factureSelectionnee.lignes.length > 0 && (
                       <>
-                        <Typography variant="h6" gutterBottom>
+                        <Typography color="primary" variant="h6" gutterBottom>
                           Lignes de facturation ({factureSelectionnee.lignes.length})
                         </Typography>
 
@@ -866,9 +866,7 @@ const FacturesVenteIxfacture = () => {
                     )}
 
                     {/* Montants */}
-                    <Typography variant="h6" gutterBottom>
-                      Montants
-                    </Typography>
+
                     <Box sx={{ display: 'flex', mt: 2, flexDirection: 'column', gap: 1 }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Typography>Total HT</Typography>
@@ -900,7 +898,7 @@ const FacturesVenteIxfacture = () => {
                     {/* En-tête de la facture */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4, pb: 3, borderBottom: 2, borderColor: 'primary.main' }}>
                       <Box>
-                        <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 1 }}>
+                        <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
                           FACTURE
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
@@ -923,10 +921,10 @@ const FacturesVenteIxfacture = () => {
                     {/* Informations vendeur et client */}
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, mb: 4 }}>
                       <Box>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>
-                          De : Votre Entreprise
+                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1,  }}>
+                          Vendeur
                         </Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                        <Typography variant="body2" >
                           Entreprise iXbus
                         </Typography>
                         <Typography variant="body2">
@@ -943,10 +941,10 @@ const FacturesVenteIxfacture = () => {
                         </Typography>
                       </Box>
                       <Box>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>
-                          À : Client
+                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1,  }}>
+                          Acheteur
                         </Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                        <Typography variant="body2" >
                           {factureSelectionnee?.client}
                         </Typography>
                         <Typography variant="body2">
@@ -965,13 +963,13 @@ const FacturesVenteIxfacture = () => {
                     <TableContainer sx={{ mb: 3 }}>
                       <Table>
                         <TableHead>
-                          <TableRow sx={{ bgcolor: 'primary.main' }}>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Description</TableCell>
-                            <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>Qté</TableCell>
-                            <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>Unité</TableCell>
-                            <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>Prix unit.</TableCell>
-                            <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>TVA</TableCell>
-                            <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>Montant HT</TableCell>
+                          <TableRow >
+                            <TableCell >Description</TableCell>
+                            <TableCell align="right" >Qté</TableCell>
+                            <TableCell align="right" >Unité</TableCell>
+                            <TableCell align="right" >Prix unit.</TableCell>
+                            <TableCell align="right" >TVA</TableCell>
+                            <TableCell align="right" >Montant HT</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
@@ -990,7 +988,7 @@ const FacturesVenteIxfacture = () => {
                     </TableContainer>
 
                     {/* Pied de facture avec totaux */}
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2, borderTop: 1, borderColor: 'divider' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2, borderColor: 'divider' }}>
                       <Box sx={{ minWidth: 300 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                           <Typography variant="body2">Total HT :</Typography>
@@ -1004,8 +1002,8 @@ const FacturesVenteIxfacture = () => {
                             {formaterMontant(factureSelectionnee?.montantTVA || 0)}
                           </Typography>
                         </Box>
-                        <Divider sx={{ my: 1 }} />
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', bgcolor: 'primary.light', p: 1, borderRadius: 1 }}>
+                        
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1, borderRadius: 1 }}>
                           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Total TTC :</Typography>
                           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                             {formaterMontant(factureSelectionnee?.montantTTC || 0)}
@@ -1029,10 +1027,10 @@ const FacturesVenteIxfacture = () => {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   {/* Origine de la facture */}
                   <Paper elevation={0} sx={{ p: 2 }}>
-                    <Typography variant="h6" gutterBottom>
+                    <Typography color="primary" variant="h6" gutterBottom>
                       Origine de la facture
                     </Typography>
-                    <Divider sx={{ mb: 2 }} />
+                    
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                       <Typography variant="body2" color="text.secondary">
                         Cette facture a été créée par :
@@ -1044,19 +1042,15 @@ const FacturesVenteIxfacture = () => {
                         variant="outlined"
                       />
                     </Box>
-                    <Alert severity="info" sx={{ mt: 2 }}>
-                      {factureSelectionnee?.origine === 'Saisie manuelle' && 'Cette facture a été créée manuellement dans l\'interface iXFacture.'}
-                      {factureSelectionnee?.origine === 'Import manuel' && 'Cette facture a été importée dans le système à partir d\'un fichier.'}
-                      {factureSelectionnee?.origine === 'API' && 'Cette facture a été créée automatiquement via l\'API iXFacture.'}
-                    </Alert>
+
                   </Paper>
 
                   {/* Destination de la facture */}
                   <Paper elevation={0} sx={{ p: 2 }}>
-                    <Typography variant="h6" gutterBottom>
+                    <Typography color="primary" variant="h6" gutterBottom>
                       Destination de la facture
                     </Typography>
-                    <Divider sx={{ mb: 2 }} />
+                    
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                       <Typography variant="body2" color="text.secondary">
                         Cette facture est envoyée vers :
@@ -1067,25 +1061,23 @@ const FacturesVenteIxfacture = () => {
                         size="medium"
                       />
                     </Box>
-                    <Alert severity={factureSelectionnee?.destination === 'PA' ? 'success' : 'info'} sx={{ mt: 2 }}>
-                      {factureSelectionnee?.destination === 'PA' && 'Cette facture sera transmise via une Plateforme Agréée et bénéficiera du suivi de statuts.'}
-                      {factureSelectionnee?.destination === 'CPP' && 'Cette facture sera transmise directement vers Chorus Pro Portal.'}
-                    </Alert>
+
                   </Paper>
 
                   {/* Nature de la facture */}
                   <Paper elevation={0} sx={{ p: 2 }}>
-                    <Typography variant="h6" gutterBottom>
+                    <Typography color="primary" variant="h6" gutterBottom>
                       Nature de la facture
                     </Typography>
-                    <Divider sx={{ mb: 2 }} />
+                    
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                       <Typography variant="body2" color="text.secondary">
                         Cette facture a été routée vers la nature :
                       </Typography>
                       <Chip
                         label={factureSelectionnee?.nature}
-                        color="secondary"
+                        color="default"
+                        variant="outlined"
                         size="medium"
                       />
                     </Box>
@@ -1099,15 +1091,15 @@ const FacturesVenteIxfacture = () => {
                     <Typography variant="h6" gutterBottom>
                       Historique de la facture
                     </Typography>
-                    <Divider sx={{ mb: 2 }} />
+                    
                     <TableContainer>
                       <Table size="small">
                         <TableHead>
                           <TableRow>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Date et heure</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Utilisateur</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Action</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Détail de l'action</TableCell>
+                            <TableCell >Date et heure</TableCell>
+                            <TableCell >Utilisateur</TableCell>
+                            <TableCell >Action</TableCell>
+                            <TableCell >Détail de l'action</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
@@ -1118,7 +1110,7 @@ const FacturesVenteIxfacture = () => {
                               </TableCell>
                               <TableCell>
                                 <Box>
-                                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                  <Typography variant="body2" >
                                     {evenement.utilisateur}
                                   </Typography>
                                   {evenement.adresseIp && (
@@ -1161,10 +1153,10 @@ const FacturesVenteIxfacture = () => {
           <Box sx={{ flex: '0 0 33.333%', display: 'flex', flexDirection: 'column', overflow: 'auto', p: 3, gap: 3 }}>
             {/* Pièces jointes */}
             <Paper elevation={0} sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
+              <Typography color="primary" variant="h6" gutterBottom>
                 Pièces jointes
               </Typography>
-              <Divider sx={{ mb: 2 }} />
+              
               <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 2 }}>
                 Pas de pièces jointes
               </Typography>
@@ -1172,10 +1164,10 @@ const FacturesVenteIxfacture = () => {
 
             {/* Métadonnées */}
             <Paper elevation={0} sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
+              <Typography color="primary" variant="h6" gutterBottom>
                 Métadonnées supplémentaires
               </Typography>
-              <Divider sx={{ mb: 2 }} />
+              
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {metadonnees.map((meta) => (
                   <Box key={meta.id}>
@@ -1243,7 +1235,7 @@ const FacturesVenteIxfacture = () => {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 2 }}>
             {/* Section 1: Identification */}
             <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Identification</Typography>
+              <Typography sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Identification</Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <TextField
                   label="Numéro de facture"
@@ -1279,7 +1271,7 @@ const FacturesVenteIxfacture = () => {
 
             {/* Section 2: Client */}
             <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Client</Typography>
+              <Typography sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Client</Typography>
               <TextField
                 label="Nom du client"
                 value={critereRecherche.client}
@@ -1294,7 +1286,7 @@ const FacturesVenteIxfacture = () => {
 
             {/* Section 3: Dates */}
             <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Période d'émission</Typography>
+              <Typography sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Période d'émission</Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <TextField
                   label="Date de début"
@@ -1321,7 +1313,7 @@ const FacturesVenteIxfacture = () => {
 
             {/* Section 4: Montants */}
             <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Montants (TTC)</Typography>
+              <Typography sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Montants (TTC)</Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <TextField
                   label="Montant minimum"
@@ -1354,7 +1346,7 @@ const FacturesVenteIxfacture = () => {
 
             {/* Section 5: Origine et Destination */}
             <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Origine et Destination</Typography>
+              <Typography sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Origine et Destination</Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <TextField
                   label="Origine"

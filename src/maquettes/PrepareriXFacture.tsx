@@ -479,13 +479,14 @@ const PrepareriXFacture = () => {
           </DialogActions>
         </Dialog>
 
+        {/* Modale Rechercher */}
         <Dialog open={modaleRechercheOuverte} onClose={fermerModaleRecherche} maxWidth="md" fullWidth>
           <DialogTitle>Recherche avancée de factures</DialogTitle>
           <DialogContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 2 }}>
               {/* Section 1: Type de facture */}
               <Box>
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Type de facture</Typography>
+                <Typography  sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Type de facture</Typography>
                 <TextField
                   label="Type"
                   select
@@ -504,7 +505,7 @@ const PrepareriXFacture = () => {
 
               {/* Section 2: Identification */}
               <Box>
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Identification</Typography>
+                <Typography  sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Identification</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                   <TextField
                     label="Numéro de facture"
@@ -540,7 +541,7 @@ const PrepareriXFacture = () => {
 
               {/* Section 3: Parties */}
               <Box>
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Parties (Vendeur / Acheteur)</Typography>
+                <Typography  sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Parties (Vendeur / Acheteur)</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                   <TextField
                     label="Vendeur"
@@ -565,7 +566,7 @@ const PrepareriXFacture = () => {
 
               {/* Section 4: Dates */}
               <Box>
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Période d'émission</Typography>
+                <Typography  sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Période d'émission</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                   <TextField
                     label="Date de début"
@@ -592,7 +593,7 @@ const PrepareriXFacture = () => {
 
               {/* Section 5: Montants */}
               <Box>
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Montants (TTC)</Typography>
+                <Typography  sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Montants (TTC)</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                   <TextField
                     label="Montant minimum"
@@ -625,7 +626,7 @@ const PrepareriXFacture = () => {
 
               {/* Section 6: Devise et Mode */}
               <Box>
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Devise et Mode de facturation</Typography>
+                <Typography  sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Devise et Mode de facturation</Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                   <TextField
                     label="Devise"

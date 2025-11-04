@@ -956,7 +956,7 @@ const FacturesAchatiXfacture = () => {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   {/* Informations du fournisseur */}
                   <Paper elevation={0} sx={{ p: 2 }}>
-                    <Typography variant="h6" gutterBottom>
+                    <Typography color="primary" variant="h6" gutterBottom>
                       Informations du fournisseur
                     </Typography>
                     <Box sx={{ display: 'grid', mb:2, gridTemplateColumns: '1fr 1fr', gap: 2 }}>
@@ -984,7 +984,7 @@ const FacturesAchatiXfacture = () => {
 
                   {/* Informations générales de la facture */}
 
-                    <Typography variant="h6" gutterBottom>
+                    <Typography color="primary" variant="h6" gutterBottom>
                       Informations de la facture
                     </Typography>
                     <Box sx={{ display: 'grid',mb:2, gridTemplateColumns: '1fr 1fr', gap: 2 }}>
@@ -1012,12 +1012,12 @@ const FacturesAchatiXfacture = () => {
                   {/* Lignes de facturation */}
                   {factureSelectionnee?.lignes && factureSelectionnee.lignes.length > 0 && (
                     <>
-                      <Typography variant="h6" gutterBottom>
+                      <Typography color="primary" variant="h6" gutterBottom>
                         Lignes de facturation ({factureSelectionnee.lignes.length})
                       </Typography>
                       
                       <TableContainer>
-                        <Table size="small">
+                        <Table>
                           <TableHead>
                             <TableRow>
                               <TableCell>Description</TableCell>
@@ -1075,7 +1075,7 @@ const FacturesAchatiXfacture = () => {
                     {/* En-tête de la facture */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4, pb: 3, borderBottom: 2, borderColor: 'primary.main' }}>
                       <Box>
-                        <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 1 }}>
+                        <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
                           FACTURE
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
@@ -1095,7 +1095,7 @@ const FacturesAchatiXfacture = () => {
                     {/* Informations vendeur et acheteur */}
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, mb: 4 }}>
                       <Box>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
                           Fournisseur
                         </Typography>
                         <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
@@ -1119,7 +1119,7 @@ const FacturesAchatiXfacture = () => {
                         )}
                       </Box>
                       <Box>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
                           Client
                         </Typography>
                         <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
@@ -1148,12 +1148,12 @@ const FacturesAchatiXfacture = () => {
                     <TableContainer sx={{ mb: 3 }}>
                       <Table>
                         <TableHead>
-                          <TableRow sx={{ bgcolor: 'primary.main' }}>
-                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Description</TableCell>
-                            <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>Qté</TableCell>
-                            <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>Prix unit.</TableCell>
-                            <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>TVA</TableCell>
-                            <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>Montant HT</TableCell>
+                          <TableRow >
+                            <TableCell sx={{  fontWeight: 'bold' }}>Description</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 'bold' }}>Qté</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 'bold' }}>Prix unit.</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 'bold' }}>TVA</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 'bold' }}>Montant HT</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
@@ -1171,7 +1171,7 @@ const FacturesAchatiXfacture = () => {
                     </TableContainer>
 
                     {/* Pied de facture avec totaux */}
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2, borderTop: 1, borderColor: 'divider' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 2 }}>
                       <Box sx={{ minWidth: 300 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                           <Typography variant="body2">Total HT :</Typography>
@@ -1186,7 +1186,7 @@ const FacturesAchatiXfacture = () => {
                           </Typography>
                         </Box>
                         <Divider sx={{ my: 1 }} />
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', bgcolor: 'primary.light', p: 1, borderRadius: 1 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 1, borderRadius: 1 }}>
                           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Total TTC :</Typography>
                           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                             {formaterMontant(factureSelectionnee?.totaux?.montantTotalTTC || 0)}
@@ -1194,7 +1194,7 @@ const FacturesAchatiXfacture = () => {
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
                           <Typography variant="body2" sx={{ fontWeight: 'bold' }}>Montant dû :</Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                             {formaterMontant(factureSelectionnee?.totaux?.montantDu || 0)}
                           </Typography>
                         </Box>
@@ -1216,10 +1216,10 @@ const FacturesAchatiXfacture = () => {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   {/* Origine de la facture */}
                   <Paper elevation={0} sx={{ p: 2 }}>
-                    <Typography variant="h6" gutterBottom>
+                    <Typography color="primary" variant="h6" gutterBottom>
                       Origine de la facture
                     </Typography>
-                    <Divider sx={{ mb: 2 }} />
+
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                       <Typography variant="body2" color="text.secondary">
                         Cette facture provient de :
@@ -1240,17 +1240,18 @@ const FacturesAchatiXfacture = () => {
 
                   {/* Nature de la facture */}
                   <Paper elevation={0} sx={{ p: 2 }}>
-                    <Typography variant="h6" gutterBottom>
+                    <Typography color="primary" variant="h6" gutterBottom>
                       Nature de la facture
                     </Typography>
-                    <Divider sx={{ mb: 2 }} />
+                    
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                       <Typography variant="body2" color="text.secondary">
                         Cette facture a été routée vers la nature :
                       </Typography>
                       <Chip
                         label={factureSelectionnee?.nature}
-                        color="secondary"
+                        variant="outlined"
+                        color="default"
                         size="medium"
                       />
                     </Box>
@@ -1261,18 +1262,18 @@ const FacturesAchatiXfacture = () => {
 
                   {/* Historique de la facture */}
                   <Paper elevation={0} sx={{ p: 2 }}>
-                    <Typography variant="h6" gutterBottom>
+                    <Typography color="primary" variant="h6" gutterBottom>
                       Historique de la facture
                     </Typography>
-                    <Divider sx={{ mb: 2 }} />
+                    
                     <TableContainer>
                       <Table size="small">
                         <TableHead>
                           <TableRow>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Date et heure</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Utilisateur</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Action</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Détail de l'action</TableCell>
+                            <TableCell >Date et heure</TableCell>
+                            <TableCell >Utilisateur</TableCell>
+                            <TableCell >Action</TableCell>
+                            <TableCell >Détail de l'action</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
@@ -1283,7 +1284,7 @@ const FacturesAchatiXfacture = () => {
                               </TableCell>
                               <TableCell>
                                 <Box>
-                                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                  <Typography variant="body2" >
                                     {evenement.utilisateur}
                                   </Typography>
                                   {evenement.adresseIp && (
@@ -1326,10 +1327,9 @@ const FacturesAchatiXfacture = () => {
           <Box sx={{ flex: '0 0 33.333%', display: 'flex', flexDirection: 'column', overflow: 'auto', p: 3, gap: 3 }}>
             {/* Pièces jointes */}
             <Paper elevation={0} sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
+              <Typography color="primary" variant="h6" gutterBottom>
                 Pièces jointes
               </Typography>
-              <Divider sx={{ mb: 2 }} />
               <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 2 }}>
                 Pas de pièces jointes
               </Typography>
@@ -1337,10 +1337,9 @@ const FacturesAchatiXfacture = () => {
 
             {/* Métadonnées */}
             <Paper elevation={0} sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>
+              <Typography color="primary" variant="h6" gutterBottom>
                 Métadonnées supplémentaires
               </Typography>
-              <Divider sx={{ mb: 2 }} />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {metadonnees.map((meta) => (
                   <Box key={meta.id}>
@@ -1408,7 +1407,7 @@ const FacturesAchatiXfacture = () => {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 2 }}>
             {/* Section 1: Identification */}
             <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Identification</Typography>
+              <Typography sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Identification</Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <TextField
                   label="Numéro de facture"
@@ -1444,7 +1443,7 @@ const FacturesAchatiXfacture = () => {
 
             {/* Section 2: Fournisseur */}
             <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Fournisseur</Typography>
+              <Typography sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Fournisseur</Typography>
               <TextField
                 label="Nom du fournisseur"
                 value={critereRecherche.fournisseur}
@@ -1459,7 +1458,7 @@ const FacturesAchatiXfacture = () => {
 
             {/* Section 3: Dates */}
             <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Période de réception</Typography>
+              <Typography sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Période de réception</Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <TextField
                   label="Date de début"
@@ -1486,7 +1485,7 @@ const FacturesAchatiXfacture = () => {
 
             {/* Section 4: Montants */}
             <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Montants (TTC)</Typography>
+              <Typography sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Montants (TTC)</Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <TextField
                   label="Montant minimum"
@@ -1519,7 +1518,7 @@ const FacturesAchatiXfacture = () => {
 
             {/* Section 5: Origine */}
             <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Origine</Typography>
+              <Typography sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Origine</Typography>
               <TextField
                 label="Origine de la facture"
                 select
