@@ -37,15 +37,31 @@ import {
   ViewColumn as ViewColumnIcon,
   RestartAlt as RestartAltIcon,
   Clear as ClearIcon,
+  CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
 import UtilisateurIxBus from '../templates/UtilisateurIxBus';
 
-// Types de statuts de facture de vente (PA d'émission)
-type StatutTechnique = 'Rejetée' | 'Déposée';
+// Types de statuts de facture de vente
+// Inclut les statuts de la PA d'émission ET les statuts reçus de la PA de réception
+type StatutEmission =
+  | 'Rejetée' // Statut technique PA émission
+  | 'Déposée' // Statut technique PA émission
+  | 'Emise par la plateforme' // Statut métier PA émission
+  | 'Complétée' // Statut métier PA émission
+  | 'Encaissée'; // Statut métier PA émission
 
-type StatutMetier = 'Emise par la plateforme' | 'Complétée' | 'Encaissée';
+type StatutReception =
+  | 'Reçue de la plateforme' // Statut technique PA réception
+  | 'Mise à disposition' // Statut technique PA réception
+  | 'Prise en charge' // Statut métier PA réception
+  | 'Approuvée' // Statut métier PA réception
+  | 'Approuvée partiellement' // Statut métier PA réception
+  | 'En litige' // Statut métier PA réception
+  | 'Suspendue' // Statut métier PA réception
+  | 'Refusée' // Statut métier PA réception
+  | 'Paiement transmis'; // Statut métier PA réception
 
-type StatutFacture = StatutTechnique | StatutMetier;
+type StatutFacture = StatutEmission | StatutReception;
 
 // Type pour l'origine de la facture
 type OrigineFacture = 'PA' | 'Hors PA';
@@ -111,7 +127,9 @@ interface Colonne {
 }
 
 // Données fictives de factures de vente - Au minimum une facture par statut
+// Inclut les statuts de PA émission ET les statuts reçus de la PA réception
 const facturesVenteFictives: FactureVente[] = [
+  // Statuts de la PA d'émission
   {
     id: '1',
     numero: 'FV-2025-001',
@@ -187,6 +205,7 @@ const facturesVenteFictives: FactureVente[] = [
     origine: 'PA',
     nature: 'Factures_ERP2',
   },
+  // Statuts reçus de la PA de réception
   {
     id: '6',
     numero: 'FV-2025-006',
@@ -197,10 +216,130 @@ const facturesVenteFictives: FactureVente[] = [
     montantHT: 8900.00,
     montantTVA: 1780.00,
     montantTTC: 10680.00,
-    statut: 'Emise par la plateforme',
+    statut: 'Reçue de la plateforme',
     reference: 'CMD-VTE-150',
-    origine: 'Hors PA',
+    origine: 'PA',
     nature: 'Factures_General',
+  },
+  {
+    id: '7',
+    numero: 'FV-2025-007',
+    client: 'Collectivité Urbaine Centre',
+    type: 'Entité publique',
+    dateEmission: '2025-10-07',
+    dateEcheance: '2025-11-07',
+    montantHT: 15600.00,
+    montantTVA: 3120.00,
+    montantTTC: 18720.00,
+    statut: 'Mise à disposition',
+    reference: 'CMD-VTE-151',
+    origine: 'PA',
+    nature: 'Factures_ERP1',
+  },
+  {
+    id: '8',
+    numero: 'FV-2025-008',
+    client: 'Entreprise BTP Régionale',
+    type: 'Entreprise privée',
+    dateEmission: '2025-10-08',
+    dateEcheance: '2025-11-08',
+    montantHT: 9450.00,
+    montantTVA: 1890.00,
+    montantTTC: 11340.00,
+    statut: 'Prise en charge',
+    reference: 'CMD-VTE-152',
+    origine: 'PA',
+    nature: 'Factures_ERP2',
+  },
+  {
+    id: '9',
+    numero: 'FV-2025-009',
+    client: 'Services Logistiques Pro',
+    type: 'Entreprise privée',
+    dateEmission: '2025-10-09',
+    dateEcheance: '2025-11-09',
+    montantHT: 6780.00,
+    montantTVA: 1356.00,
+    montantTTC: 8136.00,
+    statut: 'Approuvée',
+    reference: 'CMD-VTE-153',
+    origine: 'PA',
+    nature: 'Factures_General',
+  },
+  {
+    id: '10',
+    numero: 'FV-2025-010',
+    client: 'Hôpital Régional Sud',
+    type: 'Entité publique',
+    dateEmission: '2025-10-10',
+    dateEcheance: '2025-11-10',
+    montantHT: 22300.00,
+    montantTVA: 4460.00,
+    montantTTC: 26760.00,
+    statut: 'Approuvée partiellement',
+    reference: 'CMD-VTE-154',
+    origine: 'PA',
+    nature: 'Factures_ERP1',
+  },
+  {
+    id: '11',
+    numero: 'FV-2025-011',
+    client: 'Commerce Alimentaire Plus',
+    type: 'Entreprise privée',
+    dateEmission: '2025-10-11',
+    dateEcheance: '2025-11-11',
+    montantHT: 3890.00,
+    montantTVA: 778.00,
+    montantTTC: 4668.00,
+    statut: 'En litige',
+    reference: 'CMD-VTE-155',
+    origine: 'PA',
+    nature: 'Factures_ERP2',
+  },
+  {
+    id: '12',
+    numero: 'FV-2025-012',
+    client: 'Mairie de Villeneuve',
+    type: 'Entité publique',
+    dateEmission: '2025-10-12',
+    dateEcheance: '2025-11-12',
+    montantHT: 11200.00,
+    montantTVA: 2240.00,
+    montantTTC: 13440.00,
+    statut: 'Suspendue',
+    reference: 'CMD-VTE-156',
+    origine: 'PA',
+    nature: 'Factures_General',
+  },
+  {
+    id: '13',
+    numero: 'FV-2025-013',
+    client: 'Industrie Mécanique SA',
+    type: 'Entreprise privée',
+    dateEmission: '2025-10-13',
+    dateEcheance: '2025-11-13',
+    montantHT: 2450.00,
+    montantTVA: 490.00,
+    montantTTC: 2940.00,
+    statut: 'Refusée',
+    reference: 'CMD-VTE-157',
+    origine: 'PA',
+    nature: 'Factures_ERP1',
+  },
+  {
+    id: '14',
+    numero: 'FV-2025-014',
+    client: 'Université Sciences Tech',
+    type: 'Entité publique',
+    dateEmission: '2025-10-14',
+    dateEcheance: '2025-11-14',
+    montantHT: 17800.00,
+    montantTVA: 3560.00,
+    montantTTC: 21360.00,
+    statut: 'Paiement transmis',
+    reference: 'CMD-VTE-158',
+    origine: 'PA',
+    nature: 'Factures_ERP2',
   },
 ];
 
@@ -225,10 +364,16 @@ const genererDetailAction = (action: string, typeAction: TypeAction, metadonneeA
   // Pour les statuts techniques
   if (typeAction === 'statut_technique') {
     switch (action) {
+      // Statuts PA émission
       case 'Rejetée':
         return 'La facture est rejetée par la plateforme (non conforme)';
       case 'Déposée':
         return 'La facture est prise en charge par la plateforme d\'émission';
+      // Statuts PA réception (reçus du système)
+      case 'Reçue de la plateforme':
+        return 'La facture est reçue par la plateforme de réception';
+      case 'Mise à disposition':
+        return 'La facture est mise à disposition par la plateforme de réception';
       default:
         return `Statut technique : ${action}`;
     }
@@ -237,12 +382,28 @@ const genererDetailAction = (action: string, typeAction: TypeAction, metadonneeA
   // Pour les statuts métiers
   if (typeAction === 'statut_metier' || typeAction === 'changement_statut_manuel' || typeAction === 'changement_statut_api') {
     switch (action) {
+      // Statuts PA émission
       case 'Emise par la plateforme':
         return 'La facture est envoyée à la plateforme de réception';
       case 'Complétée':
         return 'La facture est complétée suite à une suspension';
       case 'Encaissée':
         return 'Le paiement de la facture a été réceptionné';
+      // Statuts PA réception (reçus du système)
+      case 'Prise en charge':
+        return 'L\'acheteur a pris en charge la facture';
+      case 'Approuvée':
+        return 'L\'acheteur a approuvé la facture';
+      case 'Approuvée partiellement':
+        return 'L\'acheteur a approuvé partiellement la facture';
+      case 'En litige':
+        return 'L\'acheteur a mis la facture en litige';
+      case 'Suspendue':
+        return 'L\'acheteur a suspendu la facture';
+      case 'Refusée':
+        return 'L\'acheteur a refusé la facture';
+      case 'Paiement transmis':
+        return 'L\'acheteur a transmis le paiement de la facture';
       default:
         return `Changement de statut : ${action}`;
     }
@@ -282,7 +443,14 @@ const genererHistoriqueFacture = (facture: FactureVente): EvenementHistorique[] 
   const dateEmission = facture.dateEmission || '2025-10-01';
   const dateBase = `${dateEmission.substring(0, 4)}-${dateEmission.substring(5, 7)}-${dateEmission.substring(8, 10)}`;
 
-  // Toutes les factures commencent par "Déposée"
+  // Fonction utilitaire pour ajouter des jours à une date
+  const ajouterJours = (dateStr: string, jours: number): string => {
+    const date = new Date(dateStr);
+    date.setDate(date.getDate() + jours);
+    return date.toISOString().split('T')[0];
+  };
+
+  // Toutes les factures commencent par "Déposée" (statut technique, Système)
   historique.push({
     dateHeure: `${dateBase} 08:30:15`,
     utilisateur: 'Système',
@@ -303,7 +471,12 @@ const genererHistoriqueFacture = (facture: FactureVente): EvenementHistorique[] 
     return historique;
   }
 
-  // Sinon, on passe à "Emise par la plateforme"
+  // Si le statut actuel est "Déposée", on s'arrête après le dépôt
+  if (facture.statut === 'Déposée') {
+    return historique;
+  }
+
+  // Sinon, on passe à "Emise par la plateforme" (statut métier, Système)
   historique.push({
     dateHeure: `${dateBase} 08:32:45`,
     utilisateur: 'Système',
@@ -311,11 +484,6 @@ const genererHistoriqueFacture = (facture: FactureVente): EvenementHistorique[] 
     action: 'Emise par la plateforme',
     detailAction: genererDetailAction('Emise par la plateforme', 'statut_metier'),
   });
-
-  // Si le statut actuel est "Déposée", on a juste la déposition
-  if (facture.statut === 'Déposée') {
-    return historique;
-  }
 
   // Si le statut actuel est "Emise par la plateforme", on ajoute quelques actions
   if (facture.statut === 'Emise par la plateforme') {
@@ -340,7 +508,17 @@ const genererHistoriqueFacture = (facture: FactureVente): EvenementHistorique[] 
     return historique;
   }
 
-  // Ajouter une consultation pour les autres statuts
+  // Pour tous les autres statuts, ajouter des consultations et téléchargements
+  const dateJ1 = ajouterJours(dateBase, 1);
+  const dateJ2 = ajouterJours(dateBase, 2);
+  const dateJ3 = ajouterJours(dateBase, 3);
+  const dateJ5 = ajouterJours(dateBase, 5);
+  const dateJ7 = ajouterJours(dateBase, 7);
+  const dateJ10 = ajouterJours(dateBase, 10);
+  const dateJ20 = ajouterJours(dateBase, 20);
+  const dateJ25 = ajouterJours(dateBase, 25);
+
+  // Consultation initiale
   historique.push({
     dateHeure: `${dateBase} 10:15:32`,
     utilisateur: 'Marie Dubois',
@@ -350,37 +528,414 @@ const genererHistoriqueFacture = (facture: FactureVente): EvenementHistorique[] 
     detailAction: genererDetailAction('Consultation', 'consultation'),
   });
 
-  // Calculer la date du lendemain
-  const dateSuivante = new Date(dateBase);
-  dateSuivante.setDate(dateSuivante.getDate() + 1);
-  const dateJ1 = dateSuivante.toISOString().split('T')[0];
+  // Téléchargement PDF
+  historique.push({
+    dateHeure: `${dateBase} 10:18:45`,
+    utilisateur: 'Marie Dubois',
+    adresseIp: '192.168.1.55',
+    typeAction: 'telechargement',
+    action: 'PDF',
+    detailAction: genererDetailAction('PDF', 'telechargement'),
+  });
 
-  // Gestion des différents statuts métiers
+  // Gestion des statuts PA émission
+  if (facture.statut === 'Complétée') {
+    // Parcours : Emise → Suspendue (de la PA réception) → Complétée
+    historique.push({
+      dateHeure: `${dateJ1} 09:30:00`,
+      utilisateur: 'Système (PA réception)',
+      typeAction: 'statut_technique',
+      action: 'Reçue de la plateforme',
+      detailAction: genererDetailAction('Reçue de la plateforme', 'statut_technique'),
+    });
+
+    historique.push({
+      dateHeure: `${dateJ1} 09:32:15`,
+      utilisateur: 'Système (PA réception)',
+      typeAction: 'statut_technique',
+      action: 'Mise à disposition',
+      detailAction: genererDetailAction('Mise à disposition', 'statut_technique'),
+    });
+
+    historique.push({
+      dateHeure: `${dateJ2} 14:20:30`,
+      utilisateur: 'Système (PA réception)',
+      typeAction: 'statut_metier',
+      action: 'Prise en charge',
+      detailAction: genererDetailAction('Prise en charge', 'statut_metier'),
+    });
+
+    historique.push({
+      dateHeure: `${dateJ5} 11:45:12`,
+      utilisateur: 'Système (PA réception)',
+      typeAction: 'statut_metier',
+      action: 'Suspendue',
+      detailAction: genererDetailAction('Suspendue', 'statut_metier'),
+    });
+
+    // Consultation après suspension
+    historique.push({
+      dateHeure: `${dateJ5} 15:30:00`,
+      utilisateur: 'Pierre Martin',
+      adresseIp: '192.168.1.78',
+      typeAction: 'consultation',
+      action: 'Consultation',
+      detailAction: genererDetailAction('Consultation', 'consultation'),
+    });
+
+    // Ajout de métadonnée pour compléter
+    historique.push({
+      dateHeure: `${dateJ7} 09:15:00`,
+      utilisateur: 'Pierre Martin',
+      adresseIp: '192.168.1.78',
+      typeAction: 'metadonnee',
+      action: 'Code projet',
+      detailAction: genererDetailAction('Code projet', 'metadonnee', undefined, 'Projet B'),
+      metadonneeApres: 'Projet B',
+    });
+
+    // Complétée (statut métier, Système)
+    historique.push({
+      dateHeure: `${dateJ7} 09:45:12`,
+      utilisateur: 'Système',
+      typeAction: 'statut_metier',
+      action: 'Complétée',
+      detailAction: genererDetailAction('Complétée', 'statut_metier'),
+    });
+
+    return historique;
+  }
+
+  if (facture.statut === 'Encaissée') {
+    // Parcours complet : Emise → Reçue → Mise à disposition → Prise en charge → Approuvée → Paiement transmis → Encaissée
+    historique.push({
+      dateHeure: `${dateJ1} 09:30:00`,
+      utilisateur: 'Système (PA réception)',
+      typeAction: 'statut_technique',
+      action: 'Reçue de la plateforme',
+      detailAction: genererDetailAction('Reçue de la plateforme', 'statut_technique'),
+    });
+
+    historique.push({
+      dateHeure: `${dateJ1} 09:32:15`,
+      utilisateur: 'Système (PA réception)',
+      typeAction: 'statut_technique',
+      action: 'Mise à disposition',
+      detailAction: genererDetailAction('Mise à disposition', 'statut_technique'),
+    });
+
+    historique.push({
+      dateHeure: `${dateJ2} 14:20:30`,
+      utilisateur: 'Système (PA réception)',
+      typeAction: 'statut_metier',
+      action: 'Prise en charge',
+      detailAction: genererDetailAction('Prise en charge', 'statut_metier'),
+    });
+
+    // Consultation intermédiaire
+    historique.push({
+      dateHeure: `${dateJ3} 10:30:00`,
+      utilisateur: 'Marie Dubois',
+      adresseIp: '192.168.1.55',
+      typeAction: 'consultation',
+      action: 'Consultation',
+      detailAction: genererDetailAction('Consultation', 'consultation'),
+    });
+
+    historique.push({
+      dateHeure: `${dateJ5} 11:45:12`,
+      utilisateur: 'Système (PA réception)',
+      typeAction: 'statut_metier',
+      action: 'Approuvée',
+      detailAction: genererDetailAction('Approuvée', 'statut_metier'),
+    });
+
+    historique.push({
+      dateHeure: `${dateJ20} 16:30:00`,
+      utilisateur: 'Système (PA réception)',
+      typeAction: 'statut_metier',
+      action: 'Paiement transmis',
+      detailAction: genererDetailAction('Paiement transmis', 'statut_metier'),
+    });
+
+    historique.push({
+      dateHeure: `${dateJ25} 14:32:08`,
+      utilisateur: 'Système',
+      typeAction: 'statut_metier',
+      action: 'Encaissée',
+      detailAction: genererDetailAction('Encaissée', 'statut_metier'),
+    });
+
+    return historique;
+  }
+
+  // Gestion des statuts PA réception (reçus du système)
+  // Tous ces statuts viennent après "Reçue de la plateforme" et "Mise à disposition"
+
+  historique.push({
+    dateHeure: `${dateJ1} 09:30:00`,
+    utilisateur: 'Système (PA réception)',
+    typeAction: 'statut_technique',
+    action: 'Reçue de la plateforme',
+    detailAction: genererDetailAction('Reçue de la plateforme', 'statut_technique'),
+  });
+
+  if (facture.statut === 'Reçue de la plateforme') {
+    return historique;
+  }
+
+  historique.push({
+    dateHeure: `${dateJ1} 09:32:15`,
+    utilisateur: 'Système (PA réception)',
+    typeAction: 'statut_technique',
+    action: 'Mise à disposition',
+    detailAction: genererDetailAction('Mise à disposition', 'statut_technique'),
+  });
+
+  if (facture.statut === 'Mise à disposition') {
+    // Ajouter une consultation
+    historique.push({
+      dateHeure: `${dateJ1} 15:20:00`,
+      utilisateur: 'Pierre Martin',
+      adresseIp: '192.168.1.78',
+      typeAction: 'consultation',
+      action: 'Consultation',
+      detailAction: genererDetailAction('Consultation', 'consultation'),
+    });
+    return historique;
+  }
+
+  // Prise en charge (statut métier PA réception)
+  historique.push({
+    dateHeure: `${dateJ2} 14:20:30`,
+    utilisateur: 'Système (PA réception)',
+    typeAction: 'statut_metier',
+    action: 'Prise en charge',
+    detailAction: genererDetailAction('Prise en charge', 'statut_metier'),
+  });
+
+  if (facture.statut === 'Prise en charge') {
+    // Ajouter consultation et téléchargement
+    historique.push({
+      dateHeure: `${dateJ2} 16:45:00`,
+      utilisateur: 'Marie Dubois',
+      adresseIp: '192.168.1.55',
+      typeAction: 'consultation',
+      action: 'Consultation',
+      detailAction: genererDetailAction('Consultation', 'consultation'),
+    });
+
+    historique.push({
+      dateHeure: `${dateJ3} 09:30:00`,
+      utilisateur: 'Pierre Martin',
+      adresseIp: '192.168.1.78',
+      typeAction: 'telechargement',
+      action: 'UBL',
+      detailAction: genererDetailAction('UBL', 'telechargement'),
+    });
+    return historique;
+  }
+
+  // Consultation intermédiaire
+  historique.push({
+    dateHeure: `${dateJ3} 10:30:00`,
+    utilisateur: 'Marie Dubois',
+    adresseIp: '192.168.1.55',
+    typeAction: 'consultation',
+    action: 'Consultation',
+    detailAction: genererDetailAction('Consultation', 'consultation'),
+  });
+
+  // Branches selon le statut final
   switch (facture.statut) {
-    case 'Complétée':
+    case 'Approuvée':
       historique.push({
-        dateHeure: `${dateJ1} 09:45:12`,
-        utilisateur: 'Système',
-        typeAction: 'changement_statut_manuel',
-        action: 'Complétée',
-        detailAction: genererDetailAction('Complétée', 'changement_statut_manuel'),
+        dateHeure: `${dateJ5} 11:45:12`,
+        utilisateur: 'Système (PA réception)',
+        typeAction: 'statut_metier',
+        action: 'Approuvée',
+        detailAction: genererDetailAction('Approuvée', 'statut_metier'),
+      });
+
+      historique.push({
+        dateHeure: `${dateJ7} 14:20:00`,
+        utilisateur: 'Pierre Martin',
+        adresseIp: '192.168.1.78',
+        typeAction: 'consultation',
+        action: 'Consultation',
+        detailAction: genererDetailAction('Consultation', 'consultation'),
       });
       break;
 
-    case 'Encaissée': {
-      const dateJ3 = new Date(dateSuivante);
-      dateJ3.setDate(dateJ3.getDate() + 25);
-      const dateJ3Str = dateJ3.toISOString().split('T')[0];
+    case 'Approuvée partiellement':
+      historique.push({
+        dateHeure: `${dateJ5} 11:45:12`,
+        utilisateur: 'Système (PA réception)',
+        typeAction: 'statut_metier',
+        action: 'Approuvée partiellement',
+        detailAction: genererDetailAction('Approuvée partiellement', 'statut_metier'),
+      });
 
       historique.push({
-        dateHeure: `${dateJ3Str} 14:32:08`,
-        utilisateur: 'Système',
-        typeAction: 'changement_statut_api',
-        action: 'Encaissée',
-        detailAction: genererDetailAction('Encaissée', 'changement_statut_api'),
+        dateHeure: `${dateJ5} 15:30:00`,
+        utilisateur: 'Marie Dubois',
+        adresseIp: '192.168.1.55',
+        typeAction: 'consultation',
+        action: 'Consultation',
+        detailAction: genererDetailAction('Consultation', 'consultation'),
+      });
+
+      historique.push({
+        dateHeure: `${dateJ7} 09:15:00`,
+        utilisateur: 'Pierre Martin',
+        adresseIp: '192.168.1.78',
+        typeAction: 'metadonnee',
+        action: 'Commentaire interne',
+        detailAction: genererDetailAction('Commentaire interne', 'metadonnee', undefined, 'Facture approuvée partiellement - montant contesté'),
+        metadonneeApres: 'Facture approuvée partiellement - montant contesté',
       });
       break;
-    }
+
+    case 'En litige':
+      historique.push({
+        dateHeure: `${dateJ5} 11:45:12`,
+        utilisateur: 'Système (PA réception)',
+        typeAction: 'statut_metier',
+        action: 'En litige',
+        detailAction: genererDetailAction('En litige', 'statut_metier'),
+      });
+
+      historique.push({
+        dateHeure: `${dateJ5} 14:00:00`,
+        utilisateur: 'Marie Dubois',
+        adresseIp: '192.168.1.55',
+        typeAction: 'consultation',
+        action: 'Consultation',
+        detailAction: genererDetailAction('Consultation', 'consultation'),
+      });
+
+      historique.push({
+        dateHeure: `${dateJ7} 10:30:00`,
+        utilisateur: 'Pierre Martin',
+        adresseIp: '192.168.1.78',
+        typeAction: 'metadonnee',
+        action: 'Commentaire interne',
+        detailAction: genererDetailAction('Commentaire interne', 'metadonnee', undefined, 'Contacter le client pour résoudre le litige'),
+        metadonneeApres: 'Contacter le client pour résoudre le litige',
+      });
+
+      historique.push({
+        dateHeure: `${dateJ10} 11:45:00`,
+        utilisateur: 'Marie Dubois',
+        adresseIp: '192.168.1.55',
+        typeAction: 'telechargement',
+        action: 'PDF',
+        detailAction: genererDetailAction('PDF', 'telechargement'),
+      });
+      break;
+
+    case 'Suspendue':
+      historique.push({
+        dateHeure: `${dateJ5} 11:45:12`,
+        utilisateur: 'Système (PA réception)',
+        typeAction: 'statut_metier',
+        action: 'Suspendue',
+        detailAction: genererDetailAction('Suspendue', 'statut_metier'),
+      });
+
+      historique.push({
+        dateHeure: `${dateJ5} 15:30:00`,
+        utilisateur: 'Pierre Martin',
+        adresseIp: '192.168.1.78',
+        typeAction: 'consultation',
+        action: 'Consultation',
+        detailAction: genererDetailAction('Consultation', 'consultation'),
+      });
+
+      historique.push({
+        dateHeure: `${dateJ7} 09:15:00`,
+        utilisateur: 'Pierre Martin',
+        adresseIp: '192.168.1.78',
+        typeAction: 'metadonnee',
+        action: 'Commentaire interne',
+        detailAction: genererDetailAction('Commentaire interne', 'metadonnee', undefined, 'En attente de documents complémentaires du client'),
+        metadonneeApres: 'En attente de documents complémentaires du client',
+      });
+      break;
+
+    case 'Refusée':
+      historique.push({
+        dateHeure: `${dateJ5} 11:45:12`,
+        utilisateur: 'Système (PA réception)',
+        typeAction: 'statut_metier',
+        action: 'Refusée',
+        detailAction: genererDetailAction('Refusée', 'statut_metier'),
+      });
+
+      historique.push({
+        dateHeure: `${dateJ5} 13:00:00`,
+        utilisateur: 'Marie Dubois',
+        adresseIp: '192.168.1.55',
+        typeAction: 'consultation',
+        action: 'Consultation',
+        detailAction: genererDetailAction('Consultation', 'consultation'),
+      });
+
+      historique.push({
+        dateHeure: `${dateJ5} 13:30:00`,
+        utilisateur: 'Marie Dubois',
+        adresseIp: '192.168.1.55',
+        typeAction: 'telechargement',
+        action: 'PDF',
+        detailAction: genererDetailAction('PDF', 'telechargement'),
+      });
+
+      historique.push({
+        dateHeure: `${dateJ7} 09:00:00`,
+        utilisateur: 'Pierre Martin',
+        adresseIp: '192.168.1.78',
+        typeAction: 'metadonnee',
+        action: 'Commentaire interne',
+        detailAction: genererDetailAction('Commentaire interne', 'metadonnee', undefined, 'Facture refusée par le client - vérifier les conditions'),
+        metadonneeApres: 'Facture refusée par le client - vérifier les conditions',
+      });
+      break;
+
+    case 'Paiement transmis':
+      historique.push({
+        dateHeure: `${dateJ5} 11:45:12`,
+        utilisateur: 'Système (PA réception)',
+        typeAction: 'statut_metier',
+        action: 'Approuvée',
+        detailAction: genererDetailAction('Approuvée', 'statut_metier'),
+      });
+
+      historique.push({
+        dateHeure: `${dateJ7} 14:20:00`,
+        utilisateur: 'Pierre Martin',
+        adresseIp: '192.168.1.78',
+        typeAction: 'consultation',
+        action: 'Consultation',
+        detailAction: genererDetailAction('Consultation', 'consultation'),
+      });
+
+      historique.push({
+        dateHeure: `${dateJ20} 16:30:00`,
+        utilisateur: 'Système (PA réception)',
+        typeAction: 'statut_metier',
+        action: 'Paiement transmis',
+        detailAction: genererDetailAction('Paiement transmis', 'statut_metier'),
+      });
+
+      historique.push({
+        dateHeure: `${dateJ20} 17:00:00`,
+        utilisateur: 'Marie Dubois',
+        adresseIp: '192.168.1.55',
+        typeAction: 'consultation',
+        action: 'Consultation',
+        detailAction: genererDetailAction('Consultation', 'consultation'),
+      });
+      break;
   }
 
   return historique;
@@ -428,6 +983,7 @@ const FacturesVenteIxfacture = () => {
   const [ongletActif, setOngletActif] = useState(0);
 
   // États pour les menus déroulants
+  const [anchorStatuer, setAnchorStatuer] = useState<null | HTMLElement>(null);
   const [anchorExporter, setAnchorExporter] = useState<null | HTMLElement>(null);
   const [anchorTelecharger, setAnchorTelecharger] = useState<null | HTMLElement>(null);
 
@@ -454,6 +1010,37 @@ const FacturesVenteIxfacture = () => {
   const [rechercheRapide, setRechercheRapide] = useState('');
 
   // Handlers pour les menus déroulants
+  const ouvrirMenuStatuer = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorStatuer(event.currentTarget);
+  };
+
+  const fermerMenuStatuer = () => {
+    setAnchorStatuer(null);
+  };
+
+  // Fonction pour passer au statut "Encaissée"
+  const changerStatutEncaissee = () => {
+    facturesSelectionnees.forEach((id) => {
+      setFactures((prev) =>
+        prev.map((f) => (f.id === id ? { ...f, statut: 'Encaissée' } : f))
+      );
+    });
+    setFacturesSelectionnees([]);
+    fermerMenuStatuer();
+  };
+
+  // Vérifier si au moins une facture peut être passée à "Encaissée"
+  // Seules les factures avec statut "Paiement transmis" peuvent passer à "Encaissée"
+  const peutPasserEncaissee = (): boolean => {
+    if (facturesSelectionnees.length === 0) return false;
+
+    const facturesSelectionneesList = factures.filter((f) =>
+      facturesSelectionnees.includes(f.id)
+    );
+
+    return facturesSelectionneesList.some((f) => f.statut === 'Paiement transmis');
+  };
+
   const ouvrirMenuExporter = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorExporter(event.currentTarget);
   };
@@ -604,18 +1191,40 @@ const FacturesVenteIxfacture = () => {
   // Obtenir la couleur du chip de statut
   const obtenirCouleurStatut = (statut: StatutFacture): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
     switch (statut) {
-      // Statuts techniques
+      // Statuts techniques PA émission
       case 'Rejetée':
         return 'error';
       case 'Déposée':
         return 'info';
 
-      // Statuts métiers
+      // Statuts métiers PA émission
       case 'Emise par la plateforme':
         return 'primary';
       case 'Complétée':
         return 'success';
       case 'Encaissée':
+        return 'success';
+
+      // Statuts techniques PA réception (reçus du système)
+      case 'Reçue de la plateforme':
+        return 'info';
+      case 'Mise à disposition':
+        return 'info';
+
+      // Statuts métiers PA réception (reçus du système)
+      case 'Prise en charge':
+        return 'primary';
+      case 'Approuvée':
+        return 'success';
+      case 'Approuvée partiellement':
+        return 'warning';
+      case 'En litige':
+        return 'warning';
+      case 'Suspendue':
+        return 'warning';
+      case 'Refusée':
+        return 'error';
+      case 'Paiement transmis':
         return 'success';
 
       default:
@@ -629,11 +1238,22 @@ const FacturesVenteIxfacture = () => {
     if (typeAction === 'statut_technique' || typeAction === 'statut_metier' || typeAction === 'changement_statut_manuel' || typeAction === 'changement_statut_api') {
       // Vérifier si l'action correspond à un statut connu
       const statutsPossibles: StatutFacture[] = [
+        // Statuts PA émission
         'Rejetée',
         'Déposée',
         'Emise par la plateforme',
         'Complétée',
         'Encaissée',
+        // Statuts PA réception
+        'Reçue de la plateforme',
+        'Mise à disposition',
+        'Prise en charge',
+        'Approuvée',
+        'Approuvée partiellement',
+        'En litige',
+        'Suspendue',
+        'Refusée',
+        'Paiement transmis',
       ];
 
       const statutTrouve = statutsPossibles.find(s => s === action);
@@ -669,6 +1289,29 @@ const FacturesVenteIxfacture = () => {
             flexWrap: 'wrap',
           }}
         >
+          <Tooltip title="Passer au statut Encaissée (uniquement pour les factures avec statut Paiement transmis)">
+            <span>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<CheckCircleIcon />}
+                onClick={ouvrirMenuStatuer}
+                disabled={!peutPasserEncaissee()}
+              >
+                Statuer
+              </Button>
+            </span>
+          </Tooltip>
+          <Menu
+            anchorEl={anchorStatuer}
+            open={Boolean(anchorStatuer)}
+            onClose={fermerMenuStatuer}
+          >
+            <MenuItem onClick={changerStatutEncaissee}>
+              Encaissée
+            </MenuItem>
+          </Menu>
+
           <Tooltip title="Rechercher des factures">
             <Button
               variant="outlined"
