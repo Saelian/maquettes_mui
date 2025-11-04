@@ -110,5 +110,7 @@ export default function EReporting() {
     </Box>
   );
 
-  return <UtilisateurIxBus>{contenu}</UtilisateurIxBus>;
+  return <UtilisateurIxBus titre="E-reporting">
+      {contenu}
+    </UtilisateurIxBus>;
 }

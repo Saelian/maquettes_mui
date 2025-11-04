@@ -64,7 +64,7 @@ export const modulesUtilisateurIxBus: Module[] = [
       { texte: 'Préparer', icone: <Add />, lien: '/preparer-ixfacture' },
       { texte: 'Factures d\'achat', icone: <FileDownload />, lien: '/factures-achat-ixfacture' },
       { texte: 'Factures de vente', icone: <FileUpload />, lien: '/factures-vente-ixfacture' },
-      { texte: 'E-reporting', icone: <AttachMoney /> },
+      { texte: 'E-reporting', icone: <AttachMoney />, lien: '/ereporting' },
       { texte: 'Annuaire', icone: <ManageSearch />, lien: '/consultation-annuaire-ixfacture' }
     ],
   },
