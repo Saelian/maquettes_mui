@@ -46,6 +46,7 @@ import { LigneFactureVente } from './FEVente/facturesVenteFictives';
 import { StatutEmission } from '../types/StatutEmission';
 import { StatutReception } from '../types/StatutReception';
 import { TypeAction } from '../types/TypeAction';
+import ModaleImportFactureCorrective from '../composants/ModaleImportFactureCorrective';
 
 type StatutFacture = StatutEmission | StatutReception;
 
@@ -112,8 +113,8 @@ interface Colonne {
 const colonnesParDefaut: Colonne[] = [
   { id: 'numero', label: 'N° Facture', visible: true, sortable: true },
   { id: 'client', label: 'Client', visible: true, sortable: true },
-  { id: 'type', label: 'Type', visible: true, sortable: true },
-  { id: 'dateEmission', label: 'Date émission', visible: true, sortable: true },
+  { id: 'type', label: 'Type', visible: false, sortable: true },
+  { id: 'dateEmission', label: 'Date émission', visible: false, sortable: true },
   { id: 'dateEcheance', label: 'Date échéance', visible: true, sortable: true },
   { id: 'origine', label: 'Origine', visible: true, sortable: true },
   { id: 'destination', label: 'Destination', visible: true, sortable: true },
@@ -121,8 +122,9 @@ const colonnesParDefaut: Colonne[] = [
   { id: 'montantHT', label: 'Montant HT', visible: true, sortable: true },
   { id: 'montantTVA', label: 'TVA', visible: false, sortable: true },
   { id: 'montantTTC', label: 'Montant TTC', visible: true, sortable: true },
-  { id: 'statut', label: 'Statut', visible: true, sortable: true },
   { id: 'reference', label: 'Référence', visible: true, sortable: true },
+  { id: 'statut', label: 'Statut', visible: true, sortable: true },
+
 ];
 
 // Fonction pour obtenir le numéro de règle de routage selon la nature
@@ -162,6 +164,7 @@ const FacturesVenteIxfacture = () => {
   const [modaleRechercheOuverte, setModaleRechercheOuverte] = useState(false);
   const [modaleColonnesOuverte, setModaleColonnesOuverte] = useState(false);
   const [modaleDetailOuverte, setModaleDetailOuverte] = useState(false);
+  const [modaleImportCorrectiveOuverte, setModaleImportCorrectiveOuverte] = useState(false);
 
   // État pour l'onglet actif dans la modale de détail
   const [ongletActif, setOngletActif] = useState(0);
@@ -223,6 +226,48 @@ const FacturesVenteIxfacture = () => {
     );
 
     return facturesSelectionneesList.some((f) => f.statut === 'Paiement transmis');
+  };
+
+  // Vérifier si au moins une facture peut être passée à "Complétée"
+  // Seules les factures avec statut "Suspendue" peuvent passer à "Complétée"
+  const peutPasserCompletee = (): boolean => {
+    if (facturesSelectionnees.length === 0) return false;
+
+    const facturesSelectionneesList = factures.filter((f) =>
+      facturesSelectionnees.includes(f.id)
+    );
+
+    return facturesSelectionneesList.some((f) => f.statut === 'Suspendue');
+  };
+
+  // Vérifier si le bouton "Statuer" doit être activé
+  const peutStatuer = (): boolean => {
+    return peutPasserEncaissee() || peutPasserCompletee();
+  };
+
+  // Fonction pour ouvrir la modale d'import de facture corrective
+  const ouvrirModaleImportCorrective = () => {
+    fermerMenuStatuer();
+    setModaleImportCorrectiveOuverte(true);
+  };
+
+  const fermerModaleImportCorrective = () => {
+    setModaleImportCorrectiveOuverte(false);
+  };
+
+  // Fonction pour gérer l'import d'une facture corrective et passer au statut "Complétée"
+  const handleImporterFactureCorrective = (fichier: File) => {
+    console.log('Import de la facture corrective:', fichier.name);
+
+    // Passer les factures sélectionnées au statut "Complétée"
+    facturesSelectionnees.forEach((id) => {
+      setFactures((prev) =>
+        prev.map((f) => (f.id === id && f.statut === 'Suspendue' ? { ...f, statut: 'Complétée' } : f))
+      );
+    });
+
+    setFacturesSelectionnees([]);
+    fermerModaleImportCorrective();
   };
 
   const ouvrirMenuExporter = (event: React.MouseEvent<HTMLElement>) => {
@@ -473,14 +518,14 @@ const FacturesVenteIxfacture = () => {
             flexWrap: 'wrap',
           }}
         >
-          <Tooltip title="Passer au statut Encaissée (uniquement pour les factures avec statut Paiement transmis)">
+          <Tooltip title="Changer le statut des factures sélectionnées">
             <span>
               <Button
                 variant="contained"
                 color="primary"
                 startIcon={<CheckCircleIcon />}
                 onClick={ouvrirMenuStatuer}
-                disabled={!peutPasserEncaissee()}
+                disabled={!peutStatuer()}
               >
                 Statuer
               </Button>
@@ -491,9 +536,16 @@ const FacturesVenteIxfacture = () => {
             open={Boolean(anchorStatuer)}
             onClose={fermerMenuStatuer}
           >
-            <MenuItem onClick={changerStatutEncaissee}>
-              Encaissée
-            </MenuItem>
+            {peutPasserEncaissee() && (
+              <MenuItem onClick={changerStatutEncaissee}>
+                Encaissée
+              </MenuItem>
+            )}
+            {peutPasserCompletee() && (
+              <MenuItem onClick={ouvrirModaleImportCorrective}>
+                Complétée
+              </MenuItem>
+            )}
           </Menu>
 
           <Tooltip title="Rechercher des factures">
@@ -1244,6 +1296,16 @@ const FacturesVenteIxfacture = () => {
           <Button onClick={fermerModaleColonnes}>Fermer</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Modale d'import de facture corrective */}
+      <ModaleImportFactureCorrective
+        ouvert={modaleImportCorrectiveOuverte}
+        onFermer={fermerModaleImportCorrective}
+        onImporter={handleImporterFactureCorrective}
+        numeroFacture={
+          factures.find((f) => facturesSelectionnees.includes(f.id) && f.statut === 'Suspendue')?.numero || ''
+        }
+      />
     </Box>
   );
 
