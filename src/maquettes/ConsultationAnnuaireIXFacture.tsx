@@ -22,17 +22,12 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Divider,
   List,
   ListItem,
   ListItemText,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
+
 } from '@mui/material';
-import {
-  ExpandMore as ExpandMoreIcon,
-} from '@mui/icons-material';
+
 import {
   Search as SearchIcon,
   Language as LanguageIcon,

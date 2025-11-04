@@ -115,7 +115,7 @@ export const GestionLignesFacture = ({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6">
+        <Typography variant="h6" color="primary">
           Lignes de facture ({lignes.length})
         </Typography>
         <Button
@@ -130,8 +130,8 @@ export const GestionLignesFacture = ({
 
       {/* Tableau des lignes existantes */}
       {lignes.length > 0 && (
-        <TableContainer component={Paper} sx={{ borderRadius: 0 }}>
-          <Table size="small">
+        <TableContainer sx={{ borderRadius: 0 }}>
+          <Table>
             <TableHead>
               <TableRow>
                 <TableCell>N°</TableCell>
@@ -149,7 +149,7 @@ export const GestionLignesFacture = ({
                 <TableRow key={index}>
                   <TableCell>{ligne.numeroLigne}</TableCell>
                   <TableCell>
-                    <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                    <Typography variant="body2" >
                       {ligne.article.nom}
                     </Typography>
                     {ligne.article.description && (
@@ -163,7 +163,7 @@ export const GestionLignesFacture = ({
                   <TableCell align="right">
                     {ligne.prixUnitaireNet.toFixed(2)} €
                   </TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                  <TableCell align="right" >
                     {ligne.montantNet.toFixed(2)} €
                   </TableCell>
                   <TableCell align="right">
@@ -318,11 +318,7 @@ export const GestionLignesFacture = ({
                   readOnly: true,
                   endAdornment: '€',
                 }}
-                sx={{
-                  '& .MuiInputBase-input': {
-                    fontWeight: 'bold',
-                  },
-                }}
+                
               />
             </Box>
 

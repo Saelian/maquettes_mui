@@ -425,7 +425,7 @@ const PrepareriXFacture = () => {
                   </Box>
                 )}
                 <Box>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2 }}>{factureActive.typeFacture === 'VENTE' ? 'Informations du client (Acheteur)' : 'Informations du fournisseur (Vendeur)'}</Typography>
+                  <Typography variant="h6" color='primary' sx={{  mb: 2 }}>{factureActive.typeFacture === 'VENTE' ? 'Informations du client (Acheteur)' : 'Informations du fournisseur (Vendeur)'}</Typography>
                   <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
                     <ChampFactureAvecCode codeBT={factureActive.typeFacture === 'VENTE' ? 'BT-44' : 'BT-27'} label="Nom" obligatoire textFieldProps={{ value: (factureActive.typeFacture === 'VENTE' ? factureActive.acheteur?.nom : factureActive.vendeur?.nom) || '', onChange: (e) => handlePartieChange(factureActive.typeFacture === 'VENTE' ? 'acheteur' : 'vendeur', 'nom', e.target.value) }} />
                     <ChampFactureAvecCode codeBT={factureActive.typeFacture === 'VENTE' ? 'BT-46' : 'BT-29'} label="SIRET" textFieldProps={{ value: (factureActive.typeFacture === 'VENTE' ? factureActive.acheteur?.siret : factureActive.vendeur?.siret) || '', onChange: (e) => handlePartieChange(factureActive.typeFacture === 'VENTE' ? 'acheteur' : 'vendeur', 'siret', e.target.value) }} />
@@ -436,8 +436,8 @@ const PrepareriXFacture = () => {
                   </Box>
                 </Box>
                 <Box>
-                  <Typography variant="h6" gutterBottom>Informations générales de la facture</Typography>
-                  <Divider sx={{ mb: 3 }} />
+                  <Typography variant="h6" color='primary' sx={{  mb: 2 }}>Informations générales de la facture</Typography>
+
                   <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
                     <ChampFactureAvecCode codeBT="BT-1" label="Numéro de facture" obligatoire textFieldProps={{ value: factureActive.numero || '', onChange: (e) => setFactureActive({ ...factureActive, numero: e.target.value }), error: !validerFormatIdentifiant(factureActive.numero || ''), helperText: factureActive.numero && !validerFormatIdentifiant(factureActive.numero) ? 'Format invalide' : '' }} />
                     <ChampFactureAvecCode codeBT="BT-2" label="Date d'émission" obligatoire textFieldProps={{ type: 'date', value: factureActive.dateEmission ? `${factureActive.dateEmission.substring(0, 4)}-${factureActive.dateEmission.substring(4, 6)}-${factureActive.dateEmission.substring(6, 8)}` : '', onChange: (e) => { const [y, m, d] = e.target.value.split('-'); setFactureActive({ ...factureActive, dateEmission: `${y}${m}${d}` }); }, InputLabelProps: { shrink: true } }} />
@@ -448,14 +448,14 @@ const PrepareriXFacture = () => {
                 </Box>
                 <GestionLignesFacture lignes={factureActive.lignes || []} onChange={handleLignesChange} />
                 <Box>
-                  <Typography variant="h6" gutterBottom>Récapitulatif</Typography>
-                  <Divider sx={{ mb: 3 }} />
-                  <Paper sx={{ p: 2, borderRadius: 0 }}>
+                  <Typography variant="h6" color='primary' sx={{  mb: 2 }}>Récapitulatif</Typography>
+
+                  
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}><Typography>Total HT</Typography><Typography sx={{ fontWeight: 'bold' }}>{formaterMontant(factureActive.totaux?.montantTotalHT || 0)}</Typography></Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}><Typography>Total TVA</Typography><Typography sx={{ fontWeight: 'bold' }}>{formaterMontant(factureActive.totaux?.montantTotalTVA || 0)}</Typography></Box>
                     <Divider sx={{ my: 1 }} />
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}><Typography variant="h6">Total TTC</Typography><Typography variant="h6" sx={{ fontWeight: 'bold' }}>{formaterMontant(factureActive.totaux?.montantTotalTTC || 0)}</Typography></Box>
-                  </Paper>
+                  
                 </Box>
               </Box>
             ) : (
