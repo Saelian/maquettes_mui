@@ -765,7 +765,7 @@ const ConsultationAnnuaireIXFacture = () => {
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     {/* Informations principales */}
                     <Paper variant="outlined" sx={{ p: 2 }}>
-                      <Typography variant="h6" gutterBottom>
+                      <Typography color="primary" variant="h6" gutterBottom>
                         Informations principales
                       </Typography>
                       <Divider sx={{ mb: 2 }} />
@@ -819,7 +819,7 @@ const ConsultationAnnuaireIXFacture = () => {
                     {/* Adresse postale */}
                     {elementSelectionne.postalAddress && (
                       <Paper variant="outlined" sx={{ p: 2 }}>
-                        <Typography variant="h6" gutterBottom>
+                        <Typography color="primary" variant="h6" gutterBottom>
                           Adresse postale
                         </Typography>
                         <Divider sx={{ mb: 2 }} />
@@ -857,7 +857,7 @@ const ConsultationAnnuaireIXFacture = () => {
                     {/* Unité légale (si établissement) */}
                     {elementSelectionne.legalUnit && (
                       <Paper variant="outlined" sx={{ p: 2 }}>
-                        <Typography variant="h6" gutterBottom>
+                        <Typography color="primary" variant="h6" gutterBottom>
                           Unité légale rattachée
                         </Typography>
                         <Divider sx={{ mb: 2 }} />
@@ -888,7 +888,7 @@ const ConsultationAnnuaireIXFacture = () => {
                     {elementSelectionne.identifiers && elementSelectionne.identifiers.length > 0 && (
                       <Accordion defaultExpanded>
                         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                          <Typography variant="h6">
+                          <Typography color="primary" variant="h6">
                             Identifiants ({elementSelectionne.identifiers.length})
                           </Typography>
                         </AccordionSummary>
@@ -939,7 +939,7 @@ const ConsultationAnnuaireIXFacture = () => {
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     {/* Informations principales */}
                     <Paper variant="outlined" sx={{ p: 2 }}>
-                      <Typography variant="h6" gutterBottom>
+                      <Typography color="primary" variant="h6" gutterBottom>
                         Informations principales
                       </Typography>
                       <Divider sx={{ mb: 2 }} />
@@ -968,7 +968,7 @@ const ConsultationAnnuaireIXFacture = () => {
                       elementSelectionne.entity.contacts.length > 0 && (
                         <Accordion defaultExpanded>
                           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                            <Typography variant="h6">
+                            <Typography color="primary" variant="h6">
                               Contacts ({elementSelectionne.entity.contacts.length})
                             </Typography>
                           </AccordionSummary>
@@ -1009,7 +1009,7 @@ const ConsultationAnnuaireIXFacture = () => {
                       elementSelectionne.allowedDocuments.length > 0 && (
                         <Accordion defaultExpanded>
                           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                            <Typography variant="h6">
+                            <Typography color="primary" variant="h6">
                               Documents autorisés ({elementSelectionne.allowedDocuments.length})
                             </Typography>
                           </AccordionSummary>

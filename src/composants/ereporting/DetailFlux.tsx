@@ -68,7 +68,6 @@ function SectionInfo({ titre, children }: { titre: string; children: React.React
       <Typography variant="h6" gutterBottom color="primary">
         {titre}
       </Typography>
-      <Divider sx={{ mb: 2 }} />
       {children}
     </Box>
   );
@@ -80,10 +79,10 @@ function SectionInfo({ titre, children }: { titre: string; children: React.React
 function ChampInfo({ label, valeur }: { label: string; valeur: React.ReactNode }) {
   return (
     <Box sx={{ mb: 2, flex: { xs: '1 1 100%', md: '1 1 45%' } }}>
-      <Typography variant="body2" color="text.secondary">
+      <Typography  variant="body2" color="text.secondary">
         {label}
       </Typography>
-      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+      <Typography variant="body1">
         {valeur}
       </Typography>
     </Box>
