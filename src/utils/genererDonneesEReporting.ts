@@ -12,6 +12,9 @@ import type {
   FactureAvecPaiement,
   Paiement,
   RepartitionParTaux,
+  MontantsTotaux,
+  TransactionsB2C,
+  TransactionsAvecPaiement,
 } from '../types/ereporting';
 
 /**
@@ -39,22 +42,8 @@ function genererHorodatage(date: Date): string {
  * Génère un SIREN fictif
  */
 function genererSiren(): string {
-  return Math.floor(100000000 + Math.random() * 900000000).toString();
+  return "123456789";
 }
-
-/**
- * Liste de raisons sociales fictives
- */
-const raisonsSociales = [
-  'ACME Corporation France',
-  'TechnoSolutions SAS',
-  'Industries Modernes SARL',
-  'Commerce International SA',
-  'Services Numériques France',
-  'Distribution Europe',
-  'Logistique Transport Plus',
-  'Énergie Verte France',
-];
 
 /**
  * Génère des données racine communes à tous les flux
@@ -62,46 +51,48 @@ const raisonsSociales = [
 function genererDonneesRacine(
   typeFlux: TypeFlux,
   index: number,
-  date: Date
+  date: Date,
+  estDeclarationNonInitiale: boolean = false
 ): DonneesRacineFlux {
-  const typeTransmission = ['IN', 'CO', 'MO', 'RE'][
-    Math.floor(Math.random() * 4)
-  ] as 'IN' | 'CO' | 'MO' | 'RE';
+  // Majoritairement des déclarations initiales (IN)
+  // Seulement 2 déclarations rectificatives/correctives sur tout le jeu de données
+  const typeTransmission = estDeclarationNonInitiale
+    ? (['CO', 'RE'][Math.floor(Math.random() * 2)] as 'CO' | 'RE')
+    : 'IN';
 
-  const sirenEmetteur = genererSiren();
-  const sirenDeclarant = genererSiren();
+  // Même SIREN pour émetteur et déclarant
+  const siren = genererSiren();
 
   return {
     idTransmission: `TRANS-${typeFlux.replace('.', '')}-${date.getFullYear()}-${(index + 1).toString().padStart(5, '0')}`,
-    nomDocument: `Flux ${typeFlux} - ${raisonsSociales[index % raisonsSociales.length]}`,
+    nomDocument: `Flux ${typeFlux} - ACME Corporation France`,
     horodatage: {
       dateHeureChaine: genererHorodatage(date),
     },
     codeTypeTransmission: typeTransmission,
     references:
-      typeTransmission === 'MO' || typeTransmission === 'RE'
+      typeTransmission === 'CO' || typeTransmission === 'RE'
         ? {
             idTransmissionPrecedente: `TRANS-${typeFlux.replace('.', '')}-${date.getFullYear() - 1}-${(index + 1).toString().padStart(5, '0')}`,
-            typeTransmissionPrecedente: 'CO',
+            typeTransmissionPrecedente: 'IN',
           }
         : undefined,
     emetteur: {
-      id: sirenEmetteur,
+      id: siren,
       typeId: '0002',
-      raisonSociale: raisonsSociales[index % raisonsSociales.length],
+      raisonSociale: 'ACME Corporation France',
       codeRole: 'SE',
       adresseElectronique: {
-        uri: `emetteur.${sirenEmetteur}@cef-france.fr`,
+        uri: '0002:123456789',
       },
     },
     declarant: {
-      id: sirenDeclarant,
+      id: siren,
       typeId: '0002',
-      raisonSociale:
-        raisonsSociales[(index + 2) % raisonsSociales.length],
-      codeRole: 'BY',
+      raisonSociale: 'ACME Corporation France',
+      codeRole: 'SE',
       adresseElectronique: {
-        uri: `declarant.${sirenDeclarant}@cef-france.fr`,
+        uri: '0002:123456789',
       },
     },
   };
@@ -114,14 +105,24 @@ function genererFactureB2B(numeroFacture: string, dateBase: Date): FactureB2B {
   const dateEmission = new Date(dateBase);
   dateEmission.setDate(dateEmission.getDate() - Math.floor(Math.random() * 30));
 
-  const codesDevise = ['EUR', 'USD', 'GBP', 'CHF'];
   const typesFacture = ['380', '381', '384']; // Facture commerciale, Avoir, Facture rectificative
+
+  // Génération des montants
+  const montantHT = Math.floor(Math.random() * 50000) + 5000;
+  const montantTVA = Math.floor(montantHT * 0.2); // TVA à 20%
+
+  const montantsTotaux: MontantsTotaux = {
+    montantHT,
+    montantTVA,
+    deviseMontantTVA: 'EUR',
+  };
 
   return {
     numeroFacture,
     dateEmission: genererDateAAJJ(dateEmission),
     codeTypeFacture: typesFacture[Math.floor(Math.random() * typesFacture.length)],
-    codeDevise: codesDevise[Math.floor(Math.random() * codesDevise.length)],
+    codeDevise: 'EUR',
+    montantsTotaux,
   };
 }
 
@@ -196,6 +197,21 @@ function genererTransmissionTransactions(
     );
   }
 
+  // Flux 10.3 contient des transactions B2C agrégées
+  if (typeFlux === '10.3') {
+    const nombreTransactions = Math.floor(Math.random() * 500) + 100;
+    const montantTotalHT = Math.floor(Math.random() * 500000) + 50000;
+    const montantTotalTVA = Math.floor(montantTotalHT * 0.2); // TVA à 20%
+
+    const transactionsB2C: TransactionsB2C = {
+      montantTotalHT,
+      montantTotalTVA,
+      nombreTransactions,
+    };
+
+    transmission.transactionsB2C = transactionsB2C;
+  }
+
   return transmission;
 }
 
@@ -231,14 +247,36 @@ function genererTransmissionPaiements(
     );
   }
 
+  // Flux 10.4 contient des transactions B2C avec paiement
+  if (typeFlux === '10.4') {
+    const datePaiement = new Date(dateDebut);
+    datePaiement.setDate(datePaiement.getDate() + Math.floor(Math.random() * 20) + 5);
+
+    const paiement: Paiement = {
+      datePaiement: genererDateAAJJ(datePaiement),
+      repartitions: genererRepartitionsParTaux(),
+    };
+
+    const transactionsAvecPaiement: TransactionsAvecPaiement = {
+      paiement,
+    };
+
+    transmission.transactionsB2C = transactionsAvecPaiement;
+  }
+
   return transmission;
 }
 
 /**
  * Génère un flux e-reporting complet
  */
-function genererFlux(typeFlux: TypeFlux, index: number, date: Date): FluxEReporting {
-  const donneesRacine = genererDonneesRacine(typeFlux, index, date);
+function genererFlux(
+  typeFlux: TypeFlux,
+  index: number,
+  date: Date,
+  estDeclarationNonInitiale: boolean = false
+): FluxEReporting {
+  const donneesRacine = genererDonneesRacine(typeFlux, index, date, estDeclarationNonInitiale);
 
   const flux: FluxEReporting = {
     typeFlux,
@@ -266,13 +304,27 @@ export function genererFluxEReporting(nombreParType: number = 5): FluxEReporting
   const typesFlux: TypeFlux[] = ['10.1', '10.2', '10.3', '10.4'];
   const maintenant = new Date();
 
+  // Calcul du nombre total de flux qui seront générés
+  const nombreTotalFlux = typesFlux.length * nombreParType;
+
+  // On choisit 2 indices aléatoires pour les déclarations non-initiales
+  const indicesNonInitiaux = new Set<number>();
+  while (indicesNonInitiaux.size < 2 && indicesNonInitiaux.size < nombreTotalFlux) {
+    indicesNonInitiaux.add(Math.floor(Math.random() * nombreTotalFlux));
+  }
+
+  let indexGlobal = 0;
   typesFlux.forEach((typeFlux) => {
     for (let i = 0; i < nombreParType; i++) {
       // Génère des flux avec des dates décalées dans le passé
       const dateFlux = new Date(maintenant);
       dateFlux.setMonth(dateFlux.getMonth() - i);
 
-      fluxGeneres.push(genererFlux(typeFlux, i, dateFlux));
+      // Détermine si ce flux doit être une déclaration non-initiale
+      const estDeclarationNonInitiale = indicesNonInitiaux.has(indexGlobal);
+
+      fluxGeneres.push(genererFlux(typeFlux, i, dateFlux, estDeclarationNonInitiale));
+      indexGlobal++;
     }
   });
 

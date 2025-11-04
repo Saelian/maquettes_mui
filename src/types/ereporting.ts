@@ -93,6 +93,15 @@ export interface PeriodeTransmission {
 }
 
 /**
+ * Montants totaux de facture (Flux 10.1)
+ */
+export interface MontantsTotaux {
+  montantHT?: number; // TaxExclusiveAmount - Optionnel
+  montantTVA: number; // TaxAmount - Obligatoire
+  deviseMontantTVA: string; // Code devise pour le montant TVA
+}
+
+/**
  * Facture (Flux 10.1)
  */
 export interface FactureB2B {
@@ -100,6 +109,16 @@ export interface FactureB2B {
   dateEmission: string; // format: AAAAMMJJ
   codeTypeFacture: string; // UNTDID 1001
   codeDevise: string; // ISO 4217
+  montantsTotaux?: MontantsTotaux; // Groupe MonetaryTotal
+}
+
+/**
+ * Transactions B2C agrégées (Flux 10.3)
+ */
+export interface TransactionsB2C {
+  montantTotalHT: number; // TaxExclusiveAmount - Obligatoire
+  montantTotalTVA: number; // TaxTotal - Obligatoire
+  nombreTransactions: number; // TransactionsCount - Obligatoire
 }
 
 /**
@@ -108,6 +127,7 @@ export interface FactureB2B {
 export interface TransmissionTransactions {
   periode: PeriodeTransmission;
   factures?: FactureB2B[]; // Présent uniquement pour Flux 10.1
+  transactionsB2C?: TransactionsB2C; // Présent uniquement pour Flux 10.3
 }
 
 /**
@@ -137,11 +157,19 @@ export interface FactureAvecPaiement {
 }
 
 /**
+ * Transactions B2C avec paiement (Flux 10.4)
+ */
+export interface TransactionsAvecPaiement {
+  paiement: Paiement;
+}
+
+/**
  * Transmission de paiements (TB-3) - Flux 10.2 / 10.4
  */
 export interface TransmissionPaiements {
   periode: PeriodeTransmission;
   factures?: FactureAvecPaiement[]; // Présent uniquement pour Flux 10.2
+  transactionsB2C?: TransactionsAvecPaiement; // Présent uniquement pour Flux 10.4
 }
 
 /**

@@ -202,6 +202,8 @@ export default function DetailFlux({ flux, ouvert, onFermer }: DetailFluxProps) 
                         <TableCell>Date émission</TableCell>
                         <TableCell>Type facture</TableCell>
                         <TableCell>Devise</TableCell>
+                        <TableCell align="right">Montant HT</TableCell>
+                        <TableCell align="right">Montant TVA</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -215,6 +217,22 @@ export default function DetailFlux({ flux, ouvert, onFermer }: DetailFluxProps) 
                           <TableCell>
                             <Chip label={facture.codeDevise} size="small" variant="outlined" />
                           </TableCell>
+                          <TableCell align="right">
+                            {facture.montantsTotaux?.montantHT
+                              ? `${facture.montantsTotaux.montantHT.toLocaleString('fr-FR', {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })} €`
+                              : '-'}
+                          </TableCell>
+                          <TableCell align="right">
+                            {facture.montantsTotaux
+                              ? `${facture.montantsTotaux.montantTVA.toLocaleString('fr-FR', {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })} €`
+                              : '-'}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -223,11 +241,43 @@ export default function DetailFlux({ flux, ouvert, onFermer }: DetailFluxProps) 
               </Box>
             )}
 
-            {/* Flux 10.3 (transactions B2C) - Pas de factures détaillées */}
-            {typeFlux === '10.3' && (
-              <Alert severity="info" sx={{ mt: 2 }}>
-                Ce flux concerne des transactions B2C agrégées sur la période indiquée.
-              </Alert>
+            {/* Flux 10.3 (transactions B2C agrégées) */}
+            {transmissionTransactions.transactionsB2C && (
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Transactions B2C agrégées
+                </Typography>
+                <Paper variant="outlined" sx={{ p: 2 }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                    <ChampInfo
+                      label="Nombre de transactions"
+                      valeur={transmissionTransactions.transactionsB2C.nombreTransactions.toLocaleString(
+                        'fr-FR'
+                      )}
+                    />
+                    <ChampInfo
+                      label="Montant total HT"
+                      valeur={`${transmissionTransactions.transactionsB2C.montantTotalHT.toLocaleString(
+                        'fr-FR',
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }
+                      )} €`}
+                    />
+                    <ChampInfo
+                      label="Montant total TVA"
+                      valeur={`${transmissionTransactions.transactionsB2C.montantTotalTVA.toLocaleString(
+                        'fr-FR',
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }
+                      )} €`}
+                    />
+                  </Box>
+                </Paper>
+              </Box>
             )}
           </SectionInfo>
         )}
@@ -305,11 +355,56 @@ export default function DetailFlux({ flux, ouvert, onFermer }: DetailFluxProps) 
               </Box>
             )}
 
-            {/* Flux 10.4 (paiements B2C) - Pas de factures détaillées */}
-            {typeFlux === '10.4' && (
-              <Alert severity="info" sx={{ mt: 2 }}>
-                Ce flux concerne des paiements de transactions B2C agrégés sur la période indiquée.
-              </Alert>
+            {/* Flux 10.4 (paiements transactions B2C) */}
+            {transmissionPaiements.transactionsB2C && (
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Paiements de transactions B2C
+                </Typography>
+                <Paper variant="outlined" sx={{ p: 2 }}>
+                  <ChampInfo
+                    label="Date paiement"
+                    valeur={formaterDate(transmissionPaiements.transactionsB2C.paiement.datePaiement)}
+                  />
+                  <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mt: 2 }}>
+                    Répartition par taux :
+                  </Typography>
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Taux TVA</TableCell>
+                          <TableCell>Devise</TableCell>
+                          <TableCell align="right">Montant encaissé</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {transmissionPaiements.transactionsB2C.paiement.repartitions.map(
+                          (repartition, rIndex) => (
+                            <TableRow key={rIndex}>
+                              <TableCell>{repartition.taux.toFixed(2)} %</TableCell>
+                              <TableCell>
+                                <Chip
+                                  label={repartition.codeDevise || 'EUR'}
+                                  size="small"
+                                  variant="outlined"
+                                />
+                              </TableCell>
+                              <TableCell align="right">
+                                {repartition.montantEncaisse.toLocaleString('fr-FR', {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}{' '}
+                                €
+                              </TableCell>
+                            </TableRow>
+                          )
+                        )}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Paper>
+              </Box>
             )}
           </SectionInfo>
         )}
