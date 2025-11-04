@@ -1,0 +1,532 @@
+{
+  "document": {
+    "name": "eReporting Specification",
+    "version": "1.0",
+    "sections": [
+      {
+        "id": "TB-1",
+        "name": "Document transmission",
+        "path": "/ReportDocument",
+        "flux": "Flux 10 (racine)",
+        "groups": [
+          {
+            "id": "TT-1",
+            "name": "Id transmission",
+            "path": "/ReportDocument/Id",
+            "cardinality": "1..1",
+            "logicalType": "IDENTIFIANT",
+            "length": 50,
+            "businessDefinition": "Identifiant de la transmission généré par l'émetteur ou Identifiant de la transmission agrégée généré par le PPF et les PDP",
+            "businessRules": ["G8.05", "G1.104"],
+            "presentInB2B": true,
+            "presentInB2C": true
+          },
+          {
+            "id": "TT-2",
+            "name": "Nom document",
+            "path": "/ReportDocument/Name",
+            "cardinality": "0..1",
+            "logicalType": "TEXTE",
+            "length": 150,
+            "businessDefinition": "Nom du flux généré par l'émetteur",
+            "businessRules": [],
+            "presentInB2B": true,
+            "presentInB2C": true
+          },
+          {
+            "id": "TG-1",
+            "name": "Horodatage",
+            "path": "/ReportDocument/IssueDateTime",
+            "cardinality": "1..1",
+            "elements": [
+              {
+                "id": "TT-3",
+                "name": "Date-Heure",
+                "path": "/ReportDocument/IssueDateTime/DateTimeString",
+                "cardinality": "1..1",
+                "logicalType": "TEXTE",
+                "length": 14,
+                "businessDefinition": "Date et heure de création de la transmission. Les champs date-heure doivent être au format AAAAMMJJHHMMSS. Pour cela il faut renseigner la valeur de l'attribut @format = 204",
+                "valueFormat": "AAAAMMJJHHMMSS",
+                "businessRules": ["G7.06", "G7.40", "G7.43"],
+                "presentInB2B": true,
+                "presentInB2C": true
+              }
+            ]
+          },
+          {
+            "id": "TT-4",
+            "name": "Code type transmission",
+            "path": "/ReportDocument/TypeCode",
+            "cardinality": "1..1",
+            "logicalType": "CODE",
+            "length": 2,
+            "businessDefinition": "Type de transmission: 1/ Initiale (ne peut être utilisé que pour la première transmission de la période, non obligatoire); 2/ Complémentaire (par défaut); 3/ Corrective (requiert la référence à la transmission IN, CO ou MO à corriger); 4/ Rectificative (requiert la référence à la transmission agrégée, déja transmise à la DGFIP, à modifier)",
+            "valueList": ["IN", "CO", "MO", "RE"],
+            "businessRules": ["G8.01", "G8.02"],
+            "presentInB2B": true,
+            "presentInB2C": true
+          },
+          {
+            "id": "TG-2",
+            "name": "Références",
+            "path": "/ReportDocument/References",
+            "cardinality": "0..1",
+            "elements": [
+              {
+                "id": "TT-5",
+                "name": "Reference transmission précédente",
+                "path": "/ReportDocument/References/ReportId",
+                "cardinality": "1..1",
+                "logicalType": "IDENTIFIANT",
+                "length": 50,
+                "businessDefinition": "Identifiant de transmission précédente à corriger",
+                "businessRules": ["G8.02", "G1.104"],
+                "presentInB2B": true,
+                "presentInB2C": true
+              },
+              {
+                "id": "TT-6",
+                "name": "Type transmission précédente",
+                "path": "/ReportDocument/References/ReportId/@schemeId",
+                "cardinality": "1..1",
+                "logicalType": "CODE",
+                "length": 2,
+                "businessDefinition": "Les valeurs possibles pour le type de transmission précédente (TT-6) sont: IN: Initiale; CO: Complémentaire (par défaut); MO: Corrective (dans le cadre d'une seule transmission)",
+                "valueList": ["IN", "CO", "MO"],
+                "businessRules": ["G8.01", "G8.02"],
+                "presentInB2B": true,
+                "presentInB2C": true
+              }
+            ]
+          },
+          {
+            "id": "TG-3",
+            "name": "Emetteur document",
+            "path": "/ReportDocument/Sender",
+            "cardinality": "1..1",
+            "businessDefinition": "Identification de l'émetteur du document de transmission (le déclarant ou son OD) ou Identification de l'émetteur du document de transmission agrégée (PPF ou PDP)",
+            "elements": [
+              {
+                "id": "TT-8",
+                "name": "Id émetteur",
+                "path": "/ReportDocument/Sender/Id",
+                "cardinality": "1..1",
+                "logicalType": "IDENTIFIANT",
+                "length": 9,
+                "businessDefinition": "Identifiant de l'émetteur du document de transmission (flux)",
+                "businessRules": ["G6.22"],
+                "valueSpecification": "Si l'émetteur est une plateforme agréée (PDP), le matricule de la plateforme doit être renseigné (4 caractères). Si l'émetteur est un déclarant ou son mandataire, le numéro de SIREN est attendu (9 caractères).",
+                "presentInB2B": true,
+                "presentInB2C": true
+              },
+              {
+                "id": "TT-7",
+                "name": "Type Id émetteur",
+                "path": "/ReportDocument/Sender/Id/@schemeId",
+                "cardinality": "1..1",
+                "logicalType": "CODE",
+                "length": 4,
+                "businessDefinition": "Type d'identifiant",
+                "businessRules": ["G6.22"],
+                "valueSpecification": "Si l'émetteur est une plateforme agréée (PDP), le type Id émetteur est 0238. Si l'émetteur est un déclarant ou son mandataire, le type Id émetteur est 0002 (le numéro de SIREN est attendu)",
+                "presentInB2B": true,
+                "presentInB2C": true
+              },
+              {
+                "id": "TT-9",
+                "name": "Raison sociale",
+                "path": "/ReportDocument/Sender/Name",
+                "cardinality": "1..1",
+                "logicalType": "TEXTE",
+                "length": 99,
+                "businessDefinition": "Raison sociale de l'émetteur du document de transmission (flux)",
+                "businessRules": [],
+                "presentInB2B": true,
+                "presentInB2C": true
+              },
+              {
+                "id": "TT-10",
+                "name": "Code rôle",
+                "path": "/ReportDocument/Sender/RoleCode",
+                "cardinality": "1..1",
+                "logicalType": "CODE",
+                "length": 3,
+                "businessDefinition": "Le code rôle permet d'identifier le rôle de l'émetteur. La liste des codes rôles acceptés par le PPF est issue de la liste UNCL 3035",
+                "businessRules": ["G7.51"],
+                "valueSpecification": "Si l'émetteur est une plateforme agréée PDP, le code rôle est: WK. Sinon l'émetteur peut également avoir les codes rôles suivants: BY (Acheteur), SE (Vendeur ou son représentant fiscal), AB (Agent d'acheteur), SR (Agent de Vendeur)",
+                "presentInB2B": true,
+                "presentInB2C": true
+              },
+              {
+                "id": "TG-4",
+                "name": "Adresse électronique émetteur",
+                "path": "/ReportDocument/Sender/URIUniversalCommunication",
+                "cardinality": "0..1",
+                "elements": [
+                  {
+                    "id": "TT-11",
+                    "name": "Adresse électronique (réseau CEF)",
+                    "path": "/ReportDocument/Sender/URIUniversalCommunication/URIID",
+                    "cardinality": "1..1",
+                    "logicalType": "IDENTIFIANT",
+                    "length": 100,
+                    "businessDefinition": "",
+                    "businessRules": [],
+                    "presentInB2B": true,
+                    "presentInB2C": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "TG-5",
+            "name": "Déclarant",
+            "path": "/ReportDocument/Issuer",
+            "cardinality": "1..1",
+            "businessDefinition": "Identification du déclarant",
+            "elements": [
+              {
+                "id": "TT-13",
+                "name": "Id déclarant",
+                "path": "/ReportDocument/Issuer/Id",
+                "cardinality": "1..1",
+                "logicalType": "IDENTIFIANT",
+                "length": 9,
+                "businessDefinition": "Identifiant du déclarant",
+                "businessRules": ["G6.26"],
+                "valueSpecification": "Le SIREN du déclarant (id déclarant) est une donnée obligatoire (9 caractères)",
+                "presentInB2B": true,
+                "presentInB2C": true
+              },
+              {
+                "id": "TT-12",
+                "name": "Type Id déclarant",
+                "path": "/ReportDocument/Issuer/Id/@schemeId",
+                "cardinality": "1..1",
+                "logicalType": "CODE",
+                "length": 4,
+                "businessDefinition": "Type d'identifiant (aussi appelé qualifiant)",
+                "businessRules": ["G6.26"],
+                "valueSpecification": "Le type id déclarant relatif au SIREN est obligatoire et ne peut prendre comme valeur que 0002",
+                "presentInB2B": true,
+                "presentInB2C": true
+              },
+              {
+                "id": "TT-14",
+                "name": "Raison sociale",
+                "path": "/ReportDocument/Issuer/Name",
+                "cardinality": "1..1",
+                "logicalType": "TEXTE",
+                "length": 99,
+                "businessDefinition": "Raison sociale du déclarant du document de transmission",
+                "businessRules": [],
+                "presentInB2B": true,
+                "presentInB2C": true
+              },
+              {
+                "id": "TT-15",
+                "name": "Code rôle",
+                "path": "/ReportDocument/Issuer/RoleCode",
+                "cardinality": "1..1",
+                "logicalType": "CODE",
+                "length": 3,
+                "businessDefinition": "Le code rôle permet d'identifier le rôle de l'émetteur. La liste des codes rôles acceptés par le PPF est issue de la liste UNCL 3035",
+                "businessRules": ["G7.52"],
+                "valueSpecification": "Les codes rôles acceptés sont: BY (Acheteur), SE (Vendeur)",
+                "presentInB2B": true,
+                "presentInB2C": true
+              },
+              {
+                "id": "TG-6",
+                "name": "Adresse électronique émetteur",
+                "path": "/ReportDocument/Issuer/URIUniversalCommunication",
+                "cardinality": "0..1",
+                "elements": [
+                  {
+                    "id": "TT-16",
+                    "name": "Adresse électronique (réseau CEF)",
+                    "path": "/ReportDocument/Issuer/URIUniversalCommunication/URIID",
+                    "cardinality": "1..1",
+                    "logicalType": "IDENTIFIANT",
+                    "length": 100,
+                    "businessDefinition": "",
+                    "businessRules": [],
+                    "presentInB2B": true,
+                    "presentInB2C": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "TB-2",
+        "name": "Transmission transactions",
+        "path": "/TransactionsReport",
+        "flux": "10.1 / 10.3",
+        "businessRules": ["G6.29"],
+        "presentInB2B": true,
+        "presentInB2C": true,
+        "groups": [
+          {
+            "id": "TG-7",
+            "name": "Periode transmission",
+            "path": "/TransactionsReport/ReportPeriod",
+            "cardinality": "1..1",
+            "businessDefinition": "Période concernant la transmission",
+            "elements": [
+              {
+                "id": "TT-17",
+                "name": "Date début période",
+                "path": "/TransactionsReport/ReportPeriod/StartDate",
+                "cardinality": "1..1",
+                "logicalType": "TEXTE",
+                "length": 8,
+                "businessDefinition": "Date de début de la période de transmission",
+                "valueFormat": "AAAAMMJJ",
+                "businessRules": ["G1.09", "G1.36", "G6.24", "G6.25"],
+                "presentInB2B": true,
+                "presentInB2C": true
+              },
+              {
+                "id": "TT-18",
+                "name": "Date fin période",
+                "path": "/TransactionsReport/ReportPeriod/EndDate",
+                "cardinality": "1..1",
+                "logicalType": "TEXTE",
+                "length": 8,
+                "businessDefinition": "Date de fin de la période de transmission",
+                "valueFormat": "AAAAMMJJ",
+                "businessRules": ["G1.09", "G1.36", "G6.25"],
+                "presentInB2B": true,
+                "presentInB2C": true
+              }
+            ]
+          },
+          {
+            "id": "TG-8",
+            "name": "Facture",
+            "path": "/TransactionsReport/Invoice",
+            "cardinality": "0..n",
+            "businessRules": ["G6.28"],
+            "presentInB2B": true,
+            "presentInB2C": true,
+            "flux": "10.1",
+            "elements": [
+              {
+                "id": "TT-19",
+                "name": "Numéro de facture",
+                "path": "/TransactionsReport/Invoice/ID",
+                "cardinality": "1..1",
+                "logicalType": "IDENTIFIANT",
+                "length": 20,
+                "businessDefinition": "Identification de la Facture.",
+                "businessRules": ["G1.05", "G1.42", "G6.08"],
+                "presentInB2B": true,
+                "presentInB2C": true
+              },
+              {
+                "id": "TT-20",
+                "name": "Date d'émission facture initiale / facture rectificative",
+                "path": "/TransactionsReport/Invoice/IssueDate",
+                "cardinality": "1..1",
+                "logicalType": "TEXTE",
+                "length": 8,
+                "businessDefinition": "Date à laquelle la Facture a été émise.",
+                "valueFormat": "AAAAMMJJ",
+                "businessRules": ["G1.09", "G1.07", "G1.36", "G6.08"],
+                "presentInB2B": true,
+                "presentInB2C": true
+              },
+              {
+                "id": "TT-21",
+                "name": "Code de type de facture",
+                "path": "/TransactionsReport/Invoice/TypeCode",
+                "cardinality": "1..1",
+                "logicalType": "CODE",
+                "length": 3,
+                "businessDefinition": "Code spécifiant le type fonctionnel de la Facture.",
+                "valueReference": "UNTDID 1001",
+                "businessRules": ["G1.01", "G6.08"],
+                "presentInB2B": true,
+                "presentInB2C": false
+              },
+              {
+                "id": "TT-22",
+                "name": "Code de devise de la facture",
+                "path": "/TransactionsReport/Invoice/CurrencyCode",
+                "cardinality": "1..1",
+                "logicalType": "CODE",
+                "length": 3,
+                "businessDefinition": "Devise dans laquelle tous les montants de la Facture sont exprimés, à l'exception du montant total de la TVA dans la devise de comptabilisation.",
+                "valueReference": "ISO 4217",
+                "businessRules": ["G1.10", "G6.08"],
+                "presentInB2B": true,
+                "presentInB2C": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "TB-3",
+        "name": "Transmission paiements",
+        "path": "/PaymentsReport",
+        "flux": "10.2/ 10.4",
+        "businessRules": ["G6.29"],
+        "presentInB2B": true,
+        "presentInB2C": true,
+        "groups": [
+          {
+            "id": "TG-33",
+            "name": "Période transmission",
+            "path": "/PaymentsReport/ReportPeriod",
+            "cardinality": "1..1",
+            "elements": [
+              {
+                "id": "TT-89",
+                "name": "Date début période",
+                "path": "/PaymentsReport/ReportPeriod/StartDate",
+                "cardinality": "1..1",
+                "logicalType": "TEXTE",
+                "length": 8,
+                "businessDefinition": "Date de début de la période de transmission",
+                "valueFormat": "AAAAMMJJ",
+                "businessRules": ["G1.09", "G6.24", "G6.25"],
+                "presentInB2B": true,
+                "presentInB2C": true
+              },
+              {
+                "id": "TT-90",
+                "name": "Date fin période",
+                "path": "/PaymentsReport/ReportPeriod/EndDate",
+                "cardinality": "1..1",
+                "logicalType": "TEXTE",
+                "length": 8,
+                "businessDefinition": "Date de fin de la période de transmission",
+                "valueFormat": "AAAAMMJJ",
+                "businessRules": ["G1.09", "G6.25"],
+                "presentInB2B": true,
+                "presentInB2C": true
+              }
+            ]
+          },
+          {
+            "id": "TG-34",
+            "name": "Facture",
+            "path": "/PaymentsReport/Invoice",
+            "cardinality": "0..n",
+            "presentInB2B": true,
+            "presentInB2C": true,
+            "flux": "10.2",
+            "elements": [
+              {
+                "id": "TT-91",
+                "name": "Numero de facture",
+                "path": "/PaymentsReport/Invoice/InvoiceID",
+                "cardinality": "1..1",
+                "logicalType": "IDENTIFIANT",
+                "length": 20,
+                "businessDefinition": "Identification unique de la Facture.",
+                "businessRules": ["G1.05"],
+                "presentInB2B": true,
+                "presentInB2C": true
+              },
+              {
+                "id": "TT-102",
+                "name": "Date de la facture",
+                "path": "/PaymentsReport/Invoice/IssueDate",
+                "cardinality": "1..1",
+                "logicalType": "TEXTE",
+                "length": 8,
+                "businessDefinition": "Date de la facture, utilisée pour créer l'identifiant unique de facture",
+                "valueFormat": "AAAAMMJJ",
+                "businessRules": ["G1.07", "G1.09", "G1.36"],
+                "presentInB2B": true,
+                "presentInB2C": true
+              }
+            ],
+            "subGroups": [
+              {
+                "id": "TG-35",
+                "name": "Paiement",
+                "path": "/PaymentsReport/Invoice/Payment",
+                "cardinality": "1..1",
+                "presentInB2B": true,
+                "presentInB2C": true,
+                "flux": "10.2",
+                "elements": [
+                  {
+                    "id": "TT-92",
+                    "name": "Date paiement",
+                    "path": "/PaymentsReport/Invoice/Payment/Date",
+                    "cardinality": "1..1",
+                    "logicalType": "TEXTE",
+                    "length": 8,
+                    "valueFormat": "AAAAMMJJ",
+                    "businessRules": ["G1.09", "G1.36"],
+                    "presentInB2B": true,
+                    "presentInB2C": true
+                  }
+                ],
+                "subGroups": [
+                  {
+                    "id": "TG-36",
+                    "name": "Répartition par taux",
+                    "path": "/PaymentsReport/Invoice/Payment/SubTotals",
+                    "cardinality": "1..n",
+                    "presentInB2B": true,
+                    "presentInB2C": true,
+                    "flux": "10.2",
+                    "elements": [
+                      {
+                        "id": "TT-93",
+                        "name": "Taux",
+                        "path": "/PaymentsReport/Invoice/Payment/SubTotals/TaxPercent",
+                        "cardinality": "1..1",
+                        "logicalType": "POURCENTAGE",
+                        "length": "3.2",
+                        "businessDefinition": "Taux d'imposition, exprimé sous forme de pourcentage, applicable au type de TVA correspondant.",
+                        "businessRules": ["G1.24"],
+                        "presentInB2B": true,
+                        "presentInB2C": true
+                      },
+                      {
+                        "id": "TT-94",
+                        "name": "Code devise paiement",
+                        "path": "/PaymentsReport/Invoice/Payment/SubTotals/CurrencyCode",
+                        "cardinality": "0..1",
+                        "logicalType": "CODE",
+                        "length": 3,
+                        "businessDefinition": "Devise dans laquelle le montant du paiement est exprimé",
+                        "valueReference": "ISO 4217",
+                        "businessRules": ["G1.10"],
+                        "presentInB2B": true,
+                        "presentInB2C": true
+                      },
+                      {
+                        "id": "TT-95",
+                        "name": "Montant encaissé",
+                        "path": "/PaymentsReport/Invoice/Payment/SubTotals/Amount",
+                        "cardinality": "1..1",
+                        "logicalType": "MONTANT",
+                        "length": "19.6",
+                        "businessDefinition": "Montant encaissé pour le taux d'imposition correspondant",
+                        "businessRules": ["G6.27", "G1.16"],
+                        "presentInB2B": true,
+                        "presentInB2C": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
