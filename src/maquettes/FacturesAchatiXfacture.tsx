@@ -27,9 +27,6 @@ import {
   InputAdornment,
   Divider,
   Chip,
-  List,
-  ListItem,
-  ListItemText,
   Tabs,
   Tab,
 } from '@mui/material';
@@ -62,7 +59,11 @@ type StatutMetier =
   | 'Refusée'
   | 'Paiement transmis';
 
-type StatutFacture = StatutTechnique | StatutMetier;
+type StatutApplicatif =
+  | 'En attente de validation iXParapheur'
+  | 'Validée dans iXParapheur';
+
+type StatutFacture = StatutTechnique | StatutMetier | StatutApplicatif;
 
 // Type pour l'origine de la facture
 type OrigineFacture = 'PA' | 'Hors PA';
@@ -79,12 +80,28 @@ interface FactureAchat extends FactureElectronique {
   dateReception?: string; // Date de réception par l'acheteur (format YYYYMMDD)
 }
 
+// Types d'actions possibles dans l'historique
+type TypeAction =
+  | 'statut_technique'
+  | 'statut_metier'
+  | 'statut_application'
+  | 'consultation'
+  | 'telechargement'
+  | 'exportation'
+  | 'metadonnee'
+  | 'changement_statut_manuel'
+  | 'changement_statut_api';
+
 // Interface pour l'historique d'une facture
 interface EvenementHistorique {
-  date: string;
-  statut: string;
-  utilisateur: string;
-  commentaire?: string;
+  dateHeure: string; // Format: YYYY-MM-DD HH:mm:ss
+  utilisateur: string; // Nom de l'utilisateur ou "Système"
+  adresseIp?: string; // Adresse IP de l'utilisateur (optionnel pour le système)
+  typeAction: TypeAction;
+  action: string; // L'action ou le statut
+  detailAction: string; // Phrase descriptive de l'action
+  metadonneeAvant?: string; // Pour les modifications de métadonnées
+  metadonneeApres?: string; // Pour les modifications de métadonnées
 }
 
 // Interface pour les métadonnées
@@ -452,6 +469,58 @@ const facturesAchatFictives: FactureAchat[] = [
     origine: 'PA',
     nature: 'Factures_ERP2',
   },
+  {
+    id: '11',
+    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
+    modeFacturation: 'B1',
+    numero: 'FA-2025-011',
+    dateEmission: '20251011',
+    dateReception: '20251011',
+    typeDocument: '380',
+    codeDevise: 'EUR',
+    vendeur: FOURNISSEUR_3,
+    acheteur: ACHETEUR_EXEMPLE,
+    lignes: [
+      creerLigneFacture(1, 'Travaux de rénovation', 1, 8500.0, 20),
+    ],
+    totaux: {
+      sommeMontsNetsLignes: 8500.0,
+      montantTotalHT: 8500.0,
+      montantTotalTVA: 1700.0,
+      montantTotalTTC: 10200.0,
+      montantDu: 10200.0,
+      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 8500.0, montantTVA: 1700.0 }],
+    },
+    statut: 'En attente de validation iXParapheur',
+    origine: 'PA',
+    nature: 'Factures_ERP1',
+  },
+  {
+    id: '12',
+    identifiantSpecification: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
+    modeFacturation: 'B1',
+    numero: 'FA-2025-012',
+    dateEmission: '20251012',
+    dateReception: '20251012',
+    typeDocument: '380',
+    codeDevise: 'EUR',
+    vendeur: FOURNISSEUR_4,
+    acheteur: ACHETEUR_EXEMPLE,
+    lignes: [
+      creerLigneFacture(1, 'Prestations de conseil', 10, 800.0, 20),
+    ],
+    totaux: {
+      sommeMontsNetsLignes: 8000.0,
+      montantTotalHT: 8000.0,
+      montantTotalTVA: 1600.0,
+      montantTotalTTC: 9600.0,
+      montantDu: 9600.0,
+      detailsTVA: [{ codeCategorie: 'S', taux: 20, montantBase: 8000.0, montantTVA: 1600.0 }],
+    },
+    statut: 'Approuvée', // Passée par le parapheur et validée
+    origine: 'PA',
+    nature: 'Factures_ERP2',
+  },
 ];
 
 // Configuration des colonnes par défaut - Conformes EN16931
@@ -470,27 +539,373 @@ const colonnesParDefaut: Colonne[] = [
   { id: 'nombreLignes', label: 'Nb lignes', codeBT: 'BG-25', visible: false, sortable: true },
 ];
 
-// Historique fictif pour une facture
-const historiqueFactureFictif: EvenementHistorique[] = [
-  {
-    date: '2025-10-01 09:15:00',
-    statut: 'Reçue',
+// Fonction pour générer une phrase descriptive selon le statut ou l'action
+const genererDetailAction = (action: string, typeAction: TypeAction, metadonneeAvant?: string, metadonneeApres?: string): string => {
+  // Pour les statuts techniques
+  if (typeAction === 'statut_technique') {
+    switch (action) {
+      case 'Reçue de la plateforme':
+        return 'La facture est reçue de la plateforme';
+      case 'Mise à disposition':
+        return 'La facture est mise à disposition';
+      case 'Rejetée':
+        return 'La facture est rejetée';
+      default:
+        return `Statut technique : ${action}`;
+    }
+  }
+
+  // Pour les statuts métiers
+  if (typeAction === 'statut_metier' || typeAction === 'changement_statut_manuel' || typeAction === 'changement_statut_api') {
+    switch (action) {
+      case 'Prise en charge':
+        return 'La facture est prise en charge';
+      case 'Approuvée':
+        return 'La facture est approuvée';
+      case 'Approuvée partiellement':
+        return 'La facture est approuvée partiellement';
+      case 'En litige':
+        return 'La facture est mise en litige';
+      case 'Suspendue':
+        return 'La facture est suspendue';
+      case 'Refusée':
+        return 'La facture est refusée';
+      case 'Paiement transmis':
+        return 'Le paiement de la facture est transmis';
+      default:
+        return `Changement de statut : ${action}`;
+    }
+  }
+
+  // Pour les statuts applicatifs
+  if (typeAction === 'statut_application') {
+    switch (action) {
+      case 'En attente de validation iXParapheur':
+        return 'La facture est envoyée pour validation dans iXParapheur';
+      case 'Facture validée dans iXParapheur':
+      case 'Validée dans iXParapheur':
+        return 'La facture est validée dans iXParapheur';
+      default:
+        return `Statut applicatif : ${action}`;
+    }
+  }
+
+  // Pour les consultations
+  if (typeAction === 'consultation') {
+    return 'Consultation de la facture';
+  }
+
+  // Pour les téléchargements
+  if (typeAction === 'telechargement') {
+    return `Téléchargement de la facture au format ${action}`;
+  }
+
+  // Pour les exportations
+  if (typeAction === 'exportation') {
+    return `Exportation de la facture au format ${action}`;
+  }
+
+  // Pour les modifications de métadonnées
+  if (typeAction === 'metadonnee') {
+    if (metadonneeAvant && metadonneeApres) {
+      return `Modification de la métadonnée "${action}" : de "${metadonneeAvant}" vers "${metadonneeApres}"`;
+    } else if (metadonneeApres) {
+      return `Ajout de la métadonnée "${action}" : "${metadonneeApres}"`;
+    }
+    return `Modification de la métadonnée "${action}"`;
+  }
+
+  return action;
+};
+
+// Fonction pour générer un historique cohérent en fonction de la facture
+const genererHistoriqueFacture = (facture: FactureAchat): EvenementHistorique[] => {
+  const historique: EvenementHistorique[] = [];
+  const dateEmission = facture.dateEmission || '20251001';
+  const dateBase = `${dateEmission.substring(0, 4)}-${dateEmission.substring(4, 6)}-${dateEmission.substring(6, 8)}`;
+
+  // Toutes les factures commencent par "Reçue de la plateforme"
+  historique.push({
+    dateHeure: `${dateBase} 09:15:32`,
     utilisateur: 'Système',
-    commentaire: 'Facture importée automatiquement depuis le portail fournisseur',
-  },
-  {
-    date: '2025-10-01 10:30:00',
-    statut: 'En attente de validation',
+    typeAction: 'statut_technique',
+    action: 'Reçue de la plateforme',
+    detailAction: genererDetailAction('Reçue de la plateforme', 'statut_technique'),
+  });
+
+  // Si la facture est rejetée, on s'arrête là
+  if (facture.statut === 'Rejetée') {
+    historique.push({
+      dateHeure: `${dateBase} 09:16:05`,
+      utilisateur: 'Système',
+      typeAction: 'statut_technique',
+      action: 'Rejetée',
+      detailAction: genererDetailAction('Rejetée', 'statut_technique'),
+    });
+    return historique;
+  }
+
+  // Sinon, on passe à "Mise à disposition"
+  historique.push({
+    dateHeure: `${dateBase} 09:16:05`,
+    utilisateur: 'Système',
+    typeAction: 'statut_technique',
+    action: 'Mise à disposition',
+    detailAction: genererDetailAction('Mise à disposition', 'statut_technique'),
+  });
+
+  // Si le statut actuel est "Mise à disposition", on ajoute juste quelques consultations
+  if (facture.statut === 'Mise à disposition') {
+    historique.push({
+      dateHeure: `${dateBase} 10:23:17`,
+      utilisateur: 'Marie Dupont',
+      adresseIp: '192.168.1.45',
+      typeAction: 'consultation',
+      action: 'Consultation',
+      detailAction: genererDetailAction('Consultation', 'consultation'),
+    });
+    return historique;
+  }
+
+  // Ajouter une consultation
+  historique.push({
+    dateHeure: `${dateBase} 10:23:17`,
     utilisateur: 'Marie Dupont',
-    commentaire: 'Assignée au service comptabilité',
-  },
-  {
-    date: '2025-10-02 14:20:00',
-    statut: 'En cours de vérification',
+    adresseIp: '192.168.1.45',
+    typeAction: 'consultation',
+    action: 'Consultation',
+    detailAction: genererDetailAction('Consultation', 'consultation'),
+  });
+
+  // Ajouter un téléchargement
+  historique.push({
+    dateHeure: `${dateBase} 10:25:42`,
+    utilisateur: 'Marie Dupont',
+    adresseIp: '192.168.1.45',
+    typeAction: 'telechargement',
+    action: 'PDF',
+    detailAction: genererDetailAction('PDF', 'telechargement'),
+  });
+
+  // Ajouter des métadonnées
+  historique.push({
+    dateHeure: `${dateBase} 14:35:22`,
     utilisateur: 'Jean Martin',
-    commentaire: 'Vérification des montants et conformité',
-  },
-];
+    adresseIp: '192.168.1.78',
+    typeAction: 'metadonnee',
+    action: 'Service payeur',
+    detailAction: genererDetailAction('Service payeur', 'metadonnee', undefined, 'DSI'),
+    metadonneeApres: 'DSI',
+  });
+
+  // Calculer la date du lendemain
+  const dateSuivante = new Date(dateBase);
+  dateSuivante.setDate(dateSuivante.getDate() + 1);
+  const dateJ1 = dateSuivante.toISOString().split('T')[0];
+
+  // Gestion des différents statuts métiers
+  switch (facture.statut) {
+    case 'En attente de validation iXParapheur':
+      historique.push({
+        dateHeure: `${dateJ1} 09:12:45`,
+        utilisateur: 'Sophie Leclerc',
+        adresseIp: '192.168.1.92',
+        typeAction: 'changement_statut_manuel',
+        action: 'Prise en charge',
+        detailAction: genererDetailAction('Prise en charge', 'changement_statut_manuel'),
+      });
+      historique.push({
+        dateHeure: `${dateJ1} 11:48:33`,
+        utilisateur: 'Sophie Leclerc',
+        adresseIp: '192.168.1.92',
+        typeAction: 'statut_application',
+        action: 'En attente de validation iXParapheur',
+        detailAction: genererDetailAction('En attente de validation iXParapheur', 'statut_application'),
+      });
+      break;
+
+    case 'Prise en charge':
+      historique.push({
+        dateHeure: `${dateJ1} 09:12:45`,
+        utilisateur: 'Sophie Leclerc',
+        adresseIp: '192.168.1.92',
+        typeAction: 'changement_statut_manuel',
+        action: 'Prise en charge',
+        detailAction: genererDetailAction('Prise en charge', 'changement_statut_manuel'),
+      });
+      break;
+
+    case 'Approuvée': {
+      // Cas spécial pour la facture 12 : passée par le parapheur
+      if (facture.id === '12') {
+        historique.push({
+          dateHeure: `${dateJ1} 09:12:45`,
+          utilisateur: 'Sophie Leclerc',
+          adresseIp: '192.168.1.92',
+          typeAction: 'changement_statut_manuel',
+          action: 'Prise en charge',
+          detailAction: genererDetailAction('Prise en charge', 'changement_statut_manuel'),
+        });
+
+        const dateJ2 = new Date(dateSuivante);
+        dateJ2.setDate(dateJ2.getDate() + 1);
+        const dateJ2Str = dateJ2.toISOString().split('T')[0];
+
+        historique.push({
+          dateHeure: `${dateJ1} 11:48:33`,
+          utilisateur: 'Sophie Leclerc',
+          adresseIp: '192.168.1.92',
+          typeAction: 'statut_application',
+          action: 'En attente de validation iXParapheur',
+          detailAction: genererDetailAction('En attente de validation iXParapheur', 'statut_application'),
+        });
+        historique.push({
+          dateHeure: `${dateJ2Str} 08:22:19`,
+          utilisateur: 'Système',
+          typeAction: 'statut_application',
+          action: 'Facture validée dans iXParapheur',
+          detailAction: genererDetailAction('Facture validée dans iXParapheur', 'statut_application'),
+        });
+        historique.push({
+          dateHeure: `${dateJ2Str} 09:08:54`,
+          utilisateur: 'Paul Rousseau',
+          adresseIp: '192.168.1.103',
+          typeAction: 'changement_statut_manuel',
+          action: 'Approuvée',
+          detailAction: genererDetailAction('Approuvée', 'changement_statut_manuel'),
+        });
+      } else {
+        historique.push({
+          dateHeure: `${dateJ1} 09:12:45`,
+          utilisateur: 'Sophie Leclerc',
+          adresseIp: '192.168.1.92',
+          typeAction: 'changement_statut_manuel',
+          action: 'Prise en charge',
+          detailAction: genererDetailAction('Prise en charge', 'changement_statut_manuel'),
+        });
+        historique.push({
+          dateHeure: `${dateJ1} 14:22:11`,
+          utilisateur: 'Paul Rousseau',
+          adresseIp: '192.168.1.103',
+          typeAction: 'changement_statut_manuel',
+          action: 'Approuvée',
+          detailAction: genererDetailAction('Approuvée', 'changement_statut_manuel'),
+        });
+      }
+      break;
+    }
+
+    case 'Approuvée partiellement':
+      historique.push({
+        dateHeure: `${dateJ1} 09:12:45`,
+        utilisateur: 'Sophie Leclerc',
+        adresseIp: '192.168.1.92',
+        typeAction: 'changement_statut_manuel',
+        action: 'Prise en charge',
+        detailAction: genererDetailAction('Prise en charge', 'changement_statut_manuel'),
+      });
+      historique.push({
+        dateHeure: `${dateJ1} 14:30:00`,
+        utilisateur: 'Paul Rousseau',
+        adresseIp: '192.168.1.103',
+        typeAction: 'changement_statut_manuel',
+        action: 'Approuvée partiellement',
+        detailAction: genererDetailAction('Approuvée partiellement', 'changement_statut_manuel'),
+      });
+      break;
+
+    case 'En litige':
+      historique.push({
+        dateHeure: `${dateJ1} 09:12:45`,
+        utilisateur: 'Sophie Leclerc',
+        adresseIp: '192.168.1.92',
+        typeAction: 'changement_statut_manuel',
+        action: 'Prise en charge',
+        detailAction: genererDetailAction('Prise en charge', 'changement_statut_manuel'),
+      });
+      historique.push({
+        dateHeure: `${dateJ1} 15:45:00`,
+        utilisateur: 'Paul Rousseau',
+        adresseIp: '192.168.1.103',
+        typeAction: 'changement_statut_manuel',
+        action: 'En litige',
+        detailAction: genererDetailAction('En litige', 'changement_statut_manuel'),
+      });
+      break;
+
+    case 'Suspendue':
+      historique.push({
+        dateHeure: `${dateJ1} 09:12:45`,
+        utilisateur: 'Sophie Leclerc',
+        adresseIp: '192.168.1.92',
+        typeAction: 'changement_statut_manuel',
+        action: 'Prise en charge',
+        detailAction: genererDetailAction('Prise en charge', 'changement_statut_manuel'),
+      });
+      historique.push({
+        dateHeure: `${dateJ1} 16:20:00`,
+        utilisateur: 'Paul Rousseau',
+        adresseIp: '192.168.1.103',
+        typeAction: 'changement_statut_manuel',
+        action: 'Suspendue',
+        detailAction: genererDetailAction('Suspendue', 'changement_statut_manuel'),
+      });
+      break;
+
+    case 'Refusée':
+      historique.push({
+        dateHeure: `${dateJ1} 09:12:45`,
+        utilisateur: 'Sophie Leclerc',
+        adresseIp: '192.168.1.92',
+        typeAction: 'changement_statut_manuel',
+        action: 'Prise en charge',
+        detailAction: genererDetailAction('Prise en charge', 'changement_statut_manuel'),
+      });
+      historique.push({
+        dateHeure: `${dateJ1} 16:50:00`,
+        utilisateur: 'Paul Rousseau',
+        adresseIp: '192.168.1.103',
+        typeAction: 'changement_statut_manuel',
+        action: 'Refusée',
+        detailAction: genererDetailAction('Refusée', 'changement_statut_manuel'),
+      });
+      break;
+
+    case 'Paiement transmis': {
+      historique.push({
+        dateHeure: `${dateJ1} 09:12:45`,
+        utilisateur: 'Sophie Leclerc',
+        adresseIp: '192.168.1.92',
+        typeAction: 'changement_statut_manuel',
+        action: 'Prise en charge',
+        detailAction: genererDetailAction('Prise en charge', 'changement_statut_manuel'),
+      });
+      historique.push({
+        dateHeure: `${dateJ1} 14:22:11`,
+        utilisateur: 'Paul Rousseau',
+        adresseIp: '192.168.1.103',
+        typeAction: 'changement_statut_manuel',
+        action: 'Approuvée',
+        detailAction: genererDetailAction('Approuvée', 'changement_statut_manuel'),
+      });
+
+      const dateJ3 = new Date(dateSuivante);
+      dateJ3.setDate(dateJ3.getDate() + 3);
+      const dateJ3Str = dateJ3.toISOString().split('T')[0];
+
+      historique.push({
+        dateHeure: `${dateJ3Str} 10:15:42`,
+        utilisateur: 'Système',
+        typeAction: 'changement_statut_api',
+        action: 'Paiement transmis',
+        detailAction: genererDetailAction('Paiement transmis', 'changement_statut_api'),
+      });
+      break;
+    }
+  }
+
+  return historique;
+};
 
 // Métadonnées fictives - Conformes au paramétrage dans MetadonneesIXFacture
 // Pour les Factures Entrantes (FE = Factures d'Achat), seules les métadonnées avec visibiliteFE sont affichées
@@ -589,6 +1004,22 @@ const obtenirStatutsDisponibles = (statutActuel: StatutFacture): StatutMetier[] 
     case 'Paiement transmis':
       // Statut final, on ne peut rien faire après
       return [];
+
+    case 'En attente de validation iXParapheur':
+      // En attente de validation dans le parapheur, l'utilisateur ne peut rien faire
+      // C'est le parapheur qui va valider ou rejeter
+      return [];
+
+    case 'Validée dans iXParapheur':
+      // Après validation dans le parapheur, on peut statuer comme depuis "Prise en charge"
+      return [
+        'Approuvée',
+        'Approuvée partiellement',
+        'En litige',
+        'Suspendue',
+        'Refusée',
+        'Paiement transmis',
+      ];
 
     default:
       return [];
@@ -882,7 +1313,7 @@ const FacturesAchatiXfacture = () => {
   };
 
   // Obtenir la couleur du chip de statut
-  const obtenirCouleurStatut = (statut: StatutFacture) => {
+  const obtenirCouleurStatut = (statut: StatutFacture): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
     switch (statut) {
       // Statuts techniques
       case 'Reçue de la plateforme':
@@ -908,9 +1339,45 @@ const FacturesAchatiXfacture = () => {
       case 'Paiement transmis':
         return 'success';
 
+      // Statuts applicatifs
+      case 'En attente de validation iXParapheur':
+        return 'secondary';
+      case 'Validée dans iXParapheur':
+        return 'success';
+
       default:
         return 'default';
     }
+  };
+
+  // Obtenir la couleur d'une action dans l'historique
+  const obtenirCouleurAction = (action: string, typeAction: TypeAction): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
+    // Pour les statuts, utiliser la même couleur que dans le tableau
+    if (typeAction === 'statut_technique' || typeAction === 'statut_metier' || typeAction === 'changement_statut_manuel' || typeAction === 'changement_statut_api' || typeAction === 'statut_application') {
+      // Vérifier si l'action correspond à un statut connu
+      const statutsPossibles: StatutFacture[] = [
+        'Reçue de la plateforme',
+        'Mise à disposition',
+        'Rejetée',
+        'Prise en charge',
+        'Approuvée',
+        'Approuvée partiellement',
+        'En litige',
+        'Suspendue',
+        'Refusée',
+        'Paiement transmis',
+        'En attente de validation iXParapheur',
+        'Validée dans iXParapheur',
+      ];
+
+      const statutTrouve = statutsPossibles.find(s => s === action);
+      if (statutTrouve) {
+        return obtenirCouleurStatut(statutTrouve);
+      }
+    }
+
+    // Pour les autres actions (consultation, téléchargement, etc.)
+    return 'default';
   };
 
   // Handler pour mettre à jour une métadonnée
@@ -1512,39 +1979,57 @@ const FacturesAchatiXfacture = () => {
                       Historique de la facture
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
-                    <List dense>
-                      {historiqueFactureFictif.map((evenement, index) => (
-                        <ListItem key={index} sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                          <ListItemText
-                            primary={
-                              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                <Chip
-                                  label={evenement.statut}
-                                  size="small"
-                                  color="primary"
-                                  variant="outlined"
-                                />
-                                <Typography variant="caption" color="text.secondary">
-                                  {evenement.date}
-                                </Typography>
-                              </Box>
-                            }
-                            secondary={
-                              <>
-                                <Typography variant="body2" component="span" sx={{ fontWeight: 'bold' }}>
-                                  {evenement.utilisateur}
-                                </Typography>
-                                {evenement.commentaire && (
-                                  <Typography variant="body2" component="span" sx={{ display: 'block', mt: 0.5 }}>
-                                    {evenement.commentaire}
+                    <TableContainer>
+                      <Table size="small">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell sx={{ fontWeight: 'bold' }}>Date et heure</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>Utilisateur</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>Action</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>Détail de l'action</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {factureSelectionnee && genererHistoriqueFacture(factureSelectionnee).map((evenement, index) => (
+                            <TableRow key={index} hover>
+                              <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                                {evenement.dateHeure}
+                              </TableCell>
+                              <TableCell>
+                                <Box>
+                                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                    {evenement.utilisateur}
                                   </Typography>
-                                )}
-                              </>
-                            }
-                          />
-                        </ListItem>
-                      ))}
-                    </List>
+                                  {evenement.adresseIp && (
+                                    <Typography variant="caption" color="text.secondary">
+                                      IP : {evenement.adresseIp}
+                                    </Typography>
+                                  )}
+                                </Box>
+                              </TableCell>
+                              <TableCell>
+                                <Chip
+                                  label={evenement.action}
+                                  size="small"
+                                  color={obtenirCouleurAction(evenement.action, evenement.typeAction)}
+                                  variant={
+                                    evenement.typeAction === 'consultation' ||
+                                    evenement.typeAction === 'telechargement' ||
+                                    evenement.typeAction === 'exportation' ||
+                                    evenement.typeAction === 'metadonnee' ? 'outlined' : 'filled'
+                                  }
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Typography variant="body2">
+                                  {evenement.detailAction}
+                                </Typography>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
                   </Paper>
                 </Box>
               )}
