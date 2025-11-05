@@ -33,6 +33,27 @@ Ce projet sert à créer des maquettes destinées à divers produits, en utilisa
 - **Vite** pour le développement et le build
 - **TypeScript** avec options de compilation strictes
 
+## Configuration initiale
+
+### Mot de passe d'accès
+
+L'application est protégée par un mot de passe défini dans le fichier `.env` :
+
+```bash
+# Copier le fichier d'exemple
+cp .env.example .env
+
+# Le mot de passe par défaut est : maquettes2025
+# Pour le modifier, éditer le fichier .env
+VITE_APP_PASSWORD=votremotdepasse
+```
+
+**Fonctionnement :**
+- Lors du premier accès, le mot de passe est demandé
+- Une fois validé, l'authentification est enregistrée dans le localStorage
+- Le composant `ProtectionMotDePasse` enveloppe toutes les routes de l'application
+- Pour réinitialiser : supprimer la clé `maquettes_authentifie` du localStorage
+
 ## Commandes de développement
 
 ```bash
@@ -107,16 +128,21 @@ npm run lint:fix
 - `src/main.tsx` - Point d'entrée de l'application, rend le composant racine `App` avec React.StrictMode
 
 ### Structure des composants
-- `src/App.tsx` - **Sommaire principal** listant toutes les maquettes et templates disponibles
+- `src/App.tsx` - **Application principale** avec routing et protection par mot de passe
+  - Enveloppe toutes les routes avec le composant `ProtectionMotDePasse`
+  - Définit les routes pour la page d'accueil, les templates et les maquettes
+- `src/pages/` - **Pages principales** de l'application
+  - `Accueil.tsx` - Page d'accueil avec disclaimer sur l'état des maquettes
+- `src/composants/` - **Composants réutilisables** partagés entre plusieurs maquettes
+  - `ProtectionMotDePasse.tsx` - Composant de protection par mot de passe
+  - `navigation/` - Composants de navigation (MenuLateral, BarreApplication, etc.)
 - `src/templates/` - **Templates réutilisables** qui définissent des structures de base communes
   - `UtilisateurIxBus.tsx` - Template avec menu Utilisateur
-  - `AdministrateurIxBus.tsx` - Template avec menu Administrateur (à créer)
-- `src/composants/` - **Composants réutilisables** partagés entre plusieurs maquettes
+  - `AdminIxBus.tsx` - Template avec menu Administrateur
 - `src/maquettes/` - **TOUTES LES MAQUETTES** sont stockées ici (ex: `src/maquettes/MaquetteProduit.tsx`)
 - `src/types/` - **Types et interfaces** partagés
   - `navigation.ts` - Interfaces Module, SousSection
   - `modulesUtilisateurIxBus.tsx` - Modules du menu Utilisateur
-- Toutes les maquettes et templates doivent être référencés dans le sommaire App.tsx
 
 ### Modularisation et maintenabilité
 
@@ -133,23 +159,27 @@ Organisation actuelle du projet :
 ```
 src/
 ├── composants/
+│   ├── ProtectionMotDePasse.tsx  # Composant de protection par mot de passe
 │   ├── navigation/
 │   │   ├── BoutonSommaire.tsx
 │   │   ├── MenuLateral.tsx
 │   │   ├── BarreApplication.tsx
 │   │   └── LogoIxBus.tsx
 │   └── ...
+├── pages/
+│   └── Accueil.tsx         # Page d'accueil avec disclaimer
 ├── templates/
-│   └── UtilisateurIxBus.tsx
+│   ├── UtilisateurIxBus.tsx
+│   └── AdminIxBus.tsx
 ├── maquettes/              # TOUTES LES MAQUETTES ici
-│   ├── PremierTest.tsx
-│   ├── BaseIxbus.tsx
+│   ├── TableauDeBordIxfacture.tsx
+│   ├── PrepareriXFacture.tsx
 │   └── ...
 ├── types/
 │   ├── navigation.ts
 │   └── modulesUtilisateurIxBus.tsx
 ├── utils/
-└── App.tsx
+└── App.tsx                 # Application principale avec routing
 ```
 
 ### Approche de styling

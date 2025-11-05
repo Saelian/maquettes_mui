@@ -28,6 +28,44 @@ Ce projet permet de créer et organiser des maquettes d'interfaces utilisateur d
 npm install
 ```
 
+### Configuration du mot de passe
+
+L'application est protégée par un mot de passe. Pour la configurer :
+
+1. **Copier le fichier d'exemple** :
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Modifier le mot de passe** (optionnel) :
+   ```bash
+   # Éditer le fichier .env et changer la valeur
+   VITE_APP_PASSWORD=votremotdepasse
+   ```
+
+   Par défaut, le mot de passe est : `maquettes2025`
+
+3. **Démarrer l'application** :
+   ```bash
+   npm run dev
+   ```
+
+4. **Premier accès** :
+   - Ouvrir l'application dans le navigateur
+   - Saisir le mot de passe configuré
+   - L'authentification sera enregistrée dans le localStorage
+   - Vous n'aurez plus besoin de le saisir par la suite
+
+⚠️ **Note de sécurité** : Ce système de protection est uniquement frontal et n'est pas sécurisé pour un environnement de production. Il est destiné à un usage interne et de démonstration uniquement.
+
+### Réinitialiser l'authentification
+
+Si vous souhaitez être redemandé le mot de passe :
+1. Ouvrir les outils de développement du navigateur (F12)
+2. Aller dans l'onglet "Application" ou "Stockage"
+3. Supprimer la clé `maquettes_authentifie` du localStorage
+4. Rafraîchir la page
+
 ## 💻 Commandes disponibles
 
 ```bash
@@ -60,120 +98,32 @@ npm run test:visual:headed    # Tests avec navigateur visible
 ```
 src/
 ├── composants/              # Composants réutilisables
+│   ├── ProtectionMotDePasse.tsx  # Composant de protection par mot de passe
 │   └── navigation/          # Composants de navigation
 │       ├── BoutonSommaire.tsx
 │       ├── MenuLateral.tsx
 │       ├── BarreApplication.tsx
 │       └── LogoIxBus.tsx
+├── pages/                   # Pages principales
+│   └── Accueil.tsx          # Page d'accueil avec disclaimer
 ├── templates/               # Templates de base réutilisables
-│   └── UtilisateurIxBus.tsx    # Template avec menu Utilisateur
+│   ├── UtilisateurIxBus.tsx    # Template avec menu Utilisateur
+│   └── AdminIxBus.tsx          # Template avec menu Administrateur
 ├── maquettes/               # TOUTES LES MAQUETTES
-│   ├── PremierTest.tsx
 │   ├── TableauDeBordIxfacture.tsx
 │   ├── PrepareriXFacture.tsx
-│   └── FacturesAchatiXfacture.tsx
+│   ├── FacturesAchatiXfacture.tsx
+│   └── ...
 ├── types/                   # Types et interfaces partagés
 │   ├── navigation.ts
 │   └── modulesUtilisateurIxBus.tsx
 ├── utils/                   # Fonctions utilitaires
-├── App.tsx                  # Sommaire principal avec routing
+├── App.tsx                  # Application principale avec routing
 └── main.tsx                 # Point d'entrée de l'application
 
 tests/                       # Tests visuels Playwright
 ├── *.visual.spec.ts         # Tests pour chaque maquette
 └── screenshots/             # Captures d'écran de référence
 ```
-
-## 🎨 Architecture
-
-### Templates
-
-Les **templates** sont des structures de base réutilisables qui définissent une disposition commune (AppBar, Drawer, zones de contenu).
-
-#### Template UtilisateurIxBus
-
-Fournit une structure avec :
-- AppBar en haut de page
-- Menu latéral Utilisateur (Drawer) rétractable à gauche
-- Zone de contenu centrée avec fond blanc et ombre
-
-**Utilisation dans une maquette :**
-
-```tsx
-import UtilisateurIxBus from '../templates/UtilisateurIxBus';
-
-export default function MaMaquette() {
-  return (
-    <UtilisateurIxBus>
-      {/* Votre contenu ici */}
-    </UtilisateurIxBus>
-  );
-}
-```
-
-### Composants réutilisables
-
-Les composants partagés sont stockés dans `src/composants/` et peuvent être utilisés dans plusieurs maquettes :
-
-- **BoutonSommaire** : Bouton de retour au sommaire (en bas à gauche)
-- **MenuLateral** : Menu latéral rétractable avec modules et sous-sections
-- **BarreApplication** : Barre d'application en haut de page
-- **LogoIxBus** : Logo affiché dans le menu latéral
-
-### Créer une nouvelle maquette
-
-1. Créer un nouveau fichier dans `src/maquettes/` (ex: `MaNouvelleMaquette.tsx`)
-2. Choisir un template adapté ou créer une structure autonome
-3. Utiliser le composant `BoutonSommaire` pour le retour au sommaire
-4. Ajouter la maquette dans `src/App.tsx` :
-
-```tsx
-import MaNouvelleMaquette from './maquettes/MaNouvelleMaquette';
-
-const maquettes = [
-  // ...
-  { nom: 'Ma Nouvelle Maquette', chemin: '/ma-maquette', composant: <MaNouvelleMaquette /> },
-];
-```
-
-## ✅ Validation des maquettes
-
-**Lors de la publication de nouvelles maquettes, tu DOIS TOUJOURS :**
-
-### 1. Vérifier le code - OBLIGATOIRE AVANT TOUTE LIVRAISON
-- **TOUJOURS exécuter `npm run lint` AVANT de créer un fichier de test**
-- **TOUJOURS exécuter `npm run build` pour détecter les erreurs d'imports et de compilation**
-- Corriger immédiatement toute erreur détectée
-- Ne jamais publier avec des erreurs de linter, typecheck ou build
-- ⚠️ **Le lint seul ne détecte pas toujours les imports incorrects - le build est OBLIGATOIRE**
-
-### 2. Créer un test visuel spécifique pour la maquette
-- Chaque maquette doit avoir son propre fichier de test : `tests/[nom-maquette].visual.spec.ts`
-- Le test doit vérifier l'alignement de tous les éléments majeurs avec l'AppBar
-- Prendre des captures d'écran pour référence
-- Voir [tests/README.md](tests/README.md) pour la structure type d'un test
-
-### 3. Vérifier visuellement l'alignement et l'apparence
-- Exécuter `npm run test:visual` pour lancer les tests Playwright
-- Le test doit passer sans erreur avant de livrer la maquette
-- Si le test échoue, utiliser `npm run test:visual:ui` pour déboguer
-- Les captures d'écran sont dans `tests/screenshots/`
-
-### 4. Points de vérification visuels obligatoires
-- ✅ Alignement horizontal de tous les conteneurs avec l'AppBar
-- ✅ Espacement entre l'AppBar et le contenu principal (`mt: 2`)
-- ✅ Tous les boutons/éléments fonctionnels sont visibles et accessibles
-- ✅ Les marges et paddings sont cohérents
-
-**Ordre des commandes OBLIGATOIRE pour valider une maquette :**
-1. `npm run lint` - Vérifier TypeScript + ESLint
-2. `npm run build` - **OBLIGATOIRE** pour détecter les imports incorrects et erreurs de compilation
-3. `npm run test:visual` - Exécuter les tests visuels Playwright
-
-**Autres commandes disponibles :**
-- `npm run test:visual:ui` - Ouvre l'interface Playwright pour déboguer les tests
-- `npm run test:visual:headed` - Exécute les tests avec navigateur visible
-- `npx playwright test tests/[nom-maquette].visual.spec.ts` - Teste une maquette spécifique
-
 
 
