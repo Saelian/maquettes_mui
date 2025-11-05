@@ -538,11 +538,10 @@ export default function InterfacesIXFacture() {
       {/* Dialog Ajout/Édition Règle */}
       <Dialog open={dialogRegleOuvert} onClose={fermerDialogRegle} maxWidth="lg" fullWidth>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <DrawIcon />
           {modeEditionRegle ? 'Modifier une règle iXParapheur' : 'Ajouter une règle iXParapheur'}
         </DialogTitle>
         <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Nom de la règle */}
             <TextField
               label="Nom de la règle"
@@ -550,23 +549,17 @@ export default function InterfacesIXFacture() {
               fullWidth
               value={formulaireRegle.nom}
               onChange={(e) => setFormulaireRegle({ ...formulaireRegle, nom: e.target.value })}
-              helperText="Ex: Factures DSI"
             />
-
-            <Divider />
 
             {/* Section Statut déclencheur */}
             <Box>
-              <Typography variant="h6" gutterBottom>
-                Statut déclencheur (obligatoire)
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Sélectionnez l'état de la facture qui déclenchera l'envoi vers iXParapheur
-              </Typography>
+              <Typography color="primary" variant="h6" gutterBottom>
+                Statut déclencheur
+              </Typography>  
               <FormControl fullWidth required size="small">
-                <InputLabel>Statut déclencheur</InputLabel>
+                <InputLabel>Statut qui déclenchera le dépôt iXParapheur</InputLabel>
                 <Select
-                  label="Statut déclencheur"
+                  label="Statut qui déclenchera le dépôt iXParapheur"
                   value={formulaireRegle.statutDeclencheur}
                   onChange={(e) =>
                     setFormulaireRegle({ ...formulaireRegle, statutDeclencheur: e.target.value as StatutFacture })
@@ -581,16 +574,11 @@ export default function InterfacesIXFacture() {
               </FormControl>
             </Box>
 
-            <Divider />
-
             {/* Section Conditions complémentaires */}
             <Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Box>
-                  <Typography variant="h6">Conditions complémentaires (facultatif)</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Ajoutez des conditions supplémentaires basées sur les métadonnées ou les données de facture
-                  </Typography>
+                  <Typography color="primary" variant="h6">Conditions complémentaires</Typography>
                 </Box>
                 <Button variant="outlined" size="small" startIcon={<AddIcon />} onClick={ajouterCondition}>
                   Ajouter une condition
@@ -697,23 +685,17 @@ export default function InterfacesIXFacture() {
               )}
             </Box>
 
-            <Divider />
-
             {/* Section Actions (ALORS) */}
             <Box>
-              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <DrawIcon />
-                Actions (ALORS) - Paramètres iXParapheur
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Définissez la nature du document et le circuit de validation à appliquer dans iXParapheur
+              <Typography color="primary" variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                Choix de la nature et du circuit 
               </Typography>
 
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 600 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
                 <FormControl fullWidth required size="small">
-                  <InputLabel>Nature du document (iXParapheur)</InputLabel>
+                  <InputLabel>Nature iXParapheur</InputLabel>
                   <Select
-                    label="Nature du document (iXParapheur)"
+                    label="Nature du document"
                     value={formulaireRegle.natureDocument}
                     onChange={(e) =>
                       setFormulaireRegle({ ...formulaireRegle, natureDocument: e.target.value })
@@ -728,9 +710,9 @@ export default function InterfacesIXFacture() {
                 </FormControl>
 
                 <FormControl fullWidth required size="small">
-                  <InputLabel>Circuit de validation (iXParapheur)</InputLabel>
+                  <InputLabel>Circuit de validation </InputLabel>
                   <Select
-                    label="Circuit de validation (iXParapheur)"
+                    label="Circuit de validation"
                     value={formulaireRegle.circuitValidation}
                     onChange={(e) =>
                       setFormulaireRegle({ ...formulaireRegle, circuitValidation: e.target.value })
@@ -746,17 +728,13 @@ export default function InterfacesIXFacture() {
               </Box>
             </Box>
 
-            <Divider />
-
             {/* Section Statuts finaux */}
             <Box>
-              <Typography variant="h6" gutterBottom>
-                Statuts finaux (obligatoire)
+              <Typography color="primary" variant="h6" gutterBottom>
+                Statuts finaux
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Sélectionnez les états qui seront appliqués à la facture lors du retour d'iXParapheur
-              </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 600 }}>
+
+              <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
                 <FormControl fullWidth required size="small">
                   <InputLabel>Statut final en cas d'acceptation</InputLabel>
                   <Select
@@ -793,25 +771,26 @@ export default function InterfacesIXFacture() {
               </Box>
             </Box>
 
-            <Divider />
-
             {/* Ordre et activation */}
             <Box>
-              <Typography variant="h6" gutterBottom>
+              <Typography color='primary' variant="h6" gutterBottom>
                 Ordre d'évaluation et activation
               </Typography>
-              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+
+              <Box sx={{ display: 'flex', flexDirection:'row', gap: 2 }}>
+
                 <TextField
                   label="Ordre d'exécution"
                   type="number"
                   size="small"
+                  fullWidth
                   value={formulaireRegle.ordre}
                   onChange={(e) =>
                     setFormulaireRegle({ ...formulaireRegle, ordre: parseInt(e.target.value) || 0 })
                   }
-                  sx={{ width: 150 }}
-                  helperText="Définit l'ordre d'évaluation des règles"
+                  sx={{ width: '50%' }}
                 />
+
                 <FormControlLabel
                   control={
                     <Switch
@@ -821,7 +800,9 @@ export default function InterfacesIXFacture() {
                   }
                   label="Règle active"
                 />
+
               </Box>
+              
               <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
                 Les règles sont évaluées dans l'ordre croissant. Si une règle est appliquée, les suivantes sont ignorées.
               </Typography>
