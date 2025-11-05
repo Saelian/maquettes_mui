@@ -1,0 +1,3 @@
+# Interdire l'indexation de toutes les pages par tous les robots
+User-agent: *
+Disallow: /
