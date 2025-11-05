@@ -23,7 +23,6 @@ import {
   DialogActions,
   Switch,
   FormControlLabel,
-  Divider,
   Tooltip,
   Toolbar,
   Checkbox,
@@ -35,7 +34,6 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-import DrawIcon from '@mui/icons-material/Draw';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 
