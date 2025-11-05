@@ -41,6 +41,16 @@ import Tabs from '@mui/material/Tabs';
 
 import IXParapheurLogo from '../assets/img_modules/ico_iXParapheur_couleur.svg';
 
+// Import des types de statuts
+import { StatutTechnique } from '../types/StatutTechnique';
+import { StatutMetier } from '../types/StatutMetier';
+import { StatutApplicatif } from '../types/StatutApplicatif';
+import { StatutEmission } from '../types/StatutEmission';
+import { StatutReception } from '../types/StatutReception';
+
+// Type pour tous les statuts possibles (factures d'achat et de vente)
+type StatutFacture = StatutTechnique | StatutMetier | StatutApplicatif | StatutEmission | StatutReception;
+
 interface Condition {
   id: number;
   sourceType: 'metadonnee' | 'donneeFacture';
@@ -53,12 +63,14 @@ interface Condition {
 interface RegleParapheur {
   id: number;
   nom: string;
-  conditions: Condition[];
+  statutDeclencheur: StatutFacture; // État qui déclenche l'envoi vers iXParapheur (obligatoire)
+  conditions: Condition[]; // Conditions complémentaires (facultatif)
   natureDocument: string;
   circuitValidation: string;
-  ordre: number;
+  statutFinalAcceptation: StatutFacture; // État appliqué au retour d'iXParapheur si acceptation (obligatoire)
+  statutFinalRefus: StatutFacture; // État appliqué au retour d'iXParapheur si refus (obligatoire)
+  ordre: number; // Ordre d'évaluation de la règle (obligatoire)
   active: boolean;
-  gestionConflits: 'premiere' | 'derniere' | 'alerte';
 }
 
 
@@ -69,11 +81,39 @@ export default function InterfacesIXFacture() {
   const [regleSelectionnee, setRegleSelectionnee] = useState<RegleParapheur | null>(null);
   const [reglesSelectionnees, setReglesSelectionnees] = useState<number[]>([]);
 
+  // Liste des statuts déclencheurs disponibles (exclus les statuts techniques et certains statuts métiers)
+  const statutsDeclencheurs: StatutFacture[] = [
+    // Statuts techniques achat
+    'Mise à disposition',
+    // Statuts métiers achat/vente
+    'Prise en charge',
+    'Approuvée',
+    'Approuvée partiellement',
+    'En litige',
+    'Suspendue',
+    'Paiement transmis',
+  ];
+
+  // Liste des statuts finaux disponibles (exclus les statuts techniques et certains statuts métiers)
+  const statutsFinaux: StatutFacture[] = [
+    // Statuts techniques achat
+    'Mise à disposition',
+    // Statuts métiers achat/vente
+    'Prise en charge',
+    'Approuvée',
+    'Approuvée partiellement',
+    'En litige',
+    'Suspendue',
+    'Refusée',
+    'Paiement transmis',
+  ];
+
   // Règles mode dynamique
   const [regles, setRegles] = useState<RegleParapheur[]>([
     {
       id: 1,
       nom: 'Factures DSI',
+      statutDeclencheur: 'Mise à disposition',
       conditions: [
         {
           id: 1,
@@ -85,13 +125,15 @@ export default function InterfacesIXFacture() {
       ],
       natureDocument: 'Documents informatiques',
       circuitValidation: 'Signature des factures de la DSI',
+      statutFinalAcceptation: 'Approuvée',
+      statutFinalRefus: 'Refusée',
       ordre: 1,
       active: true,
-      gestionConflits: 'premiere',
     },
     {
       id: 2,
       nom: 'Factures URBANISME',
+      statutDeclencheur: 'Mise à disposition',
       conditions: [
         {
           id: 1,
@@ -103,21 +145,24 @@ export default function InterfacesIXFacture() {
       ],
       natureDocument: 'Documents d\'urbanisme',
       circuitValidation: 'Visa directeur urbanisme',
+      statutFinalAcceptation: 'Approuvée',
+      statutFinalRefus: 'Refusée',
       ordre: 2,
       active: true,
-      gestionConflits: 'premiere',
     },
   ]);
 
   // État du formulaire de règle
   const [formulaireRegle, setFormulaireRegle] = useState({
     nom: '',
+    statutDeclencheur: '' as StatutFacture | '',
     conditions: [] as Condition[],
     natureDocument: '',
     circuitValidation: '',
+    statutFinalAcceptation: '' as StatutFacture | '',
+    statutFinalRefus: '' as StatutFacture | '',
     ordre: regles.length + 1,
     active: true,
-    gestionConflits: 'premiere' as RegleParapheur['gestionConflits'],
   });
 
   // Données API simulées - Natures de documents
@@ -162,12 +207,14 @@ export default function InterfacesIXFacture() {
     setRegleSelectionnee(null);
     setFormulaireRegle({
       nom: '',
+      statutDeclencheur: '',
       conditions: [],
       natureDocument: '',
       circuitValidation: '',
+      statutFinalAcceptation: '',
+      statutFinalRefus: '',
       ordre: regles.length + 1,
       active: true,
-      gestionConflits: 'premiere',
     });
     setDialogRegleOuvert(true);
   };
@@ -180,12 +227,14 @@ export default function InterfacesIXFacture() {
         setRegleSelectionnee(regle);
         setFormulaireRegle({
           nom: regle.nom,
+          statutDeclencheur: regle.statutDeclencheur,
           conditions: [...regle.conditions],
           natureDocument: regle.natureDocument,
           circuitValidation: regle.circuitValidation,
+          statutFinalAcceptation: regle.statutFinalAcceptation,
+          statutFinalRefus: regle.statutFinalRefus,
           ordre: regle.ordre,
           active: regle.active,
-          gestionConflits: regle.gestionConflits,
         });
         setDialogRegleOuvert(true);
       }
@@ -197,20 +246,41 @@ export default function InterfacesIXFacture() {
   };
 
   const sauvegarderRegle = () => {
+    // Validation : on s'assure que les champs obligatoires sont remplis
+    if (
+      !formulaireRegle.nom ||
+      !formulaireRegle.statutDeclencheur ||
+      !formulaireRegle.natureDocument ||
+      !formulaireRegle.circuitValidation ||
+      !formulaireRegle.statutFinalAcceptation ||
+      !formulaireRegle.statutFinalRefus
+    ) {
+      return;
+    }
+
+    const regleAEnregistrer: RegleParapheur = {
+      nom: formulaireRegle.nom,
+      statutDeclencheur: formulaireRegle.statutDeclencheur as StatutFacture,
+      conditions: formulaireRegle.conditions,
+      natureDocument: formulaireRegle.natureDocument,
+      circuitValidation: formulaireRegle.circuitValidation,
+      statutFinalAcceptation: formulaireRegle.statutFinalAcceptation as StatutFacture,
+      statutFinalRefus: formulaireRegle.statutFinalRefus as StatutFacture,
+      ordre: formulaireRegle.ordre,
+      active: formulaireRegle.active,
+      id: 0, // Sera remplacé ci-dessous
+    };
+
     if (modeEditionRegle && regleSelectionnee) {
+      regleAEnregistrer.id = regleSelectionnee.id;
       setRegles(
         regles.map((r) =>
-          r.id === regleSelectionnee.id
-            ? { ...r, ...formulaireRegle }
-            : r
+          r.id === regleSelectionnee.id ? regleAEnregistrer : r
         )
       );
     } else {
-      const nouvelleRegle: RegleParapheur = {
-        id: Math.max(...regles.map((r) => r.id), 0) + 1,
-        ...formulaireRegle,
-      };
-      setRegles([...regles, nouvelleRegle]);
+      regleAEnregistrer.id = Math.max(...regles.map((r) => r.id), 0) + 1;
+      setRegles([...regles, regleAEnregistrer]);
     }
     fermerDialogRegle();
     setReglesSelectionnees([]);
@@ -359,9 +429,12 @@ export default function InterfacesIXFacture() {
                         />
                       </TableCell>
                       <TableCell>Nom de la règle</TableCell>
-                      <TableCell>Conditions</TableCell>
+                      <TableCell>Statut déclencheur</TableCell>
+                      <TableCell>Conditions complémentaires</TableCell>
                       <TableCell>Nature du document (iXParapheur)</TableCell>
                       <TableCell>Circuit de validation (iXParapheur)</TableCell>
+                      <TableCell>Statut final (acceptation)</TableCell>
+                      <TableCell>Statut final (refus)</TableCell>
                       <TableCell align="center">Ordre</TableCell>
                       <TableCell align="center">État</TableCell>
                     </TableRow>
@@ -369,7 +442,7 @@ export default function InterfacesIXFacture() {
                   <TableBody>
                     {regles.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                        <TableCell colSpan={10} align="center" sx={{ py: 4 }}>
                           <Typography variant="body2" color="text.secondary">
                             Aucune règle configurée
                           </Typography>
@@ -392,24 +465,54 @@ export default function InterfacesIXFacture() {
                               </Typography>
                             </TableCell>
                             <TableCell>
-                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                {regle.conditions.map((cond, idx) => (
-                                  <Box key={cond.id}>
-                                    {idx > 0 && cond.lienLogique && (
-                                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
-                                        {cond.lienLogique}
-                                      </Typography>
-                                    )}
-                                    <Typography variant="body2">{getLibelleCondition(cond)}</Typography>
-                                  </Box>
-                                ))}
-                              </Box>
+                              <Chip
+                                label={regle.statutDeclencheur}
+                                size="small"
+                                color="primary"
+                                variant="outlined"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              {regle.conditions.length === 0 ? (
+                                <Typography variant="body2" color="text.secondary" fontStyle="italic">
+                                  Aucune condition complémentaire
+                                </Typography>
+                              ) : (
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                  {regle.conditions.map((cond, idx) => (
+                                    <Box key={cond.id}>
+                                      {idx > 0 && cond.lienLogique && (
+                                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                                          {cond.lienLogique}
+                                        </Typography>
+                                      )}
+                                      <Typography variant="body2">{getLibelleCondition(cond)}</Typography>
+                                    </Box>
+                                  ))}
+                                </Box>
+                              )}
                             </TableCell>
                             <TableCell>
                               <Typography variant="body2">{regle.natureDocument}</Typography>
                             </TableCell>
                             <TableCell>
                               <Typography variant="body2">{regle.circuitValidation}</Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={regle.statutFinalAcceptation}
+                                size="small"
+                                color="success"
+                                variant="outlined"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={regle.statutFinalRefus}
+                                size="small"
+                                color="error"
+                                variant="outlined"
+                              />
                             </TableCell>
                             <TableCell align="center">
                               <Typography variant="body2">{regle.ordre}</Typography>
@@ -452,10 +555,43 @@ export default function InterfacesIXFacture() {
 
             <Divider />
 
-            {/* Section Conditions */}
+            {/* Section Statut déclencheur */}
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                Statut déclencheur (obligatoire)
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Sélectionnez l'état de la facture qui déclenchera l'envoi vers iXParapheur
+              </Typography>
+              <FormControl fullWidth required size="small">
+                <InputLabel>Statut déclencheur</InputLabel>
+                <Select
+                  label="Statut déclencheur"
+                  value={formulaireRegle.statutDeclencheur}
+                  onChange={(e) =>
+                    setFormulaireRegle({ ...formulaireRegle, statutDeclencheur: e.target.value as StatutFacture })
+                  }
+                >
+                  {statutsDeclencheurs.map((statut) => (
+                    <MenuItem key={statut} value={statut}>
+                      {statut}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+
+            <Divider />
+
+            {/* Section Conditions complémentaires */}
             <Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h6">Conditions (SI)</Typography>
+                <Box>
+                  <Typography variant="h6">Conditions complémentaires (facultatif)</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Ajoutez des conditions supplémentaires basées sur les métadonnées ou les données de facture
+                  </Typography>
+                </Box>
                 <Button variant="outlined" size="small" startIcon={<AddIcon />} onClick={ajouterCondition}>
                   Ajouter une condition
                 </Button>
@@ -464,7 +600,7 @@ export default function InterfacesIXFacture() {
               {formulaireRegle.conditions.length === 0 ? (
                 <Card variant="outlined" sx={{ p: 2, textAlign: 'center', bgcolor: '#f5f5f5' }}>
                   <Typography variant="body2" color="text.secondary">
-                    Aucune condition définie. Cliquez sur "Ajouter une condition" pour commencer.
+                    Aucune condition complémentaire définie.
                   </Typography>
                 </Card>
               ) : (
@@ -612,10 +748,57 @@ export default function InterfacesIXFacture() {
 
             <Divider />
 
-            {/* Options avancées */}
+            {/* Section Statuts finaux */}
             <Box>
               <Typography variant="h6" gutterBottom>
-                Options avancées
+                Statuts finaux (obligatoire)
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Sélectionnez les états qui seront appliqués à la facture lors du retour d'iXParapheur
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 600 }}>
+                <FormControl fullWidth required size="small">
+                  <InputLabel>Statut final en cas d'acceptation</InputLabel>
+                  <Select
+                    label="Statut final en cas d'acceptation"
+                    value={formulaireRegle.statutFinalAcceptation}
+                    onChange={(e) =>
+                      setFormulaireRegle({ ...formulaireRegle, statutFinalAcceptation: e.target.value as StatutFacture })
+                    }
+                  >
+                    {statutsFinaux.map((statut) => (
+                      <MenuItem key={statut} value={statut}>
+                        {statut}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl fullWidth required size="small">
+                  <InputLabel>Statut final en cas de refus</InputLabel>
+                  <Select
+                    label="Statut final en cas de refus"
+                    value={formulaireRegle.statutFinalRefus}
+                    onChange={(e) =>
+                      setFormulaireRegle({ ...formulaireRegle, statutFinalRefus: e.target.value as StatutFacture })
+                    }
+                  >
+                    {statutsFinaux.map((statut) => (
+                      <MenuItem key={statut} value={statut}>
+                        {statut}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+            </Box>
+
+            <Divider />
+
+            {/* Ordre et activation */}
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                Ordre d'évaluation et activation
               </Typography>
               <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                 <TextField
@@ -626,27 +809,9 @@ export default function InterfacesIXFacture() {
                   onChange={(e) =>
                     setFormulaireRegle({ ...formulaireRegle, ordre: parseInt(e.target.value) || 0 })
                   }
-                  sx={{ flex: 1 }}
+                  sx={{ width: 150 }}
+                  helperText="Définit l'ordre d'évaluation des règles"
                 />
-
-                <FormControl size="small" sx={{ flex: 2 }}>
-                  <InputLabel>Gestion des conflits</InputLabel>
-                  <Select
-                    label="Gestion des conflits"
-                    value={formulaireRegle.gestionConflits}
-                    onChange={(e) =>
-                      setFormulaireRegle({
-                        ...formulaireRegle,
-                        gestionConflits: e.target.value as RegleParapheur['gestionConflits'],
-                      })
-                    }
-                  >
-                    <MenuItem value="premiere">Prendre la première règle applicable</MenuItem>
-                    <MenuItem value="derniere">Prendre la dernière règle applicable</MenuItem>
-                    <MenuItem value="alerte">Lever une alerte</MenuItem>
-                  </Select>
-                </FormControl>
-
                 <FormControlLabel
                   control={
                     <Switch
@@ -657,6 +822,9 @@ export default function InterfacesIXFacture() {
                   label="Règle active"
                 />
               </Box>
+              <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
+                Les règles sont évaluées dans l'ordre croissant. Si une règle est appliquée, les suivantes sont ignorées.
+              </Typography>
             </Box>
           </Box>
         </DialogContent>
@@ -667,9 +835,11 @@ export default function InterfacesIXFacture() {
             onClick={sauvegarderRegle}
             disabled={
               !formulaireRegle.nom ||
-              formulaireRegle.conditions.length === 0 ||
+              !formulaireRegle.statutDeclencheur ||
               !formulaireRegle.natureDocument ||
-              !formulaireRegle.circuitValidation
+              !formulaireRegle.circuitValidation ||
+              !formulaireRegle.statutFinalAcceptation ||
+              !formulaireRegle.statutFinalRefus
             }
           >
             Sauvegarder
