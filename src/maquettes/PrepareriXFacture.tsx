@@ -24,10 +24,12 @@ import {
   Toolbar,
   Tooltip,
   InputAdornment,
-  ToggleButton,
-  ToggleButtonGroup,
   Divider,
   Chip,
+  RadioGroup,
+  Radio,
+  FormControl,
+  FormLabel,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -39,8 +41,6 @@ import {
   FileUpload as FileUploadIcon,
   ViewColumn as ViewColumnIcon,
   RestartAlt as RestartAltIcon,
-  ShoppingCart as ShoppingCartIcon,
-  Sell as SellIcon,
 } from '@mui/icons-material';
 import UtilisateurIxBus from '../templates/UtilisateurIxBus';
 import { ChampFactureAvecCode } from '../composants/factures/ChampFactureAvecCode';
@@ -76,13 +76,16 @@ import {
 // Type pour distinguer facture d'achat et de vente
 type TypeFacture = 'ACHAT' | 'VENTE';
 
+// Type pour la destination des factures de vente
+type DestinationFactureVente = 'PA' | 'Mail';
+
 // Ajout d'un ID et d'un type Achat/Vente aux exemples de factures complets
-const facturesExemplesCompletes: (FactureElectronique & { id: string; typeFacture: TypeFacture })[] = [
-  { ...FACTURE_B2B_STANDARD, id: '1', typeFacture: 'VENTE' },
-  { ...FACTURE_TVA_MIXTE, id: '2', typeFacture: 'VENTE' },
-  { ...FACTURE_ACOMPTE, id: '3', typeFacture: 'VENTE' },
-  { ...AVOIR_EXEMPLE, id: '4', typeFacture: 'VENTE' },
-  { ...FACTURE_B2C_EXEMPLE, id: '5', typeFacture: 'VENTE' },
+const facturesExemplesCompletes: (FactureElectronique & { id: string; typeFacture: TypeFacture; destination?: DestinationFactureVente; emailsDestinatairesMail?: string[] })[] = [
+  { ...FACTURE_B2B_STANDARD, id: '1', typeFacture: 'VENTE', destination: 'PA' },
+  { ...FACTURE_TVA_MIXTE, id: '2', typeFacture: 'VENTE', destination: 'PA' },
+  { ...FACTURE_ACOMPTE, id: '3', typeFacture: 'VENTE', destination: 'PA' },
+  { ...AVOIR_EXEMPLE, id: '4', typeFacture: 'VENTE', destination: 'PA' },
+  { ...FACTURE_B2C_EXEMPLE, id: '5', typeFacture: 'VENTE', destination: 'PA' },
   {
     ...FACTURE_B2B_STANDARD,
     id: '6',
@@ -90,6 +93,22 @@ const facturesExemplesCompletes: (FactureElectronique & { id: string; typeFactur
     vendeur: ACHETEUR_EXEMPLE, // On inverse vendeur/acheteur pour simuler un achat
     acheteur: VENDEUR_EXEMPLE,
     typeFacture: 'ACHAT',
+  },
+  {
+    ...FACTURE_B2B_STANDARD,
+    id: '7',
+    numero: 'VMAIL-2025-001',
+    typeFacture: 'VENTE',
+    destination: 'Mail',
+    emailsDestinatairesMail: ['client@entreprise.fr', 'comptabilite@entreprise.fr'],
+  },
+  {
+    ...FACTURE_TVA_MIXTE,
+    id: '8',
+    numero: 'VMAIL-2025-002',
+    typeFacture: 'VENTE',
+    destination: 'Mail',
+    emailsDestinatairesMail: ['facturation@client.com'],
   },
 ];
 
@@ -123,7 +142,7 @@ const MODE_FACTURATION_LABELS: Record<string, string> = {
 
 // Colonnes disponibles pour le tableau
 interface Colonne {
-  id: 'numero' | 'dateEmission' | 'typeDocument' | 'vendeur' | 'acheteur' | 'montantTTC' | 'montantDu' | 'devise' | 'nombreLignes' | 'typeFacture';
+  id: 'numero' | 'dateEmission' | 'typeDocument' | 'vendeur' | 'acheteur' | 'montantTTC' | 'montantDu' | 'devise' | 'nombreLignes' | 'typeFacture' | 'destination';
   label: string;
   codeBT: string;
   visible: boolean;
@@ -142,6 +161,7 @@ const colonnesParDefaut: Colonne[] = [
   { id: 'devise', label: 'Devise', codeBT: 'BT-5', visible: false, sortable: true },
   { id: 'nombreLignes', label: 'Nb lignes', codeBT: 'BG-25', visible: true, sortable: true },
   { id: 'typeFacture', label: 'Type (Achat/Vente)', codeBT: '-', visible: true, sortable: true },
+  { id: 'destination', label: 'Destination', codeBT: '-', visible: true, sortable: true },
 ];
 
 const PrepareriXFacture = () => {
@@ -151,10 +171,11 @@ const PrepareriXFacture = () => {
   const [modePreparation, setModePreparation] = useState<'manuel' | 'import'>('manuel');
   const [modaleRechercheOuverte, setModaleRechercheOuverte] = useState(false);
   const [modaleColonnesOuverte, setModaleColonnesOuverte] = useState(false);
+  const [anchorPreparer, setAnchorPreparer] = useState<null | HTMLElement>(null);
   const [anchorExporter, setAnchorExporter] = useState<null | HTMLElement>(null);
   const [anchorTelecharger, setAnchorTelecharger] = useState<null | HTMLElement>(null);
   const [factures, setFactures] = useState(facturesExemplesCompletes);
-  const [factureActive, setFactureActive] = useState<Partial<FactureElectronique> & { typeFacture?: TypeFacture; id?: string; }>({});
+  const [factureActive, setFactureActive] = useState<Partial<FactureElectronique> & { typeFacture?: TypeFacture; id?: string; destination?: DestinationFactureVente; emailsDestinatairesMail?: string[]; }>({});
   const [facturesSelectionnees, setFacturesSelectionnees] = useState<string[]>([]);
   const [colonnes, setColonnes] = useState<Colonne[]>(colonnesParDefaut);
   const [ordreTriColonne, setOrdreTriColonne] = useState<Colonne['id']>('numero');
@@ -275,8 +296,11 @@ const PrepareriXFacture = () => {
       });
   }, [factures, ordreTriColonne, directionTri, critereRecherche, rechercheRapide]);
 
-  const handleOuvrirModaleCreation = () => {
-    setModePreparation('manuel');
+  const ouvrirMenuPreparer = (event: React.MouseEvent<HTMLElement>) => setAnchorPreparer(event.currentTarget);
+  const fermerMenuPreparer = () => setAnchorPreparer(null);
+
+  const handleOuvrirModaleCreation = (mode: 'manuel' | 'import') => {
+    setModePreparation(mode);
     setModeEdition(false);
     setFactureActive({
       id: Date.now().toString(),
@@ -291,7 +315,10 @@ const PrepareriXFacture = () => {
       acheteur: ACHETEUR_EXEMPLE,
       notes: NOTES_LEGALES_FRANCE.concat([NOTE_TRAITEMENT_B2B]),
       lignes: [],
+      destination: 'PA',
+      emailsDestinatairesMail: [],
     });
+    fermerMenuPreparer();
     setModaleFactureOuverte(true);
   };
 
@@ -350,7 +377,11 @@ const PrepareriXFacture = () => {
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         <Paper elevation={1} sx={{ borderRadius: 0, mt: 1 }}>
           <Toolbar sx={{ gap: 1, flexWrap: 'wrap' }}>
-            <Tooltip title="Préparer une nouvelle facture"><Button variant="contained" startIcon={<AddIcon />} onClick={handleOuvrirModaleCreation}>Préparer</Button></Tooltip>
+            <Tooltip title="Préparer une nouvelle facture"><Button variant="contained" startIcon={<AddIcon />} onClick={ouvrirMenuPreparer}>Préparer</Button></Tooltip>
+            <Menu anchorEl={anchorPreparer} open={Boolean(anchorPreparer)} onClose={fermerMenuPreparer}>
+              <MenuItem onClick={() => handleOuvrirModaleCreation('manuel')}>Création manuelle</MenuItem>
+              <MenuItem onClick={() => handleOuvrirModaleCreation('import')}>Importer un fichier</MenuItem>
+            </Menu>
             <Tooltip title="Transmettre les factures sélectionnées"><span><Button variant="outlined" startIcon={<SendIcon />} disabled={facturesSelectionnees.length === 0}>Transmettre</Button></span></Tooltip>
             <Tooltip title="Supprimer les factures sélectionnées"><span><Button variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={supprimerFactures} disabled={facturesSelectionnees.length === 0}>Supprimer</Button></span></Tooltip>
             <Tooltip title="Rechercher des factures"><Button variant="outlined" startIcon={<SearchIcon />} onClick={ouvrirModaleRecherche}>Rechercher</Button></Tooltip>
@@ -390,6 +421,7 @@ const PrepareriXFacture = () => {
                           case 'dateEmission': return formaterDateAffichage(facture.dateEmission);
                           case 'typeDocument': return TYPE_DOCUMENT_LABELS[facture.typeDocument] || facture.typeDocument;
                           case 'typeFacture': return <Chip label={facture.typeFacture} size="small" color={facture.typeFacture === 'VENTE' ? 'primary' : 'secondary'} />;
+                          case 'destination': return facture.typeFacture === 'VENTE' ? ('destination' in facture ? (facture as typeof factureActive).destination || 'PA' : 'PA') : '-';
                           default: return facture[col.id as keyof FactureElectronique] as string;
                         }
                       })()
@@ -404,25 +436,67 @@ const PrepareriXFacture = () => {
         <Dialog open={modaleFactureOuverte} onClose={handleFermerModale} maxWidth={false} PaperProps={{ sx: { width: '90vw', height: '90vh' } }}>
           <DialogTitle>{modeEdition ? 'Modifier la facture' : 'Préparer une facture'}</DialogTitle>
           <DialogContent sx={{ overflow: 'auto' }}>
-            {!modeEdition && (
-              <Box sx={{ pt: 2, mb: 3 }}>
-                <ToggleButtonGroup value={modePreparation} exclusive fullWidth onChange={(_, newMode) => { if (newMode) setModePreparation(newMode); }} aria-label="mode de préparation">
-                  <ToggleButton color='primary' value="manuel"><AddIcon sx={{ mr: 1 }} />Création manuelle</ToggleButton>
-                  <ToggleButton color='primary' value="import"><UploadIcon sx={{ mr: 1 }} />Importer un fichier</ToggleButton>
-                </ToggleButtonGroup>
-              </Box>
-            )}
-
             {modePreparation === 'manuel' ? (
               <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {!modeEdition && (
-                  <Box>
-                    <Typography variant="h6" gutterBottom>Type de facture</Typography>
-                    <ToggleButtonGroup value={factureActive.typeFacture || 'VENTE'} exclusive fullWidth onChange={(_, newType: TypeFacture | null) => { if (newType) setFactureActive({ ...factureActive, typeFacture: newType, vendeur: newType === 'VENTE' ? VENDEUR_EXEMPLE : ACHETEUR_EXEMPLE, acheteur: newType === 'ACHAT' ? VENDEUR_EXEMPLE : ACHETEUR_EXEMPLE });}} aria-label="type de facture">
-                      <ToggleButton color='primary' value="VENTE"><SellIcon sx={{ mr: 1 }} />Facture de vente</ToggleButton>
-                      <ToggleButton color='primary' value="ACHAT"><ShoppingCartIcon sx={{ mr: 1 }} />Facture d'achat</ToggleButton>
-                    </ToggleButtonGroup>
-                  </Box>
+                  <FormControl component="fieldset">
+                    <FormLabel component="legend">Type de facture</FormLabel>
+                    <RadioGroup
+                      row
+                      value={factureActive.typeFacture || 'VENTE'}
+                      onChange={(e) => {
+                        const newType = e.target.value as TypeFacture;
+                        setFactureActive({
+                          ...factureActive,
+                          typeFacture: newType,
+                          vendeur: newType === 'VENTE' ? VENDEUR_EXEMPLE : ACHETEUR_EXEMPLE,
+                          acheteur: newType === 'ACHAT' ? VENDEUR_EXEMPLE : ACHETEUR_EXEMPLE,
+                          destination: newType === 'VENTE' ? 'PA' : undefined,
+                          emailsDestinatairesMail: newType === 'VENTE' ? [] : undefined
+                        });
+                      }}
+                    >
+                      <FormControlLabel value="VENTE" control={<Radio />} label="Facture de vente" />
+                      <FormControlLabel value="ACHAT" control={<Radio />} label="Facture d'achat" />
+                    </RadioGroup>
+                  </FormControl>
+                )}
+                {!modeEdition && factureActive.typeFacture === 'VENTE' && (
+                  <FormControl component="fieldset">
+                    <FormLabel component="legend">Destination de la facture</FormLabel>
+                    <RadioGroup
+                      row
+                      value={factureActive.destination || 'PA'}
+                      onChange={(e) => {
+                        const newDestination = e.target.value as DestinationFactureVente;
+                        setFactureActive({
+                          ...factureActive,
+                          destination: newDestination,
+                          emailsDestinatairesMail: newDestination === 'Mail' ? [] : undefined
+                        });
+                      }}
+                    >
+                      <FormControlLabel value="PA" control={<Radio />} label="Plateforme Agréée (PA)" />
+                      <FormControlLabel value="Mail" control={<Radio />} label="Envoi par mail" />
+                    </RadioGroup>
+                    {factureActive.destination === 'Mail' && (
+                      <Box sx={{ mt: 2 }}>
+                        <TextField
+                          label="Adresses email des destinataires"
+                          fullWidth
+                          multiline
+                          rows={3}
+                          value={(factureActive.emailsDestinatairesMail || []).join(', ')}
+                          onChange={(e) => {
+                            const emails = e.target.value.split(',').map(email => email.trim()).filter(email => email);
+                            setFactureActive({ ...factureActive, emailsDestinatairesMail: emails });
+                          }}
+                          placeholder="exemple1@email.com, exemple2@email.com"
+                          helperText="Séparez les adresses email par des virgules"
+                        />
+                      </Box>
+                    )}
+                  </FormControl>
                 )}
                 <Box>
                   <Typography variant="h6" color='primary' sx={{  mb: 2 }}>{factureActive.typeFacture === 'VENTE' ? 'Informations du client (Acheteur)' : 'Informations du fournisseur (Vendeur)'}</Typography>

@@ -8,5 +8,7 @@ export type StatutEmission = 'Rejetée' // Statut technique PA émission
   |
   'Complétée' // Statut métier PA émission
   |
-  'Encaissée'; // Statut métier PA émission
+  'Encaissée' // Statut métier PA émission
+  |
+  'Envoyé par mail'; // Statut métier envoi mail
 

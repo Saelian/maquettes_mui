@@ -14,6 +14,38 @@ export const genererHistoriqueFacture = (facture: FactureVente): EvenementHistor
     return date.toISOString().split('T')[0];
   };
 
+  // Historique simplifié pour les factures envoyées par mail
+  if (facture.destination === 'Mail') {
+    // Saisie de la facture
+    const origineUtilisateur = facture.origine === 'Saisie manuelle' ? 'Pierre Martin' :
+                               facture.origine === 'Import manuel' ? 'Marie Dubois' :
+                               'Système (API)';
+    const origineIp = facture.origine !== 'API' ? '192.168.1.78' : undefined;
+
+    historique.push({
+      dateHeure: `${dateBase} 09:15:00`,
+      utilisateur: origineUtilisateur,
+      adresseIp: origineIp,
+      typeAction: 'statut_metier',
+      action: facture.origine === 'Saisie manuelle' ? 'Saisie manuelle' :
+              facture.origine === 'Import manuel' ? 'Import manuel' :
+              'Import via API',
+      detailAction: `Facture créée par ${facture.origine.toLowerCase()}`,
+    });
+
+    // Envoi par mail
+    const emailsDestinataires = facture.emailsDestinatairesMail?.join(', ') || 'destinataires';
+    historique.push({
+      dateHeure: `${dateBase} 09:20:30`,
+      utilisateur: 'Système',
+      typeAction: 'statut_metier',
+      action: 'Envoyé par mail',
+      detailAction: `Facture envoyée par mail aux destinataires : ${emailsDestinataires}`,
+    });
+
+    return historique;
+  }
+
   // Toutes les factures commencent par "Déposée" (statut technique, Système)
   historique.push({
     dateHeure: `${dateBase} 08:30:15`,

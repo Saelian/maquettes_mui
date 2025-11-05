@@ -53,7 +53,7 @@ type StatutFacture = StatutEmission | StatutReception;
 type OrigineFacture = 'Saisie manuelle' | 'Import manuel' | 'API';
 
 // Type pour la destination de la facture (où elle est envoyée)
-type DestinationFacture = 'PA' | 'CPP';
+type DestinationFacture = 'PA' | 'CPP' | 'Mail';
 
 // Type pour la nature de la facture
 type NatureFacture = 'Factures_ERP1' | 'Factures_ERP2' | 'Factures_General';
@@ -73,9 +73,10 @@ export interface FactureVente {
   statut: StatutFacture;
   reference: string;
   origine: OrigineFacture; // Comment la facture a été créée (Saisie manuelle, Import manuel, API)
-  destination: DestinationFacture; // Où la facture est envoyée (PA = Plateforme Agréée, CPP = Chorus Pro Portal)
+  destination: DestinationFacture; // Où la facture est envoyée (PA = Plateforme Agréée, CPP = Chorus Pro Portal, Mail = Envoi par mail)
   nature: NatureFacture; // Nature de routage de la facture
   lignes: LigneFactureVente[]; // Lignes de facturation
+  emailsDestinatairesMail?: string[]; // Adresses email des destinataires (uniquement si destination = 'Mail')
 }
 
 // Interface pour l'historique d'une facture
@@ -475,6 +476,8 @@ const FacturesVenteIxfacture = () => {
         return 'success';
       case 'Encaissée':
         return 'success';
+      case 'Envoyé par mail':
+        return 'default';
 
       // Statuts techniques PA réception (reçus du système)
       case 'Reçue de la plateforme':
@@ -515,6 +518,7 @@ const FacturesVenteIxfacture = () => {
         'Emise par la plateforme',
         'Complétée',
         'Encaissée',
+        'Envoyé par mail',
         // Statuts PA réception
         'Reçue de la plateforme',
         'Mise à disposition',
@@ -1050,17 +1054,47 @@ const FacturesVenteIxfacture = () => {
                     <Typography color="primary" variant="h6" gutterBottom>
                       Destination de la facture
                     </Typography>
-                    
+
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                       <Typography variant="body2" color="text.secondary">
                         Cette facture est envoyée vers :
                       </Typography>
                       <Chip
-                        label={factureSelectionnee?.destination === 'PA' ? 'Plateforme Agréée (PA)' : 'Chorus Pro Portal (CPP)'}
-                        color={factureSelectionnee?.destination === 'PA' ? 'primary' : 'secondary'}
+                        label={
+                          factureSelectionnee?.destination === 'PA'
+                            ? 'Plateforme Agréée (PA)'
+                            : factureSelectionnee?.destination === 'CPP'
+                            ? 'Chorus Pro Portal (CPP)'
+                            : 'Envoi par mail'
+                        }
+                        color={
+                          factureSelectionnee?.destination === 'PA'
+                            ? 'primary'
+                            : factureSelectionnee?.destination === 'CPP'
+                            ? 'secondary'
+                            : 'default'
+                        }
                         size="medium"
                       />
                     </Box>
+
+                    {factureSelectionnee?.destination === 'Mail' && factureSelectionnee?.emailsDestinatairesMail && (
+                      <Box sx={{ mt: 2 }}>
+                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                          Destinataires de la facture :
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                          {factureSelectionnee.emailsDestinatairesMail.map((email, index) => (
+                            <Chip
+                              key={index}
+                              label={email}
+                              variant="outlined"
+                              size="small"
+                            />
+                          ))}
+                        </Box>
+                      </Box>
+                    )}
 
                   </Paper>
 
