@@ -6,14 +6,46 @@ export const genererHistoriqueFactureAchat = (facture: FactureAchat): EvenementH
   const dateEmission = facture.dateEmission || '20251001';
   const dateBase = `${dateEmission.substring(0, 4)}-${dateEmission.substring(4, 6)}-${dateEmission.substring(6, 8)}`;
 
-  // Toutes les factures commencent par "Reçue de la plateforme"
-  historique.push({
-    dateHeure: `${dateBase} 09:15:32`,
-    utilisateur: 'Système',
-    typeAction: 'statut_technique',
-    action: 'Reçue de la plateforme',
-    detailAction: genererDetailAction('Reçue de la plateforme', 'statut_technique'),
-  });
+  // Premier événement selon l'origine de la facture
+  if (facture.origine === 'PA') {
+    // Facture reçue de la plateforme agréée
+    historique.push({
+      dateHeure: `${dateBase} 09:15:32`,
+      utilisateur: 'Système',
+      typeAction: 'statut_technique',
+      action: 'Reçue de la plateforme',
+      detailAction: genererDetailAction('Reçue de la plateforme', 'statut_technique'),
+    });
+  } else if (facture.origine === 'Saisie manuelle') {
+    // Facture saisie manuellement
+    historique.push({
+      dateHeure: `${dateBase} 09:10:15`,
+      utilisateur: 'Marie Dupont',
+      adresseIp: '192.168.1.45',
+      typeAction: 'statut_technique',
+      action: 'Saisie manuelle',
+      detailAction: 'La facture a été saisie manuellement dans le système',
+    });
+  } else if (facture.origine === 'Import manuel') {
+    // Facture importée manuellement
+    historique.push({
+      dateHeure: `${dateBase} 09:12:28`,
+      utilisateur: 'Jean Martin',
+      adresseIp: '192.168.1.78',
+      typeAction: 'statut_technique',
+      action: 'Import manuel',
+      detailAction: 'La facture a été importée manuellement via un fichier',
+    });
+  } else if (facture.origine === 'API') {
+    // Facture reçue via API
+    historique.push({
+      dateHeure: `${dateBase} 09:14:42`,
+      utilisateur: 'Système',
+      typeAction: 'statut_technique',
+      action: 'Réception via API',
+      detailAction: 'La facture a été réceptionnée via une API tierce',
+    });
+  }
 
   // Si la facture est rejetée, on s'arrête là
   if (facture.statut === 'Rejetée') {
@@ -27,7 +59,7 @@ export const genererHistoriqueFactureAchat = (facture: FactureAchat): EvenementH
     return historique;
   }
 
-  // Sinon, on passe à "Mise à disposition"
+  // Après la soumission, la facture passe obligatoirement à "Mise à disposition"
   historique.push({
     dateHeure: `${dateBase} 09:16:05`,
     utilisateur: 'Système',

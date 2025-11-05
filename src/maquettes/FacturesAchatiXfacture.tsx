@@ -51,7 +51,7 @@ import { colonnesParDefautAchat } from './FEAchat/colonnesParDefautAchat';
 type StatutFacture = StatutTechnique | StatutMetier | StatutApplicatif;
 
 // Type pour l'origine de la facture
-type OrigineFacture = 'PA' | 'Hors PA';
+type OrigineFacture = 'PA' | 'Saisie manuelle' | 'Import manuel' | 'API';
 
 // Type pour la nature de la facture
 type NatureFacture = 'Factures_ERP1' | 'Factures_ERP2' | 'Factures_General';
@@ -336,7 +336,7 @@ const FacturesAchatiXfacture = () => {
     montantMin: '',
     montantMax: '',
     devise: 'TOUS',
-    origine: 'TOUS' as 'TOUS' | 'PA' | 'Hors PA',
+    origine: 'TOUS' as 'TOUS' | 'PA' | 'Saisie manuelle' | 'Import manuel' | 'API',
   });
 
   // État pour la recherche rapide dans la barre d'actions
@@ -650,6 +650,11 @@ const FacturesAchatiXfacture = () => {
 
   // Obtenir la couleur d'une action dans l'historique
   const obtenirCouleurAction = (action: string, typeAction: TypeAction): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
+    // Pour les actions de création/soumission
+    if (action === 'Saisie manuelle' || action === 'Import manuel' || action === 'Réception via API') {
+      return 'info';
+    }
+
     // Pour les statuts, utiliser la même couleur que dans le tableau
     if (typeAction === 'statut_technique' || typeAction === 'statut_metier' || typeAction === 'changement_statut_manuel' || typeAction === 'changement_statut_api' || typeAction === 'statut_application') {
       // Vérifier si l'action correspond à un statut connu
@@ -1225,15 +1230,23 @@ const FacturesAchatiXfacture = () => {
                         Cette facture provient de :
                       </Typography>
                       <Chip
-                        label={factureSelectionnee?.origine === 'PA' ? 'Plateforme Agréée (PA)' : 'Canal tiers (Hors PA)'}
+                        label={factureSelectionnee?.origine === 'PA' ? 'Plateforme Agréée (PA)' : factureSelectionnee?.origine}
                         color={factureSelectionnee?.origine === 'PA' ? 'primary' : 'default'}
                         size="medium"
                         variant="outlined"
                       />
                     </Box>
-                    {factureSelectionnee?.origine === 'Hors PA' && (
+                    {factureSelectionnee?.origine !== 'PA' && (
                       <Alert severity="warning" sx={{ mt: 2 }}>
-                        Cette facture a été réceptionnée par un canal tiers (courrier papier, mail, API) et non via une plateforme agréée. Elle ne fera donc pas l'objet de mise à jour de statuts sur la plateforme agréée.
+                        {factureSelectionnee?.origine === 'Saisie manuelle' && (
+                          <>Cette facture a été saisie manuellement dans le système. Elle ne fera donc pas l'objet de mise à jour de statuts sur la plateforme agréée.</>
+                        )}
+                        {factureSelectionnee?.origine === 'Import manuel' && (
+                          <>Cette facture a été importée manuellement via un fichier. Elle ne fera donc pas l'objet de mise à jour de statuts sur la plateforme agréée.</>
+                        )}
+                        {factureSelectionnee?.origine === 'API' && (
+                          <>Cette facture a été réceptionnée via une API tierce. Elle ne fera donc pas l'objet de mise à jour de statuts sur la plateforme agréée.</>
+                        )}
                       </Alert>
                     )}
                   </Paper>
@@ -1529,7 +1542,9 @@ const FacturesAchatiXfacture = () => {
               >
                 <MenuItem value="TOUS">Toutes les origines</MenuItem>
                 <MenuItem value="PA">Plateforme Agréée (PA)</MenuItem>
-                <MenuItem value="Hors PA">Canal tiers (Hors PA)</MenuItem>
+                <MenuItem value="Saisie manuelle">Saisie manuelle</MenuItem>
+                <MenuItem value="Import manuel">Import manuel</MenuItem>
+                <MenuItem value="API">API</MenuItem>
               </TextField>
             </Box>
           </Box>
