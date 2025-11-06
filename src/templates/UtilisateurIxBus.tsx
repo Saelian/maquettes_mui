@@ -4,12 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import MenuLateral from '../composants/navigation/MenuLateral';
 import BarreApplication from '../composants/navigation/BarreApplication';
 import BoutonSommaire from '../composants/navigation/BoutonSommaire';
+import ModalAide from '../composants/ModalAide';
 import { modulesUtilisateurIxBus } from '../types/modulesUtilisateurIxBus';
 
 interface UtilisateurIxBusProps {
   children: ReactNode;
   titre?: string;
   sousTitre?: string;
+  pageCourante?: string;
 }
 
 /**
@@ -27,9 +29,10 @@ interface UtilisateurIxBusProps {
  *
  * Note : Pour les maquettes avec le menu Administrateur, un template AdministrateurIxBus sera créé.
  */
-export default function UtilisateurIxBus({ children, titre, sousTitre }: UtilisateurIxBusProps) {
+export default function UtilisateurIxBus({ children, titre, sousTitre, pageCourante }: UtilisateurIxBusProps) {
   const [drawerOuvert, setDrawerOuvert] = useState(false);
   const [moduleOuvert, setModuleOuvert] = useState<string | null>('iXFacture');
+  const [aideOuverte, setAideOuverte] = useState(false);
   const navigate = useNavigate();
 
   const toggleDrawer = () => {
@@ -40,8 +43,16 @@ export default function UtilisateurIxBus({ children, titre, sousTitre }: Utilisa
     setModuleOuvert(moduleOuvert === nomModule ? null : nomModule);
   };
 
-  const handleAvatarClick = () => {
+  const handleNaviguerVersAdmin = () => {
     navigate('/natures-ixfacture');
+  };
+
+  const handleOuvrirAide = () => {
+    setAideOuverte(true);
+  };
+
+  const handleFermerAide = () => {
+    setAideOuverte(false);
   };
 
   return (
@@ -56,7 +67,14 @@ export default function UtilisateurIxBus({ children, titre, sousTitre }: Utilisa
       />
 
       <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', ml: 2, mr: 2 }}>
-        <BarreApplication onToggleDrawer={toggleDrawer} titre={titre} sousTitre={sousTitre} onAvatarClick={handleAvatarClick} />
+        <BarreApplication
+          onToggleDrawer={toggleDrawer}
+          titre={titre}
+          sousTitre={sousTitre}
+          typeTemplate="utilisateur"
+          onNaviguerVersAdmin={handleNaviguerVersAdmin}
+          onOuvrirAide={handleOuvrirAide}
+        />
 
         <Box
           sx={{
@@ -67,6 +85,12 @@ export default function UtilisateurIxBus({ children, titre, sousTitre }: Utilisa
           {children}
         </Box>
       </Box>
+
+      <ModalAide
+        ouvert={aideOuverte}
+        onFermer={handleFermerAide}
+        pageCourante={pageCourante}
+      />
     </Box>
   );
 }

@@ -360,7 +360,7 @@ const ConsultationAnnuaireIXFacture = () => {
       : resultatsInternational.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
-    <UtilisateurIxBus titre="Consultation Annuaire">
+    <UtilisateurIxBus titre="Consultation Annuaire" pageCourante="consultation-annuaire-ixfacture">
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         {/* Barre d'actions supérieure */}
         <Paper elevation={1} sx={{ borderRadius: 0, mt: 1 }}>

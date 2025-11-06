@@ -358,6 +358,7 @@ export default function InterfacesIXFacture() {
       titre="Paramétrage des interfaces"
       moduleParDefaut="iXFacture"
       sousSectionSelectionnee="Interfaces"
+      pageCourante="interfaces-ixfacture"
     >
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         {/* Onglets des interfaces */}

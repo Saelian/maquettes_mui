@@ -574,6 +574,7 @@ export default function MetadonneesIXFacture() {
       titre="Paramétrage des métadonnées"
       moduleParDefaut="iXFacture"
       sousSectionSelectionnee="Metadonnées"
+      pageCourante="metadonnees-ixfacture"
     >
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         {/* Onglets */}

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import MenuLateral from '../composants/navigation/MenuLateral';
 import BarreApplication from '../composants/navigation/BarreApplication';
 import BoutonSommaire from '../composants/navigation/BoutonSommaire';
+import ModalAide from '../composants/ModalAide';
 import { modulesAdministrateurIxBus } from '../types/modulesAdministrateurIxBus';
 
 interface AdminIxBusProps {
@@ -12,6 +13,7 @@ interface AdminIxBusProps {
   sousTitre?: string;
   moduleParDefaut?: string;
   sousSectionSelectionnee?: string;
+  pageCourante?: string;
 }
 
 /**
@@ -27,9 +29,10 @@ interface AdminIxBusProps {
  * Les maquettes basées sur ce template héritent automatiquement des modifications
  * apportées aux composants MenuLateral, BarreApplication et BoutonSommaire.
  */
-export default function AdminIxBus({ children, titre, sousTitre, moduleParDefaut = 'Général', sousSectionSelectionnee }: AdminIxBusProps) {
+export default function AdminIxBus({ children, titre, sousTitre, moduleParDefaut = 'Général', sousSectionSelectionnee, pageCourante }: AdminIxBusProps) {
   const [drawerOuvert, setDrawerOuvert] = useState(false);
   const [moduleOuvert, setModuleOuvert] = useState<string | null>(moduleParDefaut);
+  const [aideOuverte, setAideOuverte] = useState(false);
   const navigate = useNavigate();
 
   const toggleDrawer = () => {
@@ -40,8 +43,16 @@ export default function AdminIxBus({ children, titre, sousTitre, moduleParDefaut
     setModuleOuvert(moduleOuvert === nomModule ? null : nomModule);
   };
 
-  const handleAvatarClick = () => {
+  const handleNaviguerVersUtilisateur = () => {
     navigate('/tableau-de-bord-ixfacture');
+  };
+
+  const handleOuvrirAide = () => {
+    setAideOuverte(true);
+  };
+
+  const handleFermerAide = () => {
+    setAideOuverte(false);
   };
 
   return (
@@ -57,7 +68,14 @@ export default function AdminIxBus({ children, titre, sousTitre, moduleParDefaut
       />
 
       <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', ml: 2, mr: 2 }}>
-        <BarreApplication onToggleDrawer={toggleDrawer} titre={titre} sousTitre={sousTitre} onAvatarClick={handleAvatarClick} />
+        <BarreApplication
+          onToggleDrawer={toggleDrawer}
+          titre={titre}
+          sousTitre={sousTitre}
+          typeTemplate="admin"
+          onNaviguerVersUtilisateur={handleNaviguerVersUtilisateur}
+          onOuvrirAide={handleOuvrirAide}
+        />
 
         <Box
           sx={{
@@ -68,6 +86,12 @@ export default function AdminIxBus({ children, titre, sousTitre, moduleParDefaut
           {children}
         </Box>
       </Box>
+
+      <ModalAide
+        ouvert={aideOuverte}
+        onFermer={handleFermerAide}
+        pageCourante={pageCourante}
+      />
     </Box>
   );
 }

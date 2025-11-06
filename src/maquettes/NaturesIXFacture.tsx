@@ -305,6 +305,7 @@ export default function NaturesIXFacture() {
       titre="Natures"
       moduleParDefaut="iXFacture"
       sousSectionSelectionnee="Natures"
+      pageCourante="natures-ixfacture"
     >
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         {/* Barre d'actions */}

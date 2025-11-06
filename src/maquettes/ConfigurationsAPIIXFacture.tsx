@@ -37,6 +37,7 @@ export default function ConfigurationsAPIIXFacture() {
     <AdminIxBus
       titre="Configuration API CPP/PA"
       moduleParDefaut="iXFacture"
+      pageCourante="configurations-api-ixfacture"
     >
       <Box sx={{ mt: 2, mb: 4 }}>
         {/* Onglets */}

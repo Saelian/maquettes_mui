@@ -9,6 +9,9 @@ const theme = createTheme({
     primary: {
       main: '#008577',
     },
+    grey: {
+      300: '#E0E0E0',
+    },
   },
   typography: {
     fontFamily: 'Montserrat, Roboto, Arial, sans-serif',

@@ -1484,7 +1484,7 @@ const FacturesVenteIxfacture = () => {
   );
 
   return (
-    <UtilisateurIxBus titre="Factures de ventes ">
+    <UtilisateurIxBus titre="Factures de ventes " pageCourante="factures-vente-ixfacture">
       {contenu}
     </UtilisateurIxBus>
   );
