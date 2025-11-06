@@ -3,7 +3,6 @@ import { Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import MenuLateral from '../composants/navigation/MenuLateral';
 import BarreApplication from '../composants/navigation/BarreApplication';
-import BoutonSommaire from '../composants/navigation/BoutonSommaire';
 import ModalAide from '../composants/ModalAide';
 import { modulesUtilisateurIxBus } from '../types/modulesUtilisateurIxBus';
 
@@ -25,7 +24,7 @@ interface UtilisateurIxBusProps {
  * - Zone de contenu personnalisable
  *
  * Les maquettes basées sur ce template héritent automatiquement des modifications
- * apportées aux composants MenuLateral, BarreApplication et BoutonSommaire.
+ * apportées aux composants MenuLateral, BarreApplication.
  *
  * Note : Pour les maquettes avec le menu Administrateur, un template AdministrateurIxBus sera créé.
  */
@@ -57,7 +56,6 @@ export default function UtilisateurIxBus({ children, titre, sousTitre, pageCoura
 
   return (
     <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f5f5f5', position: 'relative' }}>
-      <BoutonSommaire />
 
       <MenuLateral
         modules={modulesUtilisateurIxBus}

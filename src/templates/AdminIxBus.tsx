@@ -3,7 +3,6 @@ import { Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import MenuLateral from '../composants/navigation/MenuLateral';
 import BarreApplication from '../composants/navigation/BarreApplication';
-import BoutonSommaire from '../composants/navigation/BoutonSommaire';
 import ModalAide from '../composants/ModalAide';
 import { modulesAdministrateurIxBus } from '../types/modulesAdministrateurIxBus';
 
@@ -27,7 +26,7 @@ interface AdminIxBusProps {
  * - Zone de contenu personnalisable
  *
  * Les maquettes basées sur ce template héritent automatiquement des modifications
- * apportées aux composants MenuLateral, BarreApplication et BoutonSommaire.
+ * apportées aux composants MenuLateral, BarreApplication.
  */
 export default function AdminIxBus({ children, titre, sousTitre, moduleParDefaut = 'Général', sousSectionSelectionnee, pageCourante }: AdminIxBusProps) {
   const [drawerOuvert, setDrawerOuvert] = useState(false);
@@ -57,7 +56,6 @@ export default function AdminIxBus({ children, titre, sousTitre, moduleParDefaut
 
   return (
     <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f5f5f5', position: 'relative' }}>
-      <BoutonSommaire />
 
       <MenuLateral
         modules={modulesAdministrateurIxBus}
