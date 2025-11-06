@@ -10,7 +10,6 @@ import {
   Badge,
 } from '@mui/material';
 import {
-  HelpOutline,
   Description,
   Search,
 } from '@mui/icons-material';
