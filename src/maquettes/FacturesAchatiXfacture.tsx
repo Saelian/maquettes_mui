@@ -1456,7 +1456,7 @@ const FacturesAchatiXfacture = () => {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 2 }}>
             {/* Section 1: Identification */}
             <Box>
-              <Typography sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Identification</Typography>
+              <Typography sx={{  mb: 1, color: 'primary.main' }}>Identification</Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <TextField
                   label="Numéro de facture"
@@ -1492,7 +1492,7 @@ const FacturesAchatiXfacture = () => {
 
             {/* Section 2: Fournisseur */}
             <Box>
-              <Typography sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Fournisseur</Typography>
+              <Typography sx={{  mb: 1, color: 'primary.main' }}>Fournisseur</Typography>
               <TextField
                 label="Nom du fournisseur"
                 value={critereRecherche.fournisseur}
@@ -1507,7 +1507,7 @@ const FacturesAchatiXfacture = () => {
 
             {/* Section 3: Dates */}
             <Box>
-              <Typography sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Période de réception</Typography>
+              <Typography sx={{  mb: 1, color: 'primary.main' }}>Période de réception</Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <TextField
                   label="Date de début"
@@ -1534,7 +1534,7 @@ const FacturesAchatiXfacture = () => {
 
             {/* Section 4: Montants */}
             <Box>
-              <Typography sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Montants (TTC)</Typography>
+              <Typography sx={{  mb: 1, color: 'primary.main' }}>Montants (TTC)</Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <TextField
                   label="Montant minimum"
@@ -1567,7 +1567,7 @@ const FacturesAchatiXfacture = () => {
 
             {/* Section 5: Origine */}
             <Box>
-              <Typography sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Origine</Typography>
+              <Typography sx={{  mb: 1, color: 'primary.main' }}>Origine</Typography>
               <TextField
                 label="Origine de la facture"
                 select

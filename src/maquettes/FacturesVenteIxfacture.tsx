@@ -1305,7 +1305,7 @@ const FacturesVenteIxfacture = () => {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 2 }}>
             {/* Section 1: Identification */}
             <Box>
-              <Typography sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Identification</Typography>
+              <Typography sx={{  mb: 1, color: 'primary.main' }}>Identification</Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <TextField
                   label="Numéro de facture"
@@ -1341,7 +1341,7 @@ const FacturesVenteIxfacture = () => {
 
             {/* Section 2: Client */}
             <Box>
-              <Typography sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Client</Typography>
+              <Typography sx={{  mb: 1, color: 'primary.main' }}>Client</Typography>
               <TextField
                 label="Nom du client"
                 value={critereRecherche.client}
@@ -1356,7 +1356,7 @@ const FacturesVenteIxfacture = () => {
 
             {/* Section 3: Dates */}
             <Box>
-              <Typography sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Période d'émission</Typography>
+              <Typography sx={{  mb: 1, color: 'primary.main' }}>Période d'émission</Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <TextField
                   label="Date de début"
@@ -1383,7 +1383,7 @@ const FacturesVenteIxfacture = () => {
 
             {/* Section 4: Montants */}
             <Box>
-              <Typography sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Montants (TTC)</Typography>
+              <Typography sx={{  mb: 1, color: 'primary.main' }}>Montants (TTC)</Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <TextField
                   label="Montant minimum"
@@ -1416,7 +1416,7 @@ const FacturesVenteIxfacture = () => {
 
             {/* Section 5: Origine et Destination */}
             <Box>
-              <Typography sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>Origine et Destination</Typography>
+              <Typography sx={{  mb: 1, color: 'primary.main' }}>Origine et Destination</Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
                 <TextField
                   label="Origine"
