@@ -30,6 +30,7 @@ import {
   Radio,
   FormControl,
   FormLabel,
+  ListItemIcon,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -41,6 +42,12 @@ import {
   FileUpload as FileUploadIcon,
   ViewColumn as ViewColumnIcon,
   RestartAlt as RestartAltIcon,
+  TableChart as TableChartIcon,
+  GridOn as GridOnIcon,
+  Email as EmailIcon,
+  Code as CodeIcon,
+  Description as DescriptionIcon,
+  PictureAsPdf as PictureAsPdfIcon,
 } from '@mui/icons-material';
 import UtilisateurIxBus from '../templates/UtilisateurIxBus';
 import { ChampFactureAvecCode } from '../composants/factures/ChampFactureAvecCode';
@@ -386,9 +393,47 @@ const PrepareriXFacture = () => {
             <Tooltip title="Supprimer les factures sélectionnées"><span><Button variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={supprimerFactures} disabled={facturesSelectionnees.length === 0}>Supprimer</Button></span></Tooltip>
             <Tooltip title="Rechercher des factures"><Button variant="outlined" startIcon={<SearchIcon />} onClick={ouvrirModaleRecherche}>Rechercher</Button></Tooltip>
             <Tooltip title="Exporter les factures"><Button variant="outlined" startIcon={<FileUploadIcon />} onClick={ouvrirMenuExporter}>Exporter</Button></Tooltip>
-            <Menu anchorEl={anchorExporter} open={Boolean(anchorExporter)} onClose={fermerMenuExporter}><MenuItem>CSV</MenuItem><MenuItem>Excel</MenuItem></Menu>
+            <Menu anchorEl={anchorExporter} open={Boolean(anchorExporter)} onClose={fermerMenuExporter}>
+              <MenuItem onClick={fermerMenuExporter}>
+                <ListItemIcon>
+                  <TableChartIcon fontSize="small" />
+                </ListItemIcon>
+                CSV
+              </MenuItem>
+              <MenuItem onClick={fermerMenuExporter}>
+                <ListItemIcon>
+                  <GridOnIcon fontSize="small" />
+                </ListItemIcon>
+                Excel
+              </MenuItem>
+              <MenuItem onClick={fermerMenuExporter}>
+                <ListItemIcon>
+                  <EmailIcon fontSize="small" />
+                </ListItemIcon>
+                Mail
+              </MenuItem>
+            </Menu>
             <Tooltip title="Télécharger au format"><Button variant="outlined" startIcon={<FileDownloadIcon />} onClick={ouvrirMenuTelecharger}>Télécharger</Button></Tooltip>
-            <Menu anchorEl={anchorTelecharger} open={Boolean(anchorTelecharger)} onClose={fermerMenuTelecharger}><MenuItem>UBL</MenuItem><MenuItem>CII</MenuItem><MenuItem>Factur-X</MenuItem></Menu>
+            <Menu anchorEl={anchorTelecharger} open={Boolean(anchorTelecharger)} onClose={fermerMenuTelecharger}>
+              <MenuItem onClick={fermerMenuTelecharger}>
+                <ListItemIcon>
+                  <CodeIcon fontSize="small" />
+                </ListItemIcon>
+                UBL
+              </MenuItem>
+              <MenuItem onClick={fermerMenuTelecharger}>
+                <ListItemIcon>
+                  <DescriptionIcon fontSize="small" />
+                </ListItemIcon>
+                CII
+              </MenuItem>
+              <MenuItem onClick={fermerMenuTelecharger}>
+                <ListItemIcon>
+                  <PictureAsPdfIcon fontSize="small" />
+                </ListItemIcon>
+                Factur-X
+              </MenuItem>
+            </Menu>
             <TextField placeholder="Rechercher..." variant="standard" size="small" value={rechercheRapide} onChange={(e) => setRechercheRapide(e.target.value)} InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>) }} sx={{ flexGrow: 1, minWidth: '200px' }} />
             <Tooltip title="Gérer les colonnes"><Button variant="outlined" startIcon={<ViewColumnIcon />} onClick={ouvrirModaleColonnes}>Colonnes</Button></Tooltip>
           </Toolbar>

@@ -29,6 +29,7 @@ import {
   Chip,
   Tabs,
   Tab,
+  ListItemIcon,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -37,6 +38,12 @@ import {
   ViewColumn as ViewColumnIcon,
   RestartAlt as RestartAltIcon,
   CheckCircle as CheckCircleIcon,
+  TableChart as TableChartIcon,
+  GridOn as GridOnIcon,
+  Email as EmailIcon,
+  Code as CodeIcon,
+  Description as DescriptionIcon,
+  PictureAsPdf as PictureAsPdfIcon,
 } from '@mui/icons-material';
 import UtilisateurIxBus from '../templates/UtilisateurIxBus';
 import { genererHistoriqueFacture } from './FEVente/genererHistoriqueFacture';
@@ -618,9 +625,24 @@ const FacturesVenteIxfacture = () => {
             open={Boolean(anchorExporter)}
             onClose={fermerMenuExporter}
           >
-            <MenuItem onClick={fermerMenuExporter}>CSV</MenuItem>
-            <MenuItem onClick={fermerMenuExporter}>Excel</MenuItem>
-            <MenuItem onClick={fermerMenuExporter}>Mail</MenuItem>
+            <MenuItem onClick={fermerMenuExporter}>
+              <ListItemIcon>
+                <TableChartIcon fontSize="small" />
+              </ListItemIcon>
+              CSV
+            </MenuItem>
+            <MenuItem onClick={fermerMenuExporter}>
+              <ListItemIcon>
+                <GridOnIcon fontSize="small" />
+              </ListItemIcon>
+              Excel
+            </MenuItem>
+            <MenuItem onClick={fermerMenuExporter}>
+              <ListItemIcon>
+                <EmailIcon fontSize="small" />
+              </ListItemIcon>
+              Mail
+            </MenuItem>
           </Menu>
 
           <Tooltip title="Télécharger au format">
@@ -637,10 +659,24 @@ const FacturesVenteIxfacture = () => {
             open={Boolean(anchorTelecharger)}
             onClose={fermerMenuTelecharger}
           >
-            <MenuItem onClick={fermerMenuTelecharger}>UBL</MenuItem>
-            <MenuItem onClick={fermerMenuTelecharger}>CII</MenuItem>
-            <MenuItem onClick={fermerMenuTelecharger}>Factur-X</MenuItem>
-            <MenuItem onClick={fermerMenuTelecharger}>PDF</MenuItem>
+            <MenuItem onClick={fermerMenuTelecharger}>
+              <ListItemIcon>
+                <CodeIcon fontSize="small" />
+              </ListItemIcon>
+              UBL
+            </MenuItem>
+            <MenuItem onClick={fermerMenuTelecharger}>
+              <ListItemIcon>
+                <DescriptionIcon fontSize="small" />
+              </ListItemIcon>
+              CII
+            </MenuItem>
+            <MenuItem onClick={fermerMenuTelecharger}>
+              <ListItemIcon>
+                <PictureAsPdfIcon fontSize="small" />
+              </ListItemIcon>
+              Factur-X
+            </MenuItem>
           </Menu>
 
           {/* Zone de recherche rapide */}

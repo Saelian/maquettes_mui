@@ -24,91 +24,93 @@ const contenuAideParPage: Record<string, ContenuAide> = {
   'factures-vente-ixfacture': {
     titre: 'Factures de vente',
     contenu: [
-      "Cet écran vous permet de gérer vos factures de vente émises vers vos clients.",
-      "Vous pouvez consulter toutes vos factures, filtrer par statut (brouillon, envoyée, validée, rejetée), rechercher par numéro ou destinataire, et suivre l'état de transmission à la plateforme Chorus Pro.",
-      "Les actions disponibles incluent l'envoi de factures par email, la consultation des détails, et la gestion des métadonnées associées à chaque facture.",
-      "Les statuts vous informent de l'avancement du traitement : brouillon (en cours de rédaction), envoyée (transmise à Chorus Pro), validée (acceptée par le client), ou rejetée (refusée et nécessitant correction)."
+      "La colonne Origine indique si la facture a été saisie manuellement (depuis le menu Préparer), importée avec un fichier existant (depuis le menu Préparer également) ou déposée par API (connecteur métier ou transmetteur).",
+      "La colonne Destination indique si la facture est émise par la Plateforme Agréée (envoi vers un privé), CPP (envoi vers une entité publique) ou si un envoi par mail est préféré.",
+      "La colonne Nature a été déterminée automatiquement par les règles de routage (voir maquette Natures dans l'administration).",
+      "La colonne Statut indique l'état d'avancement de la facture.",
+      "S'agissant ici de factures de vente, la plupart des statuts sont ceux que la plateforme de réception nous a transmis.",
+      "De plus, on ne peut agir que sur les statuts suivants : Suspendue, Complétée et Paiement transmis.",
+      "Le statut Suspendue permet de compléter la facture. Les statuts Complétée et Paiement transmis d'acquitter de la bonne réception du paiement (statut Encaissée)."
     ]
   },
   'factures-achat-ixfacture': {
     titre: 'Factures d\'achat',
     contenu: [
-      "Cet écran centralise la gestion de vos factures d'achat reçues de vos fournisseurs.",
-      "Vous pouvez consulter l'ensemble de vos factures entrantes, les filtrer selon leur statut de traitement, rechercher par numéro ou émetteur, et suivre leur workflow de validation.",
-      "Les fonctionnalités incluent la visualisation des pièces jointes, la vérification des informations de facturation, et le suivi des échéances de paiement.",
-      "Le statut de chaque facture indique où elle se situe dans le processus : reçue, en cours de vérification, validée pour paiement, ou en anomalie nécessitant une action."
+      "La colonne Origine indique si la facture provient de la plateforme agréée et bénéficiera donc des échanges de statuts métiers.",
+      "Si la facture a été saisie manuellement (depuis le menu Préparer) ou importée avec un fichier existant (depuis le menu Préparer également) ou déposée par API (connecteur métier ou transmetteur) alors la facture ne bénéficiera pas d'échanges de statuts.",
+      "Dans ces cas, les statuts modifiés dans l'interface ne sont là qu'à titre indicatif pour le suivi interne.",
+       "La colonne Nature a été déterminée automatiquement par les règles de routage (voir maquette Natures dans l'administration).",
     ]
   },
   'preparer-ixfacture': {
     titre: 'Préparer une facture',
     contenu: [
-      "Cet écran vous permet de créer et préparer une nouvelle facture avant son envoi officiel.",
-      "Vous pouvez saisir toutes les informations nécessaires : coordonnées du destinataire, lignes de facturation avec quantités et prix, conditions de paiement, et pièces jointes.",
-      "L'interface vous guide dans la saisie des champs obligatoires et calcule automatiquement les montants HT, TVA et TTC.",
-      "Une fois complétée, la facture peut être enregistrée en brouillon pour modification ultérieure ou directement transmise pour traitement et envoi au client."
+      "Cet écran permet de créer manuellement une facture ou d'en importer une déjà existante.",
+      "Lors de la création manuelle : ",
+      "- d'une facture de vente : on peut préciser si cette facture devra partir dans la plateforme agréée ou si c'est une facture qui partira par mail directement au client",
+      "- d'une facture d'achat : s'agissant d'une facture entrante, cette facture ne bénéficiera pas d'échanges de statuts avec la plateforme agréée. Cette facture sera toutefois disponibles sur les API iXFacture et pourra être traitée par l'ERP comme une facture soumise à la réforme (il n'y aura juste pas d'échanges avec la PA)",
+      "Lors d'un import d'une facture existante : ",
+      "- si c'est une facture structurée, celle-ci partira selon les mêmes règles que pour une création manuelle",
+      "- si c'est une facture non structurée PDF, celle-ci sera envoyée dans le module de reconnaissance pour constituer une facture structurée (PAS DE MAQUETTE SUR CE POINT A CE JOUR)"
     ]
   },
   'tableau-de-bord-ixfacture': {
     titre: 'Tableau de bord',
     contenu: [
-      "Le tableau de bord offre une vue d'ensemble de votre activité de facturation.",
-      "Vous y retrouvez les indicateurs clés : nombre de factures en attente, montants totaux facturés, taux de validation, et alertes sur les factures nécessitant une attention.",
-      "Les graphiques et statistiques vous permettent de suivre l'évolution de votre activité sur différentes périodes et d'identifier rapidement les points d'attention.",
-      "C'est votre point d'entrée principal pour avoir une vision globale et accéder rapidement aux différentes sections de l'application."
+      "Le tableau de bord offre une vue d'ensemble de l'activité de facturation.",
     ]
   },
   'e-reporting': {
     titre: 'E-Reporting',
     contenu: [
-      "Cet écran gère la transmission de vos données de facturation aux autorités fiscales dans le cadre de l'obligation d'e-reporting.",
-      "Vous pouvez consulter l'historique des transmissions, vérifier les statuts de conformité, et relancer les envois en cas d'échec.",
-      "L'interface vous informe des échéances réglementaires et vous assiste dans la préparation des données selon les formats requis par l'administration fiscale.",
-      "Les rapports d'erreur détaillés vous aident à corriger rapidement les anomalies bloquant la transmission de vos déclarations."
+      "Cet écran gère la transmission des données de facturation aux autorités fiscales dans le cadre de l'obligation d'e-reporting.",
+      "La structure des exemples est issuee des spécifications réglementaires et est assez proche de ce qui sera réellement transmis en production.",
     ]
   },
   'consultation-annuaire-ixfacture': {
     titre: 'Consultation de l\'annuaire',
     contenu: [
       "Cet écran vous permet de rechercher et consulter les informations des entreprises françaises et internationales dans les annuaires officiels.",
-      "Vous pouvez effectuer des recherches par numéro SIRET, SIREN, dénomination sociale ou adresse pour vérifier l'existence et les coordonnées d'une entreprise.",
-      "Les informations affichées incluent les données d'identification, l'adresse du siège social, le statut juridique, et les codes d'activité.",
-      "Cette fonctionnalité facilite la saisie correcte des informations de vos clients et fournisseurs lors de la création de factures."
+      "La recherche n'est pas opérationnelle en tant que tel sur cette maquette.",
+      "Les informations retournées sont par contre conforme à ce qui sera retourné en production, la maquette ayant été constituée sur la base des spécifications officielles"
     ]
   },
   'interfaces-ixfacture': {
     titre: 'Interfaces iXParapheur',
     contenu: [
-      "Cet écran de configuration permet de définir les règles d'envoi de documents vers le système de signature électronique iXParapheur.",
-      "Vous pouvez paramétrer les conditions d'aiguillage : quels types de documents, pour quels montants, vers quels signataires, et dans quel circuit de validation.",
-      "Les règles configurées déterminent automatiquement le workflow de signature en fonction des caractéristiques de chaque facture (montant, fournisseur, nature...).",
-      "Cette automatisation garantit que chaque document suit le circuit d'approbation approprié sans intervention manuelle."
+      "Cet écran de configuration permet de définir les règles d'envoi des factures vers iXParapheur.",
+      "On y définit des conditions d'aiguillage vers iXParapheur, qui sont basées sur deux critères :", 
+      "- Quel est le statut qui déclenche le dépôt,",
+      "- Quelles sont les règles métiers complémentaires, basées soit sur la facture en elle-même, soit sur ces métadonnées complémentaires",
+      "Une fois les conditions remplies, la facture est automatiquement transmise à iXParapheur pour validation ",
+      "Lorsque le circuit est terminé ou refusé, on précise également le statut qui doit être déclenché dans iXFacture et transmis à la PA.",
+      "Les règles sont évaluées dans l'ordre d'apparition dans la liste : la première règle remplissant les conditions est celle qui est appliquée, les suivantes sont ignorées."
     ]
   },
   'natures-ixfacture': {
     titre: 'Natures de factures',
     contenu: [
-      "Cet écran de configuration vous permet de définir les différentes catégories de factures utilisées dans votre organisation.",
-      "Chaque nature de facture peut avoir ses propres règles d'aiguillage : destination de transmission, circuit de validation, métadonnées obligatoires.",
-      "Vous configurez ici la logique métier qui détermine automatiquement comment traiter chaque facture selon ses caractéristiques (type de prestation, entité, fournisseur...).",
-      "Ces paramètres assurent que vos factures suivent les bons processus de validation et sont transmises aux bons systèmes sans erreur."
+      "Cet écran de configuration vous permet de définir les différentes catégories de factures utilisées",
+      "Chaque nature dispose de règles d'aiguillage qui peuvent être mises en place sur la base des données de la facture ou de ses métadonnées.",
+      "La règle \"Par défaut\" est obligatoire et doit être configurée pour que le système puisse toujours attribuer une nature à chaque facture.",
+      "Pourquoi ce système ?",
+      "L'affectation à une nature de facture permet de cloisonner les factures. Une fois cloisonnées, les droits utilisateurs sont mis en place pour que certains utilisateurs ne puissent voir que les factures d'une ou plusieurs natures.",
+      "Cette restriction s'applique également aux API iXFacture, qui ne retourneront que les factures des natures auxquelles l'utilisateur a accès, permettant ainsi à plusieurs ERP de n'avoir accès qu'aux factures qui les concernent.",
     ]
   },
   'metadonnees-ixfacture': {
     titre: 'Métadonnées',
     contenu: [
-      "Cet écran permet de configurer les champs de métadonnées personnalisés associés à vos factures.",
-      "Vous pouvez définir de nouveaux champs pour capturer des informations spécifiques à votre organisation : code projet, centre de coût, référence interne...",
-      "Les règles de calcul automatique peuvent être configurées pour remplir certains champs en fonction d'autres informations de la facture.",
-      "Ces métadonnées enrichissent vos factures et facilitent leur traitement, recherche et intégration avec vos systèmes comptables et de gestion."
+      "L'administateur définit ici quelles sont les métadonnées qui sont disponibles pour les utilisateurs finaux.",
+      "Ces métadonnées peuvent ensuite être saisies sur la facture",
+      "Pour les champs qui ont des valeurs fixes (liste déroulante principalement), le contenu autorisé pourra être défini par API (exemple : plan comptable).",
+      "Les règles de calcul sont un moyen de calculer automatiquement la valeur d'une métadonnée en fonction d'autres métadonnées ou données de la facture.",
     ]
   },
   'configurations-api-ixfacture': {
     titre: 'Configurations API',
     contenu: [
-      "Cet écran gère les paramètres de connexion aux plateformes externes Chorus Pro et Plateforme de Dématérialisation Partenaire.",
-      "Vous y configurez les identifiants OAuth2, les URLs d'API, et les paramètres de sécurité nécessaires aux échanges automatisés.",
-      "Ces configurations permettent à l'application de transmettre et recevoir automatiquement les factures depuis et vers ces plateformes réglementaires.",
-      "Une configuration correcte est essentielle pour assurer le bon fonctionnement de la facturation électronique et la conformité aux obligations légales."
+      "Ecran qui permet de mettre en place les configurations API pour les connexions vers CPP et la Plateforme Agréée.",
     ]
   },
 };
