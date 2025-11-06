@@ -42,6 +42,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import SearchIcon from '@mui/icons-material/Search';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import LabelIcon from '@mui/icons-material/Label';
+import CalculateIcon from '@mui/icons-material/Calculate';
 
 interface Metadonnee {
   id: number;
@@ -580,8 +582,8 @@ export default function MetadonneesIXFacture() {
         {/* Onglets */}
         <Box sx={{ mt: 2, backgroundColor: 'white' }}>
           <Tabs value={ongletActif} onChange={(_e, nouvelOnglet) => setOngletActif(nouvelOnglet)}>
-            <Tab label="Métadonnées" />
-            <Tab label="Règles de calcul" />
+            <Tab icon={<LabelIcon />} iconPosition="start" label="Métadonnées" />
+            <Tab icon={<CalculateIcon />} iconPosition="start" label="Règles de calcul" />
           </Tabs>
         </Box>
 

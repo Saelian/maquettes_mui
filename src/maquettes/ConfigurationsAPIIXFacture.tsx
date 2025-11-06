@@ -16,7 +16,7 @@ import {
   Tab,
 } from '@mui/material';
 
-import { Save, WifiTetheringError, Token } from '@mui/icons-material';
+import { Save, WifiTetheringError, Token, AccountBalance, VerifiedUser } from '@mui/icons-material';
 
 /**
  * Maquette InterfacesIXFacture
@@ -43,8 +43,8 @@ export default function ConfigurationsAPIIXFacture() {
         {/* Onglets */}
         <Box sx={{ backgroundColor: 'white' }}>
           <Tabs value={ongletActif} onChange={handleChangeOnglet}>
-            <Tab label="PISTE / Chorus Pro" />
-            <Tab label="Plateforme Agréée" />
+            <Tab icon={<AccountBalance />} iconPosition="start" label="PISTE / Chorus Pro" />
+            <Tab icon={<VerifiedUser />} iconPosition="start" label="Plateforme Agréée" />
             {/* <Tab label="IXFacture API" /> */}
           </Tabs>
         </Box>

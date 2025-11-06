@@ -12,6 +12,7 @@ import {
 import {
   HelpOutline,
   Description,
+  Search,
 } from '@mui/icons-material';
 import UtilisateurIxBus from '../templates/UtilisateurIxBus';
 
@@ -79,7 +80,7 @@ export default function TableauDeBordIxfacture() {
           </Box>
           <Button
             variant="contained"
-            startIcon={<HelpOutline />}
+            startIcon={<Search />}
             sx={{ height: 40, bgcolor: '#008577', '&:hover': { bgcolor: '#006d62' } }}
           >
             Rechercher
